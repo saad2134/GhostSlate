@@ -208,25 +208,33 @@ def test_data_buffer_boundary():
           {/* View Router */}
           {activeView === 'overview' && (
             <ErrorBoundary onReset={() => setActiveView('studio')}>
-              <LandingView onLaunchStudio={handleLaunchStudio} />
+              <div className="responsive-page-container">
+                <LandingView onLaunchStudio={handleLaunchStudio} />
+              </div>
             </ErrorBoundary>
           )}
 
           {activeView === 'architecture' && (
             <ErrorBoundary onReset={() => setActiveView('studio')}>
-              <ArchitectureDocsView apiBase={API_BASE} />
+              <div className="responsive-page-container">
+                <ArchitectureDocsView apiBase={API_BASE} />
+              </div>
             </ErrorBoundary>
           )}
 
           {activeView === 'compliance' && (
             <ErrorBoundary onReset={() => setActiveView('studio')}>
-              <LegalComplianceView />
+              <div className="responsive-page-container">
+                <LegalComplianceView />
+              </div>
             </ErrorBoundary>
           )}
 
           {activeView === 'pricing' && (
             <ErrorBoundary onReset={() => setActiveView('studio')}>
-              <PricingTiersView onLaunchStudio={handleLaunchStudio} />
+              <div className="responsive-page-container">
+                <PricingTiersView onLaunchStudio={handleLaunchStudio} />
+              </div>
             </ErrorBoundary>
           )}
 
@@ -234,19 +242,7 @@ def test_data_buffer_boundary():
             <ErrorBoundary onReset={() => triggerHeal('race_condition')}>
               {/* 3-Step Interactive Guided Tour Banner */}
               {showQuickstart && (
-                <div style={{
-                  background: '#0a0a0a',
-                  border: '1px solid #333333',
-                  borderRadius: '10px',
-                  padding: '12px 18px',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'space-between',
-                  flexWrap: 'wrap',
-                  gap: '12px',
-                  marginBottom: '16px',
-                  boxShadow: '0 4px 20px rgba(0, 0, 0, 0.6)'
-                }}>
+                <div className="responsive-quickstart-banner">
                   <div style={{ display: 'flex', alignItems: 'center', gap: '14px', flexWrap: 'wrap' }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '13px', fontWeight: 600, color: '#38bdf8' }}>
                       <span>✦ 3-Step Studio Quickstart:</span>

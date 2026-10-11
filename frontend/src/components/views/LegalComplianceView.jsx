@@ -77,14 +77,14 @@ export default function LegalComplianceView() {
   };
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '32px', paddingBottom: '32px' }}>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 'clamp(24px, 4vw, 32px)', paddingBottom: '32px' }}>
       {/* Header Banner */}
       <div
         style={{
           background: '#0a0a0a',
           border: '1px solid #222222',
           borderRadius: '16px',
-          padding: '32px',
+          padding: 'clamp(20px, 4vw, 32px)',
           display: 'flex',
           flexDirection: 'column',
           gap: '12px',
@@ -96,7 +96,7 @@ export default function LegalComplianceView() {
             <span>ENTERPRISE SECURITY & PRIVACY SPECIFICATION</span>
           </div>
 
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
             <button
               onClick={() => handleDownloadSpec('md')}
               style={{
@@ -147,9 +147,9 @@ export default function LegalComplianceView() {
       </div>
 
       {/* Grid of Security Pillars */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '20px' }}>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 280px), 1fr))', gap: '20px' }}>
         {/* Pillar 1: Zero-Exfiltration */}
-        <div style={{ background: '#0a0a0a', border: '1px solid #222222', borderRadius: '12px', padding: '24px' }}>
+        <div style={{ background: '#0a0a0a', border: '1px solid #222222', borderRadius: '12px', padding: 'clamp(18px, 3.5vw, 24px)' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '16px', color: '#10b981' }}>
             <EyeOff size={20} />
             <h3 style={{ fontSize: '16px', fontWeight: 600, color: '#ffffff', margin: 0 }}>Zero-Exfiltration Privacy Guarantee</h3>
@@ -165,7 +165,7 @@ export default function LegalComplianceView() {
         </div>
 
         {/* Pillar 2: Subprocess Sandbox Security */}
-        <div style={{ background: '#0a0a0a', border: '1px solid #222222', borderRadius: '12px', padding: '24px' }}>
+        <div style={{ background: '#0a0a0a', border: '1px solid #222222', borderRadius: '12px', padding: 'clamp(18px, 3.5vw, 24px)' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '16px', color: '#38bdf8' }}>
             <Server size={20} />
             <h3 style={{ fontSize: '16px', fontWeight: 600, color: '#ffffff', margin: 0 }}>Subprocess Sandbox Isolation Boundary</h3>
@@ -181,7 +181,7 @@ export default function LegalComplianceView() {
         </div>
 
         {/* Pillar 3: AST Pre-Flight Security */}
-        <div style={{ background: '#0a0a0a', border: '1px solid #222222', borderRadius: '12px', padding: '24px' }}>
+        <div style={{ background: '#0a0a0a', border: '1px solid #222222', borderRadius: '12px', padding: 'clamp(18px, 3.5vw, 24px)' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '16px', color: '#f59e0b' }}>
             <Lock size={20} />
             <h3 style={{ fontSize: '16px', fontWeight: 600, color: '#ffffff', margin: 0 }}>AST-Level Static Security Pre-Flight</h3>
@@ -197,7 +197,7 @@ export default function LegalComplianceView() {
         </div>
 
         {/* Pillar 4: SARIF v2.1.0 Compliance */}
-        <div style={{ background: '#0a0a0a', border: '1px solid #222222', borderRadius: '12px', padding: '24px' }}>
+        <div style={{ background: '#0a0a0a', border: '1px solid #222222', borderRadius: '12px', padding: 'clamp(18px, 3.5vw, 24px)' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '16px', color: '#a855f7' }}>
             <FileText size={20} />
             <h3 style={{ fontSize: '16px', fontWeight: 600, color: '#ffffff', margin: 0 }}>SARIF v2.1.0 DevSecOps Standard</h3>
@@ -219,7 +219,7 @@ export default function LegalComplianceView() {
           background: '#0a0a0a',
           border: '1px solid #222222',
           borderRadius: '12px',
-          padding: '24px',
+          padding: 'clamp(16px, 3vw, 24px)',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'space-between',

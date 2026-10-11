@@ -49,7 +49,7 @@ export default function PricingTiersView({ onLaunchStudio }) {
   ];
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '40px', paddingBottom: '32px' }}>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 'clamp(28px, 4vw, 40px)', paddingBottom: '32px' }}>
       {/* Header */}
       <div style={{ textAlign: 'center', maxWidth: '680px', margin: '0 auto' }}>
         <h1 style={{ fontSize: '28px', fontWeight: 700, color: '#ffffff', margin: '0 0 12px 0', letterSpacing: '-0.02em' }}>
@@ -103,9 +103,9 @@ export default function PricingTiersView({ onLaunchStudio }) {
       </div>
 
       {/* Tier Cards Grid */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '20px' }}>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 280px), 1fr))', gap: '20px' }}>
         {/* Tier 1: Community */}
-        <div style={{ background: '#0a0a0a', border: '1px solid #222222', borderRadius: '16px', padding: '28px', display: 'flex', flexDirection: 'column' }}>
+        <div style={{ background: '#0a0a0a', border: '1px solid #222222', borderRadius: '16px', padding: 'clamp(20px, 4vw, 28px)', display: 'flex', flexDirection: 'column' }}>
           <div style={{ marginBottom: '16px' }}>
             <h3 style={{ fontSize: '18px', fontWeight: 600, color: '#ffffff', margin: '0 0 4px 0' }}>Community</h3>
             <p style={{ fontSize: '12px', color: '#888888', margin: 0 }}>Free & Open Source for individual developers.</p>
@@ -139,7 +139,7 @@ export default function PricingTiersView({ onLaunchStudio }) {
         </div>
 
         {/* Tier 2: Pro Team */}
-        <div style={{ background: '#0a0a0a', border: '1px solid #38bdf8', borderRadius: '16px', padding: '28px', display: 'flex', flexDirection: 'column', position: 'relative' }}>
+        <div style={{ background: '#0a0a0a', border: '1px solid #38bdf8', borderRadius: '16px', padding: 'clamp(20px, 4vw, 28px)', display: 'flex', flexDirection: 'column', position: 'relative' }}>
           <div
             style={{
               position: 'absolute',
@@ -188,7 +188,7 @@ export default function PricingTiersView({ onLaunchStudio }) {
         </div>
 
         {/* Tier 3: Enterprise Air-Gapped */}
-        <div style={{ background: '#0a0a0a', border: '1px solid #222222', borderRadius: '16px', padding: '28px', display: 'flex', flexDirection: 'column' }}>
+        <div style={{ background: '#0a0a0a', border: '1px solid #222222', borderRadius: '16px', padding: 'clamp(20px, 4vw, 28px)', display: 'flex', flexDirection: 'column' }}>
           <div style={{ marginBottom: '16px' }}>
             <h3 style={{ fontSize: '18px', fontWeight: 600, color: '#ffffff', margin: '0 0 4px 0' }}>Enterprise VPC</h3>
             <p style={{ fontSize: '12px', color: '#888888', margin: 0 }}>Self-hosted air-gapped security & compliance.</p>
@@ -236,7 +236,7 @@ export default function PricingTiersView({ onLaunchStudio }) {
           </p>
         </div>
 
-        <div style={{ background: '#0a0a0a', border: '1px solid #222222', borderRadius: '12px', overflowX: 'auto' }}>
+        <div style={{ background: '#0a0a0a', border: '1px solid #222222', borderRadius: '12px', overflowX: 'auto', WebkitOverflowScrolling: 'touch' }}>
           <table 
             aria-label="GhostSlate tier feature and security comparison matrix"
             style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', minWidth: '700px' }}

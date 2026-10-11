@@ -88,12 +88,12 @@ export default function LandingView({ onLaunchStudio }) {
   ];
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '48px', paddingBottom: '32px' }}>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 'clamp(32px, 5vw, 48px)', paddingBottom: '32px' }}>
       {/* Hero Section */}
       <section
         style={{
           position: 'relative',
-          padding: '48px 32px',
+          padding: 'clamp(28px, 5vw, 48px) clamp(16px, 4vw, 32px)',
           background: 'radial-gradient(ellipse 80% 50% at 50% -20%, rgba(120, 119, 198, 0.15), rgba(255, 255, 255, 0))',
           borderRadius: '16px',
           border: '1px solid #222222',
@@ -191,7 +191,7 @@ export default function LandingView({ onLaunchStudio }) {
           </p>
         </div>
 
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: '16px' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 250px), 1fr))', gap: '16px' }}>
           {scenarioBridges.map((sc) => (
             <div
               key={sc.id}
@@ -261,6 +261,7 @@ export default function LandingView({ onLaunchStudio }) {
             border: '1px solid #222222',
             borderRadius: '12px',
             overflowX: 'auto',
+            WebkitOverflowScrolling: 'touch',
           }}
         >
           <table 
@@ -332,7 +333,7 @@ export default function LandingView({ onLaunchStudio }) {
           background: 'linear-gradient(180deg, #0a0a0a 0%, #050505 100%)',
           border: '1px solid #222222',
           borderRadius: '16px',
-          padding: '36px 32px',
+          padding: 'clamp(22px, 4vw, 36px) clamp(16px, 3.5vw, 32px)',
           display: 'flex',
           flexDirection: 'column',
           gap: '28px',
@@ -367,7 +368,7 @@ export default function LandingView({ onLaunchStudio }) {
         </div>
 
         {/* Interactive Sliders Grid */}
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '24px' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 260px), 1fr))', gap: '20px' }}>
           {/* Slider 1: Team Size */}
           <div style={{ background: '#000000', border: '1px solid #1f1f1f', borderRadius: '12px', padding: '20px' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
@@ -433,7 +434,7 @@ export default function LandingView({ onLaunchStudio }) {
         </div>
 
         {/* Live Mathematical Metric Cards */}
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '16px' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 200px), 1fr))', gap: '16px' }}>
           {/* Card 1: Blast Radius Reduction */}
           <div style={{ background: '#000000', border: '1px solid #1a1a1a', borderRadius: '12px', padding: '20px', textAlign: 'center' }}>
             <div style={{ fontSize: '12px', color: '#10b981', fontWeight: 600, textTransform: 'uppercase', marginBottom: '6px' }}>
@@ -554,7 +555,7 @@ export default function LandingView({ onLaunchStudio }) {
         <div
           style={{
             display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
+            gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 250px), 1fr))',
             gap: '16px',
           }}
         >
@@ -598,7 +599,7 @@ export default function LandingView({ onLaunchStudio }) {
           background: '#0a0a0a',
           border: '1px solid #222222',
           borderRadius: '16px',
-          padding: '36px',
+          padding: 'clamp(24px, 4vw, 36px) clamp(16px, 3vw, 24px)',
           textAlign: 'center',
           display: 'flex',
           flexDirection: 'column',

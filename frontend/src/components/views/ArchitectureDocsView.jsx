@@ -117,14 +117,14 @@ services:
   };
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '32px', paddingBottom: '32px' }}>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 'clamp(24px, 4vw, 32px)', paddingBottom: '32px' }}>
       {/* Overview Header */}
       <div
         style={{
           background: '#0a0a0a',
           border: '1px solid #222222',
           borderRadius: '16px',
-          padding: '32px',
+          padding: 'clamp(20px, 4vw, 32px)',
         }}
       >
         <div style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', color: '#38bdf8', fontSize: '13px', fontWeight: 600, marginBottom: '12px' }}>
@@ -141,7 +141,7 @@ services:
       </div>
 
       {/* Live Empirical Benchmark Telemetry Card */}
-      <div style={{ background: '#0a0a0a', border: '1px solid #222222', borderRadius: '12px', padding: '24px' }}>
+      <div style={{ background: '#0a0a0a', border: '1px solid #222222', borderRadius: '12px', padding: 'clamp(16px, 3.5vw, 24px)' }}>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '16px', flexWrap: 'wrap', gap: '12px' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '10px', color: '#10b981' }}>
             <Activity size={20} />
@@ -170,7 +170,7 @@ services:
           </button>
         </div>
 
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '14px' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 160px), 1fr))', gap: '14px' }}>
           <div style={{ background: '#050505', border: '1px solid #1a1a1a', borderRadius: '8px', padding: '16px' }}>
             <div style={{ fontSize: '11px', color: '#888888', textTransform: 'uppercase', marginBottom: '4px' }}>AST Parse Latency (Avg)</div>
             <div style={{ fontSize: '20px', fontWeight: 700, color: '#38bdf8' }}>
@@ -206,8 +206,8 @@ services:
       </div>
 
       {/* Hexagonal Ports Breakdown */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '20px' }}>
-        <div style={{ background: '#0a0a0a', border: '1px solid #222222', borderRadius: '12px', padding: '24px' }}>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 280px), 1fr))', gap: '20px' }}>
+        <div style={{ background: '#0a0a0a', border: '1px solid #222222', borderRadius: '12px', padding: 'clamp(18px, 3.5vw, 24px)' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '10px', color: '#38bdf8', marginBottom: '12px' }}>
             <Layers size={20} />
             <h3 style={{ fontSize: '15px', fontWeight: 600, color: '#ffffff', margin: 0 }}>Presentation Adapters (Inbound)</h3>
@@ -219,7 +219,7 @@ services:
           </ul>
         </div>
 
-        <div style={{ background: '#0a0a0a', border: '1px solid #222222', borderRadius: '12px', padding: '24px' }}>
+        <div style={{ background: '#0a0a0a', border: '1px solid #222222', borderRadius: '12px', padding: 'clamp(18px, 3.5vw, 24px)' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '10px', color: '#10b981', marginBottom: '12px' }}>
             <Cpu size={20} />
             <h3 style={{ fontSize: '15px', fontWeight: 600, color: '#ffffff', margin: 0 }}>Core Domain Ports (Interfaces)</h3>
@@ -233,7 +233,7 @@ services:
           </ul>
         </div>
 
-        <div style={{ background: '#0a0a0a', border: '1px solid #222222', borderRadius: '12px', padding: '24px' }}>
+        <div style={{ background: '#0a0a0a', border: '1px solid #222222', borderRadius: '12px', padding: 'clamp(18px, 3.5vw, 24px)' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '10px', color: '#f59e0b', marginBottom: '12px' }}>
             <GitBranch size={20} />
             <h3 style={{ fontSize: '15px', fontWeight: 600, color: '#ffffff', margin: 0 }}>Infrastructure Adapters (Outbound)</h3>
@@ -248,9 +248,9 @@ services:
       </div>
 
       {/* Multi-Platform CI/CD Integration Tabs */}
-      <div style={{ background: '#0a0a0a', border: '1px solid #222222', borderRadius: '12px', padding: '24px' }}>
+      <div style={{ background: '#0a0a0a', border: '1px solid #222222', borderRadius: '12px', padding: 'clamp(16px, 3.5vw, 24px)' }}>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '16px', flexWrap: 'wrap', gap: '12px' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
             <button
               onClick={() => setCiTab('github')}
               style={{
