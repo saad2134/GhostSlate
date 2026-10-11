@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Cpu, GitPullRequest, Keyboard, ChevronDown, Check, Code, Globe, Shield, BookOpen, DollarSign } from 'lucide-react';
+import { Cpu, GitPullRequest, Keyboard, ChevronDown, Check, Code, Globe, Shield, BookOpen, DollarSign, ClipboardCheck } from 'lucide-react';
 import appIcon from '../assets/app-icon.png';
 import ShinyText from './ui/ShinyText';
 import DecryptedText from './ui/DecryptedText';
@@ -10,6 +10,7 @@ export default function Header({
   setProvider,
   onOpenExportModal,
   onOpenShortcuts,
+  onOpenPocModal,
   session,
   activeView = 'studio',
   setActiveView
@@ -266,6 +267,17 @@ export default function Header({
             <span>Hotkeys (?)</span>
           </button>
 
+          {/* Enterprise POC Checklist Button */}
+          <button
+            onClick={onOpenPocModal}
+            className="vercel-btn-secondary"
+            title="Enterprise 14-Day POC Evaluation Checklist"
+            style={{ padding: '7px 12px', fontSize: '0.78rem' }}
+          >
+            <ClipboardCheck size={13} color="#38bdf8" />
+            <span className="hide-on-mobile-xs">POC Checklist</span>
+          </button>
+
           {/* Aceternity Shimmer Export Button */}
           <ShimmerButton
             onClick={onOpenExportModal}
@@ -293,6 +305,7 @@ export default function Header({
           borderTop: '1px solid #1a1a1a',
           paddingTop: '10px',
           overflowX: 'auto',
+          WebkitOverflowScrolling: 'touch',
           width: '100%',
         }}
         aria-label="Application View Navigation"

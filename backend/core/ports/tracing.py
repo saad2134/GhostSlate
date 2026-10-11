@@ -16,3 +16,6 @@ class TraceHookPort(ABC):
     def end_span(self, span: Any, status: str = "OK", error: Optional[str] = None) -> None:
         """Completes a trace span with completion status and microsecond duration."""
         pass
+
+# Backward-compatible alias
+DistributedTracerPort = TraceHookPort

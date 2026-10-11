@@ -8,6 +8,7 @@ import MonacoDiffStudio from './components/MonacoDiffStudio';
 import SandboxTerminal from './components/SandboxTerminal';
 import ExportModal from './components/ExportModal';
 import KeyboardShortcutsModal from './components/KeyboardShortcutsModal';
+import EnterprisePocModal from './components/EnterprisePocModal';
 import BackgroundGrid from './components/ui/BackgroundGrid';
 import ErrorBoundary from './components/ErrorBoundary';
 
@@ -28,6 +29,7 @@ export default function App() {
   const [stage, setStage] = useState('healed');
   const [isExportModalOpen, setIsExportModalOpen] = useState(false);
   const [isShortcutsModalOpen, setIsShortcutsModalOpen] = useState(false);
+  const [isPocModalOpen, setIsPocModalOpen] = useState(false);
   const [activeView, setActiveView] = useState('studio'); // 'studio', 'overview', 'architecture', 'compliance', 'pricing'
 
   // Custom Evaluator Sandbox code & test assertion state
@@ -199,6 +201,7 @@ def test_data_buffer_boundary():
           setProvider={setProvider}
           onOpenExportModal={() => setIsExportModalOpen(true)}
           onOpenShortcuts={() => setIsShortcutsModalOpen(true)}
+          onOpenPocModal={() => setIsPocModalOpen(true)}
           session={session}
           activeView={activeView}
           setActiveView={setActiveView}
@@ -365,6 +368,13 @@ def test_data_buffer_boundary():
         <KeyboardShortcutsModal
           isOpen={isShortcutsModalOpen}
           onClose={() => setIsShortcutsModalOpen(false)}
+        />
+
+        {/* Enterprise 14-Day POC Evaluation Checklist Modal */}
+        <EnterprisePocModal
+          isOpen={isPocModalOpen}
+          onClose={() => setIsPocModalOpen(false)}
+          onLaunchScenario={(id) => handleLaunchStudio(id)}
         />
       </div>
     </BackgroundGrid>

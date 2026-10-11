@@ -1,8 +1,44 @@
 import React, { useState } from 'react';
-import { ShieldCheck, Lock, FileText, CheckCircle2, Server, EyeOff, Scale, Download, Check } from 'lucide-react';
+import { ShieldCheck, Lock, FileText, CheckCircle2, Server, EyeOff, Scale, Download, Check, Copy } from 'lucide-react';
 
 export default function LegalComplianceView() {
   const [downloaded, setDownloaded] = useState(false);
+  const [copiedSig, setCopiedSig] = useState(false);
+
+  const handleCopySigLite = () => {
+    const content = `### 📋 GhostSlate Enterprise Security Questionnaire (SIG Lite & CAIQ Summary)
+* Vendor & Product: GhostSlate ✦ Autonomous AST Program Repair & Self-Healing Sandbox
+* Author & Maintainer: Saaduddin Mohammed (github.com/saad2134)
+* Architecture Standard: Hexagonal Ports & Adapters (Strict Separation of Presentation, Domain, Infrastructure)
+
+1. Data Retention & Privacy Guarantees:
+- Customer Code Retention: 0 Days. Volatile in-memory processing only.
+- Model Training Ingestion: Contractually 0% of customer source code or tests used for model training.
+- Network Egress Policy: 0.00 KB. Offline Deterministic Heuristic Engine operates completely air-gapped.
+
+2. Subprocess Sandbox Security:
+- Execution Boundary: Ephemeral tempfile.mkdtemp directory destroyed immediately upon exit code emission.
+- Process Quota: Strict 5.0-second execution deadline terminating runaway computation.
+- Secret Scrubbing: clean_env barrier strips parent API keys, cloud tokens, and environment variables.
+
+3. Static Security Pre-Flight:
+- Syntax Inspection: Concrete AST tree parses imports before sandbox execution.
+- Prohibited Modules: Rejection of os, subprocess, socket, shutil, sys, ctypes.
+- Dynamic Execution Prohibition: Blocks eval(), exec(), __import__().
+
+4. Compliance & Auditability:
+- Standard Format: Standardized SARIF v2.1.0 output for GitHub Advanced Security and SonarQube.
+- Cryptographic Provenance: Append-only SHA-256 hash block chaining for tamper-evident verification audit.`;
+
+    if (navigator?.clipboard?.writeText) {
+      navigator.clipboard.writeText(content)
+        .then(() => {
+          setCopiedSig(true);
+          setTimeout(() => setCopiedSig(false), 2000);
+        })
+        .catch(err => console.warn('Clipboard write denied:', err));
+    }
+  };
 
   const handleDownloadSpec = (format) => {
     let content = '';
@@ -134,6 +170,25 @@ export default function LegalComplianceView() {
             >
               {downloaded ? <Check size={13} color="#10b981" /> : <Download size={13} />}
               <span>Download Audit (.json)</span>
+            </button>
+            <button
+              onClick={handleCopySigLite}
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '6px',
+                padding: '6px 14px',
+                background: '#171717',
+                border: '1px solid #333333',
+                borderRadius: '6px',
+                color: '#ffffff',
+                fontSize: '12px',
+                fontWeight: 500,
+                cursor: 'pointer',
+              }}
+            >
+              {copiedSig ? <Check size={13} color="#10b981" /> : <Copy size={13} />}
+              <span>{copiedSig ? 'SIG Lite Copied!' : 'Copy SIG Lite / CAIQ'}</span>
             </button>
           </div>
         </div>

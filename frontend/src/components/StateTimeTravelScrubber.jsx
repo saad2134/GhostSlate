@@ -7,18 +7,33 @@ import DecryptedText from './ui/DecryptedText';
 export default function StateTimeTravelScrubber({ snapshots, violation, streamSync }) {
   const [selectedStepIndex, setSelectedStepIndex] = useState(null);
   const [isPlaying, setIsPlaying] = useState(false);
+  const [streamViewMode, setStreamViewMode] = useState('resequenced'); // 'resequenced' vs 'arrival'
 
-  const currentStepIndex = selectedStepIndex !== null && selectedStepIndex < (snapshots?.length || 0)
+  const displaySnapshots = React.useMemo(() => {
+    if (!snapshots) return [];
+    if (streamViewMode === 'arrival' && streamSync?.is_out_of_order_detected) {
+      const scrambled = [...snapshots];
+      if (scrambled.length >= 3) {
+        const tmp = scrambled[1];
+        scrambled[1] = scrambled[2];
+        scrambled[2] = tmp;
+      }
+      return scrambled;
+    }
+    return snapshots;
+  }, [snapshots, streamViewMode, streamSync]);
+
+  const currentStepIndex = selectedStepIndex !== null && selectedStepIndex < (displaySnapshots?.length || 0)
     ? selectedStepIndex
-    : (snapshots && snapshots.length > 0 ? snapshots.length - 1 : 0);
+    : (displaySnapshots && displaySnapshots.length > 0 ? displaySnapshots.length - 1 : 0);
 
   useEffect(() => {
     let interval;
-    if (isPlaying && snapshots && snapshots.length > 1) {
+    if (isPlaying && displaySnapshots && displaySnapshots.length > 1) {
       interval = setInterval(() => {
         setSelectedStepIndex((prev) => {
-          const current = prev !== null ? prev : (snapshots.length - 1);
-          if (current >= snapshots.length - 1) {
+          const current = prev !== null ? prev : (displaySnapshots.length - 1);
+          if (current >= displaySnapshots.length - 1) {
             setIsPlaying(false);
             return current;
           }
@@ -27,7 +42,7 @@ export default function StateTimeTravelScrubber({ snapshots, violation, streamSy
       }, 1200);
     }
     return () => clearInterval(interval);
-  }, [isPlaying, snapshots]);
+  }, [isPlaying, displaySnapshots]);
 
   if (!snapshots || snapshots.length === 0) {
     return (
@@ -38,7 +53,7 @@ export default function StateTimeTravelScrubber({ snapshots, violation, streamSy
     );
   }
 
-  const activeSnapshot = snapshots[currentStepIndex] || snapshots[0];
+  const activeSnapshot = displaySnapshots[currentStepIndex] || displaySnapshots[0];
   const isBreach = activeSnapshot.status === 'invariant_violation' || activeSnapshot.status === 'exception';
 
   return (
@@ -129,7 +144,7 @@ export default function StateTimeTravelScrubber({ snapshots, violation, streamSy
             </span>
           </div>
 
-          <div style={{ display: 'flex', alignItems: 'center', gap: '12px', fontSize: '0.72rem', fontFamily: 'var(--font-mono)' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '12px', fontSize: '0.72rem', fontFamily: 'var(--font-mono)', flexWrap: 'wrap' }}>
             {streamSync.events_reordered > 0 && (
               <span style={{ color: '#f59e0b' }}>
                 Reordered: <strong>{streamSync.events_reordered} frames</strong> (Jitter: {streamSync.max_jitter_frames})
@@ -143,13 +158,35 @@ export default function StateTimeTravelScrubber({ snapshots, violation, streamSy
             <span style={{ color: '#10b981' }}>
               Latency: <strong>{streamSync.sync_latency_us}µs</strong>
             </span>
+            {streamSync.is_out_of_order_detected && (
+              <button
+                type="button"
+                onClick={() => setStreamViewMode(prev => prev === 'resequenced' ? 'arrival' : 'resequenced')}
+                style={{
+                  padding: '3px 8px',
+                  borderRadius: '4px',
+                  fontSize: '0.68rem',
+                  fontWeight: 600,
+                  cursor: 'pointer',
+                  backgroundColor: streamViewMode === 'arrival' ? '#f59e0b' : '#141414',
+                  color: streamViewMode === 'arrival' ? '#000000' : '#ffffff',
+                  border: '1px solid ' + (streamViewMode === 'arrival' ? '#f59e0b' : '#333333'),
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '4px',
+                  transition: 'all 0.15s ease'
+                }}
+              >
+                <span>{streamViewMode === 'arrival' ? '⚠ View: Disrupted Arrival Jitter' : '✦ View: Causal Resequenced'}</span>
+              </button>
+            )}
           </div>
         </div>
       )}
 
       {/* Scrub-Bar Timeline Tracks (Properly Padded) */}
       <div style={{ display: 'flex', alignItems: 'center', gap: '8px', width: '100%', overflowX: 'auto', padding: '4px 2px', margin: '2px 0 4px 0' }}>
-        {snapshots.map((snap, idx) => {
+        {displaySnapshots.map((snap, idx) => {
           const isSelected = idx === currentStepIndex;
           const isFaulty = snap.status === 'invariant_violation' || snap.status === 'exception';
           const isResequenced = snap.is_out_of_order;

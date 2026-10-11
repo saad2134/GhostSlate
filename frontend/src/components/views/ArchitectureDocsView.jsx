@@ -352,11 +352,20 @@ services:
       </div>
 
       {/* REST API Endpoints Specification */}
-      <div style={{ background: '#0a0a0a', border: '1px solid #222222', borderRadius: '12px', overflow: 'hidden' }}>
+      <div style={{
+        background: '#0a0a0a',
+        border: '1px solid #222222',
+        borderRadius: '12px',
+        overflowX: 'auto',
+        WebkitOverflowScrolling: 'touch'
+      }}>
         <div style={{ padding: '16px 20px', background: '#050505', borderBottom: '1px solid #222222' }}>
           <h3 style={{ margin: 0, fontSize: '14px', fontWeight: 600, color: '#ffffff' }}>REST API Specification</h3>
         </div>
-        <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', fontSize: '13px' }}>
+        <table
+          aria-label="GhostSlate REST API Specification"
+          style={{ width: '100%', minWidth: '560px', borderCollapse: 'collapse', textAlign: 'left', fontSize: '13px' }}
+        >
           <thead>
             <tr style={{ borderBottom: '1px solid #1f1f1f', color: '#888888', fontSize: '12px' }}>
               <th style={{ padding: '12px 20px' }}>Method</th>

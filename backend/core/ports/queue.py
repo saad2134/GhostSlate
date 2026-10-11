@@ -21,3 +21,6 @@ class TaskQueuePort(ABC):
     def get_job_status(self, job_id: str) -> Optional[Dict[str, Any]]:
         """Returns the execution stage, progress, and completed session if finished."""
         pass
+
+# Backward-compatible alias
+WorkerPoolPort = TaskQueuePort

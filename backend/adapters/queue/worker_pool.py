@@ -16,14 +16,24 @@ class BoundedWorkerPoolAdapter(TaskQueuePort):
     def __init__(
         self,
         coordinator: Optional[AgentLoopCoordinator] = None,
-        max_concurrent_workers: int = 4
+        max_concurrent_workers: int = 4,
+        max_workers: Optional[int] = None
     ):
+        actual_workers = max_workers if max_workers is not None else max_concurrent_workers
         self.coordinator = coordinator or AgentLoopCoordinator()
-        self.max_concurrent_workers = max_concurrent_workers
-        self._semaphore = asyncio.Semaphore(max_concurrent_workers)
+        self.max_concurrent_workers = actual_workers
+        self._semaphore = asyncio.Semaphore(actual_workers)
         self._jobs: Dict[str, Dict[str, Any]] = {}
         self._lock = threading.RLock()
         self._tasks: list[asyncio.Task] = []
+        self._is_shutdown: bool = False
+
+    @property
+    def is_shutdown(self) -> bool:
+        return self._is_shutdown
+
+    def shutdown(self) -> None:
+        self._is_shutdown = True
 
     async def submit_job(
         self,

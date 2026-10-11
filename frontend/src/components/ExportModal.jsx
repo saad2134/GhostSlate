@@ -92,7 +92,7 @@ export default function ExportModal({ isOpen, onClose, session, apiBase = '' }) 
       display: 'flex',
       alignItems: 'center',
       justifyContent: 'center',
-      padding: '20px'
+      padding: 'clamp(10px, 3vw, 20px)'
     }}>
       <div style={{
         width: '100%',
@@ -125,12 +125,19 @@ export default function ExportModal({ isOpen, onClose, session, apiBase = '' }) 
 
           <button
             onClick={onClose}
+            aria-label="Close export dialog"
             style={{
               background: 'transparent',
               border: 'none',
               color: 'var(--text-secondary)',
               cursor: 'pointer',
-              padding: '4px'
+              padding: '8px',
+              minWidth: '36px',
+              minHeight: '36px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              borderRadius: '4px',
             }}
           >
             <X size={18} />
