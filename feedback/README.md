@@ -9,6 +9,7 @@
 GhostSlate was shared across developer communities, college engineering channels, and LinkedIn targeting systems programmers, AI engineers, and QA practitioners to gather honest technical critique.
 
 ### 🔗 Public Post Copy & Distribution
+* **Live LinkedIn Post:** [https://lnkd.in/p/ddR6nADX](https://lnkd.in/p/ddR6nADX) (Update Share: `urn:li:share:7515051296274538496`)
 * **Platform:** LinkedIn & Technical Developer Discord / WhatsApp Engineering Groups
 * **Mentions:** Tagged **@GREVIX**
 * **Project Link:** [https://github.com/saad2134/GhostSlate](https://github.com/saad2134/GhostSlate)

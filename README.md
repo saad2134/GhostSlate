@@ -66,7 +66,8 @@
 
 ## 💬 Challenge Card #2: Real-World Feedback & Community Iteration
 
-> **Full Documentation & Visual Proofs:** See the [`/feedback`](feedback/README.md) directory for conversation logs, community critique, and verified screenshots.
+> **Full Documentation & Visual Proofs:** See the [`/feedback`](feedback/README.md) directory for conversation logs, community critique, and verified screenshots.  
+> **Public Outreach:** Shared on LinkedIn ([https://lnkd.in/p/ddR6nADX](https://lnkd.in/p/ddR6nADX)) tagging **@GREVIX**.
 
 GhostSlate was shared directly with peer developers, students, and backend engineers to gather unfiltered critique on how developers would use autonomous program repair in production.
 
