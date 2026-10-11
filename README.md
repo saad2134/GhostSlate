@@ -22,6 +22,14 @@
 
 ---
 
+<div align="center">
+
+[![LIVE DEMO](https://img.shields.io/badge/LIVE_DEMO-Visit_Website-00C853?style=for-the-badge&logo=render&logoColor=white)](https://ghostslate.onrender.com/)
+
+</div>
+
+---
+
 ## ✨ Features
 
 ### 🎯 Tree-Sitter AST Scoping & Surgical Node Isolation
