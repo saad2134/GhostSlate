@@ -81,13 +81,13 @@ body {
 .vercel-pill {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
+  gap: 7px;
   background-color: #111111;
   border: 1px solid var(--border-subtle);
   color: var(--text-secondary);
   border-radius: 9999px;
-  padding: 3px 10px;
-  font-size: 0.72rem;
+  padding: 4px 12px;
+  font-size: 0.74rem;
   font-weight: 500;
   letter-spacing: 0.02em;
 }
@@ -104,7 +104,7 @@ body {
   color: var(--btn-primary-text);
   border: 1px solid #ffffff;
   border-radius: 6px;
-  padding: 8px 16px;
+  padding: 8px 18px;
   font-size: 0.82rem;
   font-weight: 600;
   cursor: pointer;
@@ -124,13 +124,13 @@ body {
   color: var(--btn-secondary-text);
   border: 1px solid var(--btn-secondary-border);
   border-radius: 6px;
-  padding: 7px 14px;
+  padding: 8px 16px;
   font-size: 0.8rem;
   font-weight: 500;
   cursor: pointer;
   display: inline-flex;
   align-items: center;
-  gap: 6px;
+  gap: 7px;
   transition: all 0.15s ease;
 }
 

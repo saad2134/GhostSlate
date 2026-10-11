@@ -36,13 +36,13 @@ export default function ChaosSimulator({
   const activeIndex = getStageIndex(stage);
 
   return (
-    <SpotlightCard style={{ padding: '18px 20px', margin: '0 20px 20px 20px', backgroundColor: '#050505' }}>
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '14px', flexWrap: 'wrap', gap: '12px' }}>
+    <SpotlightCard style={{ padding: '22px 24px', margin: '0 20px 24px 20px', backgroundColor: '#050505' }}>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '16px', flexWrap: 'wrap', gap: '14px' }}>
         <div>
-          <h2 style={{ fontSize: '1rem', fontWeight: 700, margin: 0, color: '#ffffff', letterSpacing: '-0.02em' }}>
+          <h2 style={{ fontSize: '1.02rem', fontWeight: 700, margin: 0, color: '#ffffff', letterSpacing: '-0.02em' }}>
             <ShinyText text="Chaos Injection Simulator ✦ AST Self-Healing Pipeline" speed={4} />
           </h2>
-          <p style={{ fontSize: '0.76rem', color: 'var(--text-secondary)', margin: '2px 0 0 0' }}>
+          <p style={{ fontSize: '0.76rem', color: 'var(--text-secondary)', margin: '4px 0 0 0' }}>
             Simulate runtime state corruption ✦ Trigger surgical AST repair & isolated verification
           </p>
         </div>
@@ -51,6 +51,7 @@ export default function ChaosSimulator({
         <ShimmerButton
           onClick={() => onTriggerHeal(selectedScenarioId)}
           disabled={loading}
+          style={{ padding: '9px 20px', fontSize: '0.82rem' }}
         >
           {loading ? (
             <>
@@ -73,12 +74,12 @@ export default function ChaosSimulator({
         </ShimmerButton>
       </div>
 
-      {/* Aceternity Spotlight Scenario Grid */}
+      {/* Aceternity Spotlight Scenario Grid with Generous Padding */}
       <div style={{
         display: 'grid',
         gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))',
-        gap: '10px',
-        marginBottom: '16px'
+        gap: '12px',
+        marginBottom: '18px'
       }}>
         {scenarios.map((sc) => {
           const isSelected = sc.id === selectedScenarioId;
@@ -90,31 +91,32 @@ export default function ChaosSimulator({
               activeBorderColor="#ffffff"
               spotlightColor="rgba(255, 255, 255, 0.08)"
               style={{
-                padding: '12px 14px',
+                padding: '16px 18px',
+                borderRadius: '8px',
                 cursor: 'pointer',
                 backgroundColor: isSelected ? '#111111' : '#0a0a0a'
               }}
             >
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '6px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px' }}>
                 <span style={{
-                  fontSize: '0.68rem',
+                  fontSize: '0.7rem',
                   fontWeight: 600,
                   textTransform: 'uppercase',
-                  padding: '2px 6px',
-                  borderRadius: '4px',
+                  padding: '3px 8px',
+                  borderRadius: '5px',
                   backgroundColor: isSelected ? '#ffffff' : '#171717',
                   color: isSelected ? '#000000' : 'var(--text-secondary)'
                 }}>
                   {sc.category}
                 </span>
-                <span style={{ fontSize: '0.7rem', color: '#a1a1a1', fontFamily: 'var(--font-mono)' }}>
+                <span style={{ fontSize: '0.72rem', color: '#a1a1a1', fontFamily: 'var(--font-mono)' }}>
                   Python AST
                 </span>
               </div>
-              <h3 style={{ fontSize: '0.84rem', fontWeight: 600, color: '#ffffff', marginBottom: '4px' }}>
+              <h3 style={{ fontSize: '0.86rem', fontWeight: 600, color: '#ffffff', marginBottom: '6px' }}>
                 {sc.title}
               </h3>
-              <p style={{ fontSize: '0.73rem', color: 'var(--text-secondary)', margin: 0, lineClamp: 2, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
+              <p style={{ fontSize: '0.74rem', color: 'var(--text-secondary)', margin: 0, lineClamp: 2, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden', lineHeight: 1.5 }}>
                 {sc.description}
               </p>
             </SpotlightCard>
@@ -122,17 +124,17 @@ export default function ChaosSimulator({
         })}
       </div>
 
-      {/* 5-Stage High-Contrast Pipeline */}
+      {/* 5-Stage High-Contrast Pipeline with Proper Padding */}
       <div style={{
         backgroundColor: '#0a0a0a',
-        borderRadius: '6px',
-        padding: '10px 14px',
+        borderRadius: '8px',
+        padding: '12px 18px',
         border: '1px solid var(--border-subtle)',
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'space-between',
         flexWrap: 'wrap',
-        gap: '8px'
+        gap: '10px'
       }}>
         {pipelineStages.map((stg, idx) => {
           const isPassed = activeIndex >= idx;
@@ -145,13 +147,13 @@ export default function ChaosSimulator({
               style={{
                 display: 'flex',
                 alignItems: 'center',
-                gap: '6px',
-                padding: '4px 10px',
-                borderRadius: '4px',
+                gap: '8px',
+                padding: '6px 12px',
+                borderRadius: '6px',
                 backgroundColor: isCurrent ? '#ffffff' : (isPassed ? '#171717' : 'transparent'),
                 color: isCurrent ? '#000000' : (isPassed ? '#ffffff' : 'var(--text-muted)'),
                 border: isCurrent ? '1px solid #ffffff' : '1px solid transparent',
-                fontSize: '0.75rem',
+                fontSize: '0.76rem',
                 fontWeight: isCurrent ? 700 : 500,
                 transition: 'all 0.15s ease'
               }}
@@ -159,7 +161,7 @@ export default function ChaosSimulator({
               <Icon size={14} color={isCurrent ? '#000000' : (isPassed ? stg.accentColor : '#666666')} />
               <span>{stg.label}</span>
               {isPassed && idx < activeIndex && (
-                <CheckCircle2 size={12} color="#10b981" />
+                <CheckCircle2 size={13} color="#10b981" />
               )}
             </div>
           );

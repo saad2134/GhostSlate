@@ -96,8 +96,8 @@ export default function StateTimeTravelScrubber({ snapshots, violation }) {
         </div>
       </div>
 
-      {/* Scrub-Bar Timeline Tracks (Vercel Monochrome) */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: '6px', width: '100%', overflowX: 'auto', padding: '2px 0' }}>
+      {/* Scrub-Bar Timeline Tracks (Properly Padded) */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: '8px', width: '100%', overflowX: 'auto', padding: '4px 2px', margin: '4px 0 6px 0' }}>
         {snapshots.map((snap, idx) => {
           const isSelected = idx === currentStepIndex;
           const isFaulty = snap.status === 'invariant_violation' || snap.status === 'exception';
@@ -108,9 +108,10 @@ export default function StateTimeTravelScrubber({ snapshots, violation }) {
               onClick={() => { setCurrentStepIndex(idx); setIsPlaying(false); }}
               style={{
                 flex: 1,
-                minWidth: '46px',
-                height: '34px',
-                borderRadius: '6px',
+                minWidth: '58px',
+                height: '44px',
+                padding: '6px 8px',
+                borderRadius: '8px',
                 backgroundColor: isSelected
                   ? '#ffffff'
                   : (isFaulty ? '#1c1012' : '#111111'),
@@ -118,8 +119,8 @@ export default function StateTimeTravelScrubber({ snapshots, violation }) {
                   ? '1px solid #ffffff'
                   : (isFaulty ? '1px dashed #ef4444' : '1px solid var(--border-subtle)'),
                 color: isSelected ? '#000000' : (isFaulty ? '#ef4444' : '#a1a1a1'),
-                fontSize: '0.72rem',
-                fontWeight: isSelected ? 700 : 500,
+                fontSize: '0.76rem',
+                fontWeight: isSelected ? 700 : 600,
                 display: 'flex',
                 flexDirection: 'column',
                 alignItems: 'center',
@@ -128,38 +129,38 @@ export default function StateTimeTravelScrubber({ snapshots, violation }) {
                 transition: 'all 0.15s ease'
               }}
             >
-              <span>#{snap.step}</span>
-              <span style={{ fontSize: '0.62rem', opacity: 0.8 }}>L{snap.line_number}</span>
+              <span style={{ fontSize: '0.78rem' }}>#{snap.step}</span>
+              <span style={{ fontSize: '0.68rem', opacity: 0.85, marginTop: '2px' }}>L{snap.line_number}</span>
             </button>
           );
         })}
       </div>
 
-      {/* Invariant Breach Warning Box */}
+      {/* Invariant Breach Warning Box (Properly Padded) */}
       {isBreach && violation && (
         <div style={{
           backgroundColor: '#120a0b',
           border: '1px solid #ef4444',
-          borderRadius: '6px',
-          padding: '10px 14px',
+          borderRadius: '8px',
+          padding: '14px 18px',
           display: 'flex',
           alignItems: 'flex-start',
-          gap: '10px'
+          gap: '12px'
         }}>
           <AlertOctagon size={18} color="#ef4444" style={{ flexShrink: 0, marginTop: '2px' }} />
           <div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '2px' }}>
-              <span style={{ fontSize: '0.8rem', fontWeight: 700, color: '#ef4444' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px' }}>
+              <span style={{ fontSize: '0.82rem', fontWeight: 700, color: '#ef4444' }}>
                 <DecryptedText text={`${violation.rule_name} Breach`} speed={30} maxIterations={8} />
               </span>
-              <span className="vercel-pill" style={{ color: '#ffffff', borderColor: '#ef4444', fontSize: '0.68rem', backgroundColor: '#000000' }}>
+              <span className="vercel-pill" style={{ color: '#ffffff', borderColor: '#ef4444', fontSize: '0.7rem', padding: '3px 10px', backgroundColor: '#000000' }}>
                 Culprit: {violation.culprit_variable}
               </span>
             </div>
-            <p style={{ fontSize: '0.75rem', color: '#fca5a5', margin: '0 0 4px 0' }}>
+            <p style={{ fontSize: '0.76rem', color: '#fca5a5', margin: '0 0 6px 0', lineHeight: 1.5 }}>
               {activeSnapshot.message || violation.description}
             </p>
-            <div style={{ display: 'flex', gap: '14px', fontSize: '0.72rem', fontFamily: 'var(--font-mono)' }}>
+            <div style={{ display: 'flex', gap: '16px', fontSize: '0.74rem', fontFamily: 'var(--font-mono)' }}>
               <span style={{ color: '#a1a1a1' }}>Expected: <strong style={{ color: '#10b981' }}>{violation.expected_condition}</strong></span>
               <span style={{ color: '#a1a1a1' }}>Corrupt Value: <strong style={{ color: '#ef4444' }}>{violation.actual_value}</strong></span>
             </div>

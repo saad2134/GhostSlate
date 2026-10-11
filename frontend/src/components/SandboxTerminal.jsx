@@ -85,72 +85,74 @@ export default function SandboxTerminal({ verification }) {
         </div>
       </div>
 
-      {/* Terminal View Tabs */}
-      <div style={{ display: 'flex', gap: '6px' }}>
+      {/* Terminal View Tabs (Properly Padded) */}
+      <div style={{ display: 'flex', gap: '8px', margin: '4px 0 6px 0' }}>
         <button
           onClick={() => setActiveTab('pre')}
           style={{
-            backgroundColor: activeTab === 'pre' ? '#ffffff' : '#050505',
+            backgroundColor: activeTab === 'pre' ? '#ffffff' : '#111111',
             border: activeTab === 'pre' ? '1px solid #ffffff' : '1px solid var(--border-subtle)',
             color: activeTab === 'pre' ? '#000000' : 'var(--text-secondary)',
-            padding: '4px 10px',
-            borderRadius: '4px',
-            fontSize: '0.74rem',
-            fontWeight: 500,
+            padding: '7px 14px',
+            borderRadius: '6px',
+            fontSize: '0.76rem',
+            fontWeight: 600,
             display: 'flex',
             alignItems: 'center',
-            gap: '5px',
-            cursor: 'pointer'
+            gap: '7px',
+            cursor: 'pointer',
+            transition: 'all 0.15s ease'
           }}
         >
-          <XCircle size={13} color={activeTab === 'pre' ? '#000000' : '#ef4444'} />
+          <XCircle size={14} color={activeTab === 'pre' ? '#000000' : '#ef4444'} />
           <span>Pre-Patch Run ✦ Red Failed</span>
         </button>
 
         <button
           onClick={() => setActiveTab('post')}
           style={{
-            backgroundColor: activeTab === 'post' ? '#ffffff' : '#050505',
+            backgroundColor: activeTab === 'post' ? '#ffffff' : '#111111',
             border: activeTab === 'post' ? '1px solid #ffffff' : '1px solid var(--border-subtle)',
             color: activeTab === 'post' ? '#000000' : 'var(--text-secondary)',
-            padding: '4px 10px',
-            borderRadius: '4px',
-            fontSize: '0.74rem',
-            fontWeight: 500,
+            padding: '7px 14px',
+            borderRadius: '6px',
+            fontSize: '0.76rem',
+            fontWeight: 600,
             display: 'flex',
             alignItems: 'center',
-            gap: '5px',
-            cursor: 'pointer'
+            gap: '7px',
+            cursor: 'pointer',
+            transition: 'all 0.15s ease'
           }}
         >
-          <CheckCircle2 size={13} color={activeTab === 'post' ? '#000000' : '#ffffff'} />
+          <CheckCircle2 size={14} color={activeTab === 'post' ? '#000000' : '#ffffff'} />
           <span>Post-Patch Run ✦ 100% Green Passed</span>
         </button>
       </div>
 
-      {/* Terminal Console Output Window */}
+      {/* Terminal Console Output Window with Proper Padding */}
       <div style={{
         backgroundColor: '#000000',
-        borderRadius: '6px',
-        padding: '12px 14px',
+        borderRadius: '8px',
+        padding: '14px 16px',
         border: '1px solid var(--border-subtle)',
-        maxHeight: '250px',
+        maxHeight: '260px',
         overflowY: 'auto',
         fontFamily: 'var(--font-mono)',
         fontSize: '0.76rem'
       }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '8px', opacity: 0.6 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '10px', opacity: 0.6 }}>
           <span style={{ width: '8px', height: '8px', borderRadius: '50%', backgroundColor: '#333333', display: 'inline-block' }}></span>
           <span style={{ width: '8px', height: '8px', borderRadius: '50%', backgroundColor: '#444444', display: 'inline-block' }}></span>
           <span style={{ width: '8px', height: '8px', borderRadius: '50%', backgroundColor: '#555555', display: 'inline-block' }}></span>
-          <span style={{ fontSize: '0.68rem', color: '#888888', marginLeft: '6px' }}>pytest -v --no-header --tb=short ✦ Subprocess Isolation</span>
+          <span style={{ fontSize: '0.7rem', color: '#888888', marginLeft: '6px' }}>pytest -v --no-header --tb=short ✦ Subprocess Isolation</span>
         </div>
 
         <pre style={{
           margin: 0,
           whiteSpace: 'pre-wrap',
           color: activeTab === 'pre' ? '#fca5a5' : '#ededed',
-          lineHeight: 1.5
+          lineHeight: 1.55
         }}>
           {activeTab === 'pre'
             ? (verification.pre_patch_test_output || 'No output recorded')

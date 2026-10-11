@@ -28,53 +28,53 @@ export default function MonacoDiffStudio({ patch, originalCode, language = 'pyth
   }
 
   return (
-    <SpotlightCard style={{ padding: '18px 20px', display: 'flex', flexDirection: 'column', gap: '12px', backgroundColor: '#0a0a0a' }}>
+    <SpotlightCard style={{ padding: '20px 22px', display: 'flex', flexDirection: 'column', gap: '16px', backgroundColor: '#0a0a0a' }}>
       {/* Header and Controls */}
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '8px' }}>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '12px' }}>
         <div>
-          <h3 style={{ fontSize: '0.92rem', fontWeight: 700, margin: 0, color: '#ffffff', letterSpacing: '-0.02em' }}>
+          <h3 style={{ fontSize: '0.94rem', fontWeight: 700, margin: 0, color: '#ffffff', letterSpacing: '-0.02em' }}>
             <ShinyText text="Monaco AST-Scoped Diff Studio" speed={4} />
           </h3>
-          <p style={{ fontSize: '0.73rem', color: 'var(--text-secondary)', margin: 0 }}>
+          <p style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', margin: '4px 0 0 0' }}>
             Surgical AST mutation (Lines {patch?.start_line || 1} ✦ {patch?.end_line || 1}) ✦ 100% comments & scope preserved
           </p>
         </div>
 
         {/* Controls */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
           <button
             onClick={() => setInlineView(!inlineView)}
             className="vercel-btn-secondary"
-            style={{ padding: '5px 10px' }}
+            style={{ padding: '7px 14px', fontSize: '0.76rem' }}
           >
-            {inlineView ? <Split size={13} /> : <AlignJustify size={13} />}
+            {inlineView ? <Split size={14} /> : <AlignJustify size={14} />}
             <span>{inlineView ? 'Side-by-Side' : 'Inline Diff'}</span>
           </button>
 
           <button
             onClick={handleCopyDiff}
             className="vercel-btn-secondary"
-            style={{ padding: '5px 12px' }}
+            style={{ padding: '7px 14px', fontSize: '0.76rem' }}
           >
-            {copied ? <Check size={13} color="#ffffff" /> : <Copy size={13} />}
+            {copied ? <Check size={14} color="#ffffff" /> : <Copy size={14} />}
             <span>{copied ? 'Diff Copied' : 'Copy Unified Diff'}</span>
           </button>
         </div>
       </div>
 
-      {/* Explanation Banner */}
+      {/* Explanation Banner (Properly Padded) */}
       {patch?.explanation && (
         <div style={{
           backgroundColor: '#050505',
           border: '1px solid var(--border-subtle)',
-          borderRadius: '6px',
-          padding: '8px 12px',
+          borderRadius: '8px',
+          padding: '12px 16px',
           display: 'flex',
           alignItems: 'center',
-          gap: '8px'
+          gap: '10px'
         }}>
-          <Sparkles size={14} color="#ffffff" style={{ flexShrink: 0 }} />
-          <p style={{ fontSize: '0.76rem', color: '#d4d4d4', margin: 0 }}>
+          <Sparkles size={16} color="#ffffff" style={{ flexShrink: 0 }} />
+          <p style={{ fontSize: '0.77rem', color: '#d4d4d4', margin: 0, lineHeight: 1.5 }}>
             <strong style={{ color: '#ffffff' }}>AST Repair Rationale: </strong>
             {patch.explanation}
           </p>
@@ -83,8 +83,8 @@ export default function MonacoDiffStudio({ patch, originalCode, language = 'pyth
 
       {/* Monaco Diff Editor */}
       <div style={{
-        height: '330px',
-        borderRadius: '6px',
+        height: '350px',
+        borderRadius: '8px',
         overflow: 'hidden',
         border: '1px solid var(--border-subtle)',
         backgroundColor: '#000000'
