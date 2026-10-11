@@ -276,13 +276,15 @@ export default function StateTimeTravelScrubber({ snapshots, violation, streamSy
             <Layers size={13} color="#a1a1a1" />
             <span>Call Stack Execution Depth</span>
           </div>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '3px' }}>
-            {activeSnapshot.call_stack.map((frame, idx) => (
-              <div key={idx} style={{ fontSize: '0.74rem', fontFamily: 'var(--font-mono)', color: idx === activeSnapshot.call_stack.length - 1 ? '#ffffff' : '#555555' }}>
-                {idx === activeSnapshot.call_stack.length - 1 ? '▶ ' : '  '}{frame}()
-              </div>
-            ))}
-          </div>
+            {(activeSnapshot.call_stack || []).map((frame, idx) => {
+              const stackLen = activeSnapshot.call_stack?.length || 0;
+              const isTop = idx === stackLen - 1;
+              return (
+                <div key={idx} style={{ fontSize: '0.74rem', fontFamily: 'var(--font-mono)', color: isTop ? '#ffffff' : '#555555' }}>
+                  {isTop ? '▶ ' : '  '}{frame}()
+                </div>
+              );
+            })}
         </div>
       </div>
     </SpotlightCard>

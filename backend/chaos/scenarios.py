@@ -1,4 +1,4 @@
-from typing import Dict, List
+from typing import Dict, List, Optional
 from backend.core.models import ChaosScenario
 
 SCENARIOS: Dict[str, ChaosScenario] = {
@@ -240,8 +240,8 @@ def test_data_buffer_boundary():
     )
 }
 
-def get_scenario(scenario_id: str) -> ChaosScenario:
-    return SCENARIOS.get(scenario_id, SCENARIOS["race_condition"])
+def get_scenario(scenario_id: str) -> Optional[ChaosScenario]:
+    return SCENARIOS.get(scenario_id)
 
 def list_scenarios() -> List[ChaosScenario]:
     return list(SCENARIOS.values())

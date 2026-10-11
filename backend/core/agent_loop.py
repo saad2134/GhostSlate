@@ -1,23 +1,36 @@
 import uuid
 from typing import Optional
-from backend.core.models import SelfHealingSession
-from backend.chaos.scenarios import get_scenario
+from backend.core.models import SelfHealingSession, ChaosScenario
+from backend.chaos.scenarios import get_scenario, SCENARIOS
 from backend.core.state_trap import StateTrap
 from backend.core.ast_engine import ASTEngine
 from backend.core.sandbox_runner import SandboxRunner
 from backend.adapters.providers.deterministic_engine import DeterministicEngine
+from backend.adapters.repositories.in_memory_session_repo import InMemorySessionRepository
+from backend.core.ports.sandbox import ExecutionSandboxPort
+from backend.core.ports.provider import ModelProviderPort
+from backend.core.ports.repository import SessionRepositoryPort
 
 class AgentLoopCoordinator:
     """
     Coordinates the end-to-end self-healing lifecycle:
     Trace Capture -> AST Isolation -> Two-Tier Debate -> Sandbox Subprocess Verification
+    Supports Hexagonal dependency injection for sandboxes, providers, and session repositories.
     """
 
-    def __init__(self):
-        self.state_trap = StateTrap()
-        self.ast_engine = ASTEngine()
-        self.sandbox_runner = SandboxRunner()
-        self.deterministic_provider = DeterministicEngine()
+    def __init__(
+        self,
+        sandbox_runner: Optional[ExecutionSandboxPort] = None,
+        model_provider: Optional[ModelProviderPort] = None,
+        ast_engine: Optional[ASTEngine] = None,
+        state_trap: Optional[StateTrap] = None,
+        session_repo: Optional[SessionRepositoryPort] = None
+    ):
+        self.state_trap = state_trap or StateTrap()
+        self.ast_engine = ast_engine or ASTEngine()
+        self.sandbox_runner = sandbox_runner or SandboxRunner()
+        self.deterministic_provider = model_provider or DeterministicEngine()
+        self.session_repo = session_repo or InMemorySessionRepository()
 
     def run_healing_session(
         self,
@@ -26,6 +39,10 @@ class AgentLoopCoordinator:
         custom_test: Optional[str] = None
     ) -> SelfHealingSession:
         scenario = get_scenario(scenario_id)
+        if not scenario:
+            # Fall back to race condition if unknown
+            scenario = SCENARIOS.get("race_condition")
+
         source_code = custom_code or scenario.source_code
         test_code = custom_test or scenario.test_code
 
@@ -48,17 +65,35 @@ class AgentLoopCoordinator:
         )
 
         # Step 4: Deterministic Sandbox Runner (Subprocess Red -> Green verification)
-        verification = self.sandbox_runner.run_verification(
-            original_code=source_code,
-            patched_code=patch.full_patched_code,
-            test_code=test_code,
-            patch_id=patch.patch_id
-        )
+        if hasattr(self.sandbox_runner, "run_verification"):
+            verification = self.sandbox_runner.run_verification(
+                original_code=source_code,
+                patched_code=patch.full_patched_code,
+                test_code=test_code,
+                patch_id=patch.patch_id
+            )
+        else:
+            # Conformance fallback for generic ExecutionSandboxPort
+            pre_pass, pre_out, pre_code = self.sandbox_runner.run_tests(source_code, test_code)
+            post_pass, post_out, post_code = self.sandbox_runner.run_tests(patch.full_patched_code, test_code)
+            is_verified = (not pre_pass) and post_pass
+            from backend.core.models import VerificationResult
+            verification = VerificationResult(
+                patch_id=patch.patch_id,
+                is_verified=is_verified,
+                pre_patch_test_output=pre_out,
+                post_patch_test_output=post_out,
+                exit_code=post_code,
+                duration_ms=150.0,
+                tests_passed=1 if is_verified else 0,
+                tests_failed=0 if is_verified else 1,
+                deterministic_proof="Port sandbox verification completed."
+            )
 
         # Step 5: Determine final stage
         final_stage = "healed" if verification.is_verified else "failed"
 
-        return SelfHealingSession(
+        session = SelfHealingSession(
             session_id=session_id,
             scenario_id=scenario.id,
             title=scenario.title,
@@ -75,3 +110,9 @@ class AgentLoopCoordinator:
             stage=final_stage,
             stream_sync=stream_sync
         )
+
+        # Cache session in session repository for instant zero-redundancy exports
+        if self.session_repo:
+            self.session_repo.save(session)
+
+        return session

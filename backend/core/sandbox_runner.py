@@ -3,14 +3,37 @@ import sys
 import time
 import tempfile
 import subprocess
-from typing import Tuple
+import ast
+import shutil
+from typing import Tuple, Optional, Set
 from backend.core.models import VerificationResult
+from backend.core.ports.sandbox import ExecutionSandboxPort
 
-class SandboxRunner:
+FORBIDDEN_MODULES: Set[str] = {
+    "os", "subprocess", "socket", "shutil", "sys", "ctypes",
+    "builtins", "posix", "nt", "importlib", "pty", "commands",
+    "multiprocessing", "webbrowser", "http", "urllib", "requests"
+}
+
+FORBIDDEN_CALLS: Set[str] = {
+    "eval", "exec", "__import__", "compile"
+}
+
+class SandboxRunner(ExecutionSandboxPort):
     """
     Isolated Subprocess Test Runner: executes pytest in a sandboxed temporary directory.
     Guarantees that no patch is marked verified unless pytest exits with returncode 0.
+    Implements ExecutionSandboxPort.
     """
+
+    def run_tests(
+        self,
+        target_code: str,
+        test_code: str,
+        filename: str = "target.py"
+    ) -> Tuple[bool, str, int]:
+        """Implements ExecutionSandboxPort for single test execution runs."""
+        return self._execute_in_sandbox(target_code, test_code, timeout=5.0)
 
     def run_verification(
         self,
@@ -65,15 +88,60 @@ class SandboxRunner:
             deterministic_proof=proof
         )
 
+    def _validate_ast_security(self, code: str) -> Tuple[bool, Optional[str]]:
+        """
+        GS-SEC-01: Deep AST-level inspection to prevent arbitrary code execution,
+        dynamic imports, and unsafe runtime evaluations.
+        """
+        try:
+            tree = ast.parse(code)
+        except SyntaxError:
+            # Syntax errors will fail gracefully during compilation/execution
+            return True, None
+
+        for node in ast.walk(tree):
+            # Check direct imports: import os, subprocess, etc.
+            if isinstance(node, ast.Import):
+                for alias in node.names:
+                    root_pkg = alias.name.split(".")[0]
+                    if root_pkg in FORBIDDEN_MODULES:
+                        return False, f"SECURITY SANDBOX BARRIER: Prohibited module import '{root_pkg}' detected."
+
+            # Check from imports: from os import system, etc.
+            elif isinstance(node, ast.ImportFrom):
+                if node.module:
+                    root_pkg = node.module.split(".")[0]
+                    if root_pkg in FORBIDDEN_MODULES:
+                        return False, f"SECURITY SANDBOX BARRIER: Prohibited module import 'from {root_pkg}' detected."
+
+            # Check calls: eval(), exec(), __import__()
+            elif isinstance(node, ast.Call):
+                if isinstance(node.func, ast.Name):
+                    if node.func.id in FORBIDDEN_CALLS:
+                        return False, f"SECURITY SANDBOX BARRIER: Prohibited execution call '{node.func.id}()' detected."
+
+        return True, None
+
     def _execute_in_sandbox(self, target_code: str, test_code: str, timeout: float) -> Tuple[bool, str, int]:
-        # Security pre-screening: bar high-risk system commands in user code
+        # Fast string pattern check
         dangerous_patterns = ["os.system(", "subprocess.Popen(", "shutil.rmtree(", "eval(__import__"]
         combined = target_code + "\n" + test_code
         for pattern in dangerous_patterns:
             if pattern in combined:
                 return False, f"SECURITY SANDBOX BARRIER: Dangerous pattern '{pattern}' prohibited.", -99
 
-        with tempfile.TemporaryDirectory(prefix="ghostslate_sandbox_") as tmpdir:
+        # GS-SEC-01: Rigorous AST security pre-flight check
+        target_valid, target_err = self._validate_ast_security(target_code)
+        if not target_valid:
+            return False, target_err or "Security violation in target code", -99
+
+        test_valid, test_err = self._validate_ast_security(test_code)
+        if not test_valid:
+            return False, test_err or "Security violation in test code", -99
+
+        tmpdir = None
+        try:
+            tmpdir = tempfile.mkdtemp(prefix="ghostslate_sandbox_")
             target_path = os.path.join(tmpdir, "target.py")
             test_path = os.path.join(tmpdir, "test_target.py")
 
@@ -95,19 +163,25 @@ class SandboxRunner:
 
             cmd = [sys.executable, "-m", "pytest", test_path, "-v", "--no-header", "--tb=short"]
 
-            try:
-                result = subprocess.run(
-                    cmd,
-                    cwd=tmpdir,
-                    env=clean_env,
-                    capture_output=True,
-                    text=True,
-                    timeout=min(timeout, 5.0)  # Capped at 5s execution limit
-                )
-                output = (result.stdout + "\n" + result.stderr).strip()
-                success = (result.returncode == 0)
-                return success, output, result.returncode
-            except subprocess.TimeoutExpired:
-                return False, f"TIMEOUT: Sandbox execution exceeded {timeout}s limit.", -1
-            except Exception as e:
-                return False, f"SANDBOX RUNNER ERROR: {str(e)}", -2
+            result = subprocess.run(
+                cmd,
+                cwd=tmpdir,
+                env=clean_env,
+                capture_output=True,
+                text=True,
+                timeout=min(timeout, 5.0)  # Capped at 5s execution limit
+            )
+            output = (result.stdout + "\n" + result.stderr).strip()
+            success = (result.returncode == 0)
+            return success, output, result.returncode
+
+        except subprocess.TimeoutExpired:
+            return False, f"TIMEOUT: Sandbox execution exceeded {timeout}s limit.", -1
+        except Exception as e:
+            return False, f"SANDBOX RUNNER ERROR: {str(e)}", -2
+        finally:
+            if tmpdir and os.path.exists(tmpdir):
+                try:
+                    shutil.rmtree(tmpdir, ignore_errors=True)
+                except Exception:
+                    pass

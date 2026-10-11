@@ -2,28 +2,32 @@ import React, { useState, useEffect } from 'react';
 import { X, GitPullRequest, Copy, Check, Download, FileJson, FileText } from 'lucide-react';
 import ShinyText from './ui/ShinyText';
 
-export default function ExportModal({ isOpen, onClose, session }) {
+export default function ExportModal({ isOpen, onClose, session, apiBase = '' }) {
   const [prData, setPrData] = useState(null);
   const [copiedType, setCopiedType] = useState(null);
   const [activeTab, setActiveTab] = useState('pr'); // 'pr', 'diff', 'sarif'
 
+  const effectiveApiBase = apiBase || (typeof window !== 'undefined' && window.location.port === '5180' ? 'http://127.0.0.1:8000' : '');
+
   useEffect(() => {
     if (isOpen && session) {
-      fetch('http://127.0.0.1:8000/api/export/pr', {
+      fetch(`${effectiveApiBase}/api/export/pr`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           session_id: session.session_id,
           scenario_id: session.scenario_id,
           patch_id: session.patch?.patch_id || 'patch_default',
-          pr_title: `fix(ast): heal ${session.title}`
+          pr_title: `fix(ast): heal ${session.title}`,
+          custom_code: session.scenario_id === 'custom' ? session.original_code : undefined,
+          custom_test: session.scenario_id === 'custom' ? session.test_suite : undefined
         })
       })
         .then(res => res.json())
         .then(data => setPrData(data))
-        .catch(err => console.error(err));
+        .catch(err => console.error('Export PR request failed:', err));
     }
-  }, [isOpen, session]);
+  }, [isOpen, session, effectiveApiBase]);
 
   if (!isOpen) return null;
 

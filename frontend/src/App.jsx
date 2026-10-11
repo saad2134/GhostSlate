@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import Header from './components/Header';
 import ChaosSimulator from './components/ChaosSimulator';
 import StateTimeTravelScrubber from './components/StateTimeTravelScrubber';
@@ -9,6 +9,13 @@ import SandboxTerminal from './components/SandboxTerminal';
 import ExportModal from './components/ExportModal';
 import KeyboardShortcutsModal from './components/KeyboardShortcutsModal';
 import BackgroundGrid from './components/ui/BackgroundGrid';
+import ErrorBoundary from './components/ErrorBoundary';
+
+// Public & Enterprise View Components
+import LandingView from './components/views/LandingView';
+import LegalComplianceView from './components/views/LegalComplianceView';
+import ArchitectureDocsView from './components/views/ArchitectureDocsView';
+import PricingTiersView from './components/views/PricingTiersView';
 
 const API_BASE = import.meta.env.VITE_API_BASE ?? (typeof window !== 'undefined' && window.location.port === '5180' ? 'http://127.0.0.1:8000' : '');
 
@@ -21,6 +28,7 @@ export default function App() {
   const [stage, setStage] = useState('healed');
   const [isExportModalOpen, setIsExportModalOpen] = useState(false);
   const [isShortcutsModalOpen, setIsShortcutsModalOpen] = useState(false);
+  const [activeView, setActiveView] = useState('studio'); // 'studio', 'overview', 'architecture', 'compliance', 'pricing'
 
   // Custom Evaluator Sandbox code & test assertion state
   const [customCode, setCustomCode] = useState(`class DataBuffer:
@@ -47,21 +55,36 @@ def test_data_buffer_boundary():
     assert len(buf.items) == 4
 `);
 
+  // GS-UI-01: Decouple custom code & test via refs to prevent infinite re-fetch & reset loops on typing
+  const customCodeRef = useRef(customCode);
+  const customTestRef = useRef(customTest);
+  useEffect(() => { customCodeRef.current = customCode; }, [customCode]);
+  useEffect(() => { customTestRef.current = customTest; }, [customTest]);
+
+  // GS-UI-07: Track and clear pending timeouts during rapid scenario switches
+  const timersRef = useRef([]);
+  const clearAllTimers = () => {
+    timersRef.current.forEach(id => clearTimeout(id));
+    timersRef.current = [];
+  };
+
   const triggerHeal = useCallback(async (scenarioId, overrideCode, overrideTest) => {
+    clearAllTimers();
     setSelectedScenarioId(scenarioId);
     setLoading(true);
     setStage('recording_trace');
 
     try {
       // Step transitions for smooth micro-animations
-      setTimeout(() => setStage('ast_isolation'), 500);
-      setTimeout(() => setStage('agent_debate'), 1000);
-      setTimeout(() => setStage('sandbox_verifying'), 1600);
+      const t1 = setTimeout(() => setStage('ast_isolation'), 500);
+      const t2 = setTimeout(() => setStage('agent_debate'), 1000);
+      const t3 = setTimeout(() => setStage('sandbox_verifying'), 1600);
+      timersRef.current.push(t1, t2, t3);
 
       const payload = { scenario_id: scenarioId };
       if (scenarioId === 'custom') {
-        payload.custom_code = overrideCode !== undefined ? overrideCode : customCode;
-        payload.custom_test = overrideTest !== undefined ? overrideTest : customTest;
+        payload.custom_code = overrideCode !== undefined ? overrideCode : customCodeRef.current;
+        payload.custom_test = overrideTest !== undefined ? overrideTest : customTestRef.current;
       }
 
       const res = await fetch(`${API_BASE}/api/heal`, {
@@ -71,19 +94,27 @@ def test_data_buffer_boundary():
       });
 
       const data = await res.json();
-      setTimeout(() => {
+
+      // GS-UI-03: Strict error verification - never claim healed on HTTP errors
+      if (!res.ok) {
+        throw new Error(data.detail || `Server returned status ${res.status}`);
+      }
+
+      const t4 = setTimeout(() => {
         setSession(data);
         setStage(data.stage || 'healed');
         setLoading(false);
       }, 2100);
+      timersRef.current.push(t4);
     } catch (err) {
       console.error('Heal request failed:', err);
+      clearAllTimers();
       setLoading(false);
       setStage('failed');
     }
-  }, [customCode, customTest]);
+  }, []);
 
-  // Fetch scenarios on mount and run initial session
+  // Fetch scenarios on mount and run initial session once
   useEffect(() => {
     fetch(`${API_BASE}/api/scenarios`)
       .then(res => res.json())
@@ -98,16 +129,39 @@ def test_data_buffer_boundary():
       });
   }, [triggerHeal]);
 
-  // Hands-free keyboard shortcuts navigation (1-6 scenarios, Space heal, E export, ? shortcuts)
+  // GS-UI-02: Robust keyboard shortcuts without editor, textarea, contenteditable, or modal collisions
   useEffect(() => {
     const handleKeyDown = (e) => {
-      if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA' || e.target.tagName === 'SELECT') return;
+      // Guard against focused inputs, textareas, contenteditable, or Monaco Editor
+      if (
+        e.target.tagName === 'INPUT' ||
+        e.target.tagName === 'TEXTAREA' ||
+        e.target.tagName === 'SELECT' ||
+        e.target.isContentEditable ||
+        e.target.closest?.('.monaco-editor') ||
+        e.target.closest?.('[contenteditable="true"]') ||
+        isExportModalOpen ||
+        isShortcutsModalOpen
+      ) {
+        if (e.key === 'Escape') {
+          setIsExportModalOpen(false);
+          setIsShortcutsModalOpen(false);
+        }
+        return;
+      }
+
+      // Guard against browser / system modifier keys (Ctrl+1, Cmd+1, Alt+1)
+      if (e.ctrlKey || e.metaKey || e.altKey) return;
 
       if (e.key >= '1' && e.key <= '6') {
-        const idx = parseInt(e.key) - 1;
-        if (scenarios[idx]) triggerHeal(scenarios[idx].id);
+        const idx = parseInt(e.key, 10) - 1;
+        if (scenarios[idx]) {
+          if (activeView !== 'studio') setActiveView('studio');
+          triggerHeal(scenarios[idx].id);
+        }
       } else if (e.key === ' ' || e.code === 'Space') {
         e.preventDefault();
+        if (activeView !== 'studio') setActiveView('studio');
         triggerHeal(selectedScenarioId);
       } else if (e.key === 'e' || e.key === 'E') {
         setIsExportModalOpen(true);
@@ -118,9 +172,10 @@ def test_data_buffer_boundary():
         setIsShortcutsModalOpen(false);
       }
     };
+
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [scenarios, selectedScenarioId, triggerHeal]);
+  }, [scenarios, selectedScenarioId, triggerHeal, activeView, isExportModalOpen, isShortcutsModalOpen]);
 
   return (
     <BackgroundGrid>
@@ -129,66 +184,97 @@ def test_data_buffer_boundary():
       </a>
 
       <div className="responsive-app-container">
-        {/* Top Header */}
+        {/* Top Header with Tab Switcher */}
         <Header
           provider={provider}
           setProvider={setProvider}
           onOpenExportModal={() => setIsExportModalOpen(true)}
           onOpenShortcuts={() => setIsShortcutsModalOpen(true)}
           session={session}
+          activeView={activeView}
+          setActiveView={setActiveView}
         />
 
         <main id="main-content" className="responsive-main">
-          {/* Chaos Injection Simulator & 5-Stage Stepper */}
-          <ChaosSimulator
-            scenarios={scenarios}
-            selectedScenarioId={selectedScenarioId}
-            onSelectScenario={(id) => triggerHeal(id)}
-            onTriggerHeal={(id) => triggerHeal(id)}
-            loading={loading}
-            stage={stage}
-            customCode={customCode}
-            setCustomCode={setCustomCode}
-            customTest={customTest}
-            setCustomTest={setCustomTest}
-          />
+          {/* View Router */}
+          {activeView === 'overview' && (
+            <ErrorBoundary onReset={() => setActiveView('studio')}>
+              <LandingView onLaunchStudio={() => setActiveView('studio')} />
+            </ErrorBoundary>
+          )}
 
-          {/* Two-Column Bento Grid: State Invariant Inspection & Multi-Agent Verification */}
-          <div className="responsive-bento-grid">
-            {/* Column 1: Time-Travel Runtime Scrubber & AST Scoping Inspector */}
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '20px', minWidth: 0 }}>
-              <StateTimeTravelScrubber
-                snapshots={session?.snapshots}
-                violation={session?.invariant_violation}
-                streamSync={session?.stream_sync}
+          {activeView === 'architecture' && (
+            <ErrorBoundary onReset={() => setActiveView('studio')}>
+              <ArchitectureDocsView />
+            </ErrorBoundary>
+          )}
+
+          {activeView === 'compliance' && (
+            <ErrorBoundary onReset={() => setActiveView('studio')}>
+              <LegalComplianceView />
+            </ErrorBoundary>
+          )}
+
+          {activeView === 'pricing' && (
+            <ErrorBoundary onReset={() => setActiveView('studio')}>
+              <PricingTiersView onLaunchStudio={() => setActiveView('studio')} />
+            </ErrorBoundary>
+          )}
+
+          {activeView === 'studio' && (
+            <ErrorBoundary onReset={() => triggerHeal('race_condition')}>
+              {/* Chaos Injection Simulator & 5-Stage Stepper */}
+              <ChaosSimulator
+                scenarios={scenarios}
+                selectedScenarioId={selectedScenarioId}
+                onSelectScenario={(id) => triggerHeal(id)}
+                onTriggerHeal={(id) => triggerHeal(id)}
+                loading={loading}
+                stage={stage}
+                customCode={customCode}
+                setCustomCode={setCustomCode}
+                customTest={customTest}
+                setCustomTest={setCustomTest}
               />
 
-              <ASTVisualizer
-                astNodes={session?.ast_nodes}
-                isolatedNode={session?.isolated_node}
-              />
-            </div>
+              {/* Two-Column Bento Grid: State Invariant Inspection & Multi-Agent Verification */}
+              <div className="responsive-bento-grid">
+                {/* Column 1: Time-Travel Runtime Scrubber & AST Scoping Inspector */}
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '20px', minWidth: 0 }}>
+                  <StateTimeTravelScrubber
+                    snapshots={session?.snapshots}
+                    violation={session?.invariant_violation}
+                    streamSync={session?.stream_sync}
+                  />
 
-            {/* Column 2: Dual-Agent Debate Stream & Subprocess Sandbox Terminal */}
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '20px', minWidth: 0 }}>
-              <AgentDebateStream
-                debateTurns={session?.debate_turns}
-              />
+                  <ASTVisualizer
+                    astNodes={session?.ast_nodes}
+                    isolatedNode={session?.isolated_node}
+                  />
+                </div>
 
-              <SandboxTerminal
-                verification={session?.verification}
-              />
-            </div>
-          </div>
+                {/* Column 2: Dual-Agent Debate Stream & Subprocess Sandbox Terminal */}
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '20px', minWidth: 0 }}>
+                  <AgentDebateStream
+                    debateTurns={session?.debate_turns}
+                  />
 
-          {/* Full-Width Monaco Diff Studio */}
-          <div className="responsive-diff-wrapper">
-            <MonacoDiffStudio
-              patch={session?.patch}
-              originalCode={session?.original_code}
-              language={session?.language || 'python'}
-            />
-          </div>
+                  <SandboxTerminal
+                    verification={session?.verification}
+                  />
+                </div>
+              </div>
+
+              {/* Full-Width Monaco Diff Studio */}
+              <div className="responsive-diff-wrapper">
+                <MonacoDiffStudio
+                  patch={session?.patch}
+                  originalCode={session?.original_code}
+                  language={session?.language || 'python'}
+                />
+              </div>
+            </ErrorBoundary>
+          )}
         </main>
 
         {/* Footer */}
@@ -217,11 +303,12 @@ def test_data_buffer_boundary():
           </div>
         </footer>
 
-        {/* 1-Click PR & SARIF Export Modal */}
+        {/* 1-Click PR & SARIF Export Modal with dynamic apiBase */}
         <ExportModal
           isOpen={isExportModalOpen}
           onClose={() => setIsExportModalOpen(false)}
           session={session}
+          apiBase={API_BASE}
         />
 
         {/* Rapid Keyboard Navigation Overlay */}

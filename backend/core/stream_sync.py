@@ -44,6 +44,16 @@ class ResilientInMemoryStream:
         self._max_jitter: int = 0
         self._interrupt_count: int = 0
 
+    def reset(self) -> None:
+        """Resets internal state, counters, and buffer for clean reuse across sessions."""
+        self._buffer.clear()
+        self._arrival_counter = 0
+        self._highest_sequence_seen = 0
+        self._sync_log.clear()
+        self._reordered_count = 0
+        self._max_jitter = 0
+        self._interrupt_count = 0
+
     def ingest(
         self,
         snapshot: RuntimeStateSnapshot,
@@ -180,4 +190,5 @@ class ResilientInMemoryStream:
             sync_log=list(self._sync_log)
         )
 
+        self.reset()
         return ordered_snapshots, metadata
