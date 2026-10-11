@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import { DiffEditor } from '@monaco-editor/react';
 import { Split, AlignJustify, Check, Copy, Sparkles, FileDiff } from 'lucide-react';
+import SpotlightCard from './ui/SpotlightCard';
+import ShinyText from './ui/ShinyText';
 
 export default function MonacoDiffStudio({ patch, originalCode, language = 'python' }) {
   const [inlineView, setInlineView] = useState(false);
@@ -18,20 +20,20 @@ export default function MonacoDiffStudio({ patch, originalCode, language = 'pyth
 
   if (!originalCode) {
     return (
-      <div className="vercel-card" style={{ padding: '20px', textAlign: 'center', color: 'var(--text-muted)' }}>
+      <SpotlightCard style={{ padding: '20px', textAlign: 'center', color: 'var(--text-muted)' }}>
         <FileDiff size={26} style={{ opacity: 0.5, marginBottom: '6px' }} />
         <p style={{ fontSize: '0.78rem' }}>Loading target source code and computing AST diff...</p>
-      </div>
+      </SpotlightCard>
     );
   }
 
   return (
-    <div className="vercel-card" style={{ padding: '18px 20px', display: 'flex', flexDirection: 'column', gap: '12px', backgroundColor: '#0a0a0a' }}>
+    <SpotlightCard style={{ padding: '18px 20px', display: 'flex', flexDirection: 'column', gap: '12px', backgroundColor: '#0a0a0a' }}>
       {/* Header and Controls */}
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '8px' }}>
         <div>
           <h3 style={{ fontSize: '0.92rem', fontWeight: 700, margin: 0, color: '#ffffff', letterSpacing: '-0.02em' }}>
-            Monaco AST-Scoped Diff Studio
+            <ShinyText text="Monaco AST-Scoped Diff Studio" speed={4} />
           </h3>
           <p style={{ fontSize: '0.73rem', color: 'var(--text-secondary)', margin: 0 }}>
             Surgical AST mutation (Lines {patch?.start_line || 1} ✦ {patch?.end_line || 1}) ✦ 100% comments & scope preserved
@@ -121,6 +123,6 @@ export default function MonacoDiffStudio({ patch, originalCode, language = 'pyth
           }
         />
       </div>
-    </div>
+    </SpotlightCard>
   );
 }

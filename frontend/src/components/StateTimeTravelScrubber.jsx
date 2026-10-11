@@ -1,5 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { History, Play, Pause, ChevronLeft, ChevronRight, AlertOctagon, Layers, Variable } from 'lucide-react';
+import SpotlightCard from './ui/SpotlightCard';
+import ShinyText from './ui/ShinyText';
+import DecryptedText from './ui/DecryptedText';
 
 export default function StateTimeTravelScrubber({ snapshots, violation }) {
   const [currentStepIndex, setCurrentStepIndex] = useState(0);
@@ -29,10 +32,10 @@ export default function StateTimeTravelScrubber({ snapshots, violation }) {
 
   if (!snapshots || snapshots.length === 0) {
     return (
-      <div className="vercel-card" style={{ padding: '24px', textAlign: 'center', color: 'var(--text-muted)' }}>
+      <SpotlightCard style={{ padding: '24px', textAlign: 'center', color: 'var(--text-muted)' }}>
         <History size={28} style={{ marginBottom: '8px', opacity: 0.5 }} />
         <p style={{ fontSize: '0.8rem' }}>No runtime execution trace recorded yet. Trigger a chaos repair to inspect time-travel state deltas.</p>
-      </div>
+      </SpotlightCard>
     );
   }
 
@@ -40,19 +43,22 @@ export default function StateTimeTravelScrubber({ snapshots, violation }) {
   const isBreach = activeSnapshot.status === 'invariant_violation' || activeSnapshot.status === 'exception';
 
   return (
-    <div className="vercel-card" style={{
-      padding: '18px 20px',
-      display: 'flex',
-      flexDirection: 'column',
-      gap: '14px',
-      border: isBreach ? '1px solid #ef4444' : '1px solid var(--border-subtle)',
-      backgroundColor: '#0a0a0a'
-    }}>
+    <SpotlightCard
+      spotlightColor={isBreach ? 'rgba(239, 68, 68, 0.12)' : 'rgba(255, 255, 255, 0.08)'}
+      style={{
+        padding: '18px 20px',
+        display: 'flex',
+        flexDirection: 'column',
+        gap: '14px',
+        border: isBreach ? '1px solid #ef4444' : '1px solid var(--border-subtle)',
+        backgroundColor: '#0a0a0a'
+      }}
+    >
       {/* Header & Controls */}
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '10px' }}>
         <div>
           <h3 style={{ fontSize: '0.92rem', fontWeight: 700, margin: 0, color: '#ffffff', letterSpacing: '-0.02em' }}>
-            State Invariant Time-Travel Scrubber
+            <ShinyText text="State Invariant Time-Travel Scrubber" speed={4} />
           </h3>
           <p style={{ fontSize: '0.73rem', color: 'var(--text-secondary)', margin: 0 }}>
             Step {currentStepIndex + 1} of {snapshots.length} ✦ Frame @ Line {activeSnapshot.line_number} in <code style={{ color: '#ffffff' }}>{activeSnapshot.function_name}</code>
@@ -144,7 +150,7 @@ export default function StateTimeTravelScrubber({ snapshots, violation }) {
           <div>
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '2px' }}>
               <span style={{ fontSize: '0.8rem', fontWeight: 700, color: '#ef4444' }}>
-                {violation.rule_name} Breach
+                <DecryptedText text={`${violation.rule_name} Breach`} speed={30} maxIterations={8} />
               </span>
               <span className="vercel-pill" style={{ color: '#ffffff', borderColor: '#ef4444', fontSize: '0.68rem', backgroundColor: '#000000' }}>
                 Culprit: {violation.culprit_variable}
@@ -209,6 +215,6 @@ export default function StateTimeTravelScrubber({ snapshots, violation }) {
           </div>
         </div>
       </div>
-    </div>
+    </SpotlightCard>
   );
 }

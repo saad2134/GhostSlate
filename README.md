@@ -1,6 +1,7 @@
 <h1 align="center">
+  🛡️ 
   <a href="https://github.com/saad2134/GhostSlate">
-    🛡️ GhostSlate
+    GhostSlate
   </a>
 </h1>
 

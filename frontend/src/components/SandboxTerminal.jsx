@@ -1,37 +1,50 @@
 import React, { useState } from 'react';
 import { Terminal, CheckCircle2, XCircle, Clock, Zap } from 'lucide-react';
+import BorderBeam from './ui/BorderBeam';
+import SpotlightCard from './ui/SpotlightCard';
+import ShinyText from './ui/ShinyText';
+import DecryptedText from './ui/DecryptedText';
+import CountUp from './ui/CountUp';
 
 export default function SandboxTerminal({ verification }) {
   const [activeTab, setActiveTab] = useState('post');
 
   if (!verification) {
     return (
-      <div className="vercel-card" style={{ padding: '20px', textAlign: 'center', color: 'var(--text-muted)' }}>
+      <SpotlightCard style={{ padding: '20px', textAlign: 'center', color: 'var(--text-muted)' }}>
         <Terminal size={26} style={{ opacity: 0.5, marginBottom: '6px' }} />
         <p style={{ fontSize: '0.78rem' }}>Awaiting sandbox test execution...</p>
-      </div>
+      </SpotlightCard>
     );
   }
 
   const isVerified = verification.is_verified;
 
   return (
-    <div className="vercel-card" style={{
-      padding: '18px 20px',
-      display: 'flex',
-      flexDirection: 'column',
-      gap: '12px',
-      backgroundColor: '#0a0a0a',
-      borderColor: isVerified ? '#333333' : '#ef4444'
-    }}>
+    <SpotlightCard
+      spotlightColor={isVerified ? 'rgba(16, 185, 129, 0.1)' : 'rgba(239, 68, 68, 0.1)'}
+      style={{
+        position: 'relative',
+        overflow: 'hidden',
+        padding: '18px 20px',
+        display: 'flex',
+        flexDirection: 'column',
+        gap: '12px',
+        backgroundColor: '#0a0a0a',
+        borderColor: isVerified ? '#333333' : '#ef4444'
+      }}
+    >
+      {isVerified && (
+        <BorderBeam size={220} duration={6} colorFrom="#10b981" colorTo="transparent" borderWidth={1.5} />
+      )}
       {/* Header and Proof Badges */}
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '8px' }}>
         <div>
           <h3 style={{ fontSize: '0.92rem', fontWeight: 700, margin: 0, color: '#ffffff', letterSpacing: '-0.02em', display: 'flex', alignItems: 'center', gap: '8px' }}>
-            Deterministic Sandbox Subprocess Runner
+            <ShinyText text="Deterministic Sandbox Subprocess Runner" speed={4} />
             {isVerified && (
               <span className="vercel-pill" style={{ color: '#10b981', backgroundColor: '#051b11', borderColor: 'rgba(16, 185, 129, 0.4)', fontSize: '0.68rem', fontWeight: 600 }}>
-                ● 100% GREEN VERIFIED
+                <DecryptedText text="● 100% GREEN VERIFIED" speed={30} maxIterations={8} />
               </span>
             )}
           </h3>
@@ -54,7 +67,7 @@ export default function SandboxTerminal({ verification }) {
             color: 'var(--text-secondary)'
           }}>
             <Clock size={12} color="#a1a1a1" />
-            <span>Duration: <strong style={{ color: '#fff' }}>{verification.duration_ms}ms</strong></span>
+            <span>Duration: <strong style={{ color: '#fff' }}><CountUp to={verification.duration_ms} duration={0.8} suffix="ms" /></strong></span>
           </div>
 
           <div style={{
@@ -147,6 +160,6 @@ export default function SandboxTerminal({ verification }) {
             : (verification.post_patch_test_output || 'No output recorded')}
         </pre>
       </div>
-    </div>
+    </SpotlightCard>
   );
 }

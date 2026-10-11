@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { X, GitPullRequest, Copy, Check, Download, FileJson, FileText } from 'lucide-react';
+import ShinyText from './ui/ShinyText';
 
 export default function ExportModal({ isOpen, onClose, session }) {
   const [prData, setPrData] = useState(null);
@@ -79,7 +80,7 @@ export default function ExportModal({ isOpen, onClose, session }) {
         }}>
           <div>
             <h3 style={{ fontSize: '0.95rem', fontWeight: 700, margin: 0, color: '#ffffff', letterSpacing: '-0.02em' }}>
-              1-Click Pull Request ✦ SARIF Artifact Exporter
+              <ShinyText text="1-Click Pull Request ✦ SARIF Artifact Exporter" speed={4} />
             </h3>
             <p style={{ fontSize: '0.72rem', color: 'var(--text-secondary)', margin: '2px 0 0 0' }}>
               Verified program repair ready for merge ✦ CI/CD compliance

@@ -1,22 +1,25 @@
 import React from 'react';
 import { MessageSquareCode } from 'lucide-react';
+import SpotlightCard from './ui/SpotlightCard';
+import ShinyText from './ui/ShinyText';
+import CountUp from './ui/CountUp';
 
 export default function AgentDebateStream({ debateTurns }) {
   if (!debateTurns || debateTurns.length === 0) {
     return (
-      <div className="vercel-card" style={{ padding: '20px', textAlign: 'center', color: 'var(--text-muted)' }}>
+      <SpotlightCard style={{ padding: '20px', textAlign: 'center', color: 'var(--text-muted)' }}>
         <MessageSquareCode size={26} style={{ opacity: 0.5, marginBottom: '6px' }} />
         <p style={{ fontSize: '0.78rem' }}>Waiting for Two-Tier Agent Loop initialization...</p>
-      </div>
+      </SpotlightCard>
     );
   }
 
   return (
-    <div className="vercel-card" style={{ padding: '18px 20px', display: 'flex', flexDirection: 'column', gap: '12px', backgroundColor: '#0a0a0a' }}>
+    <SpotlightCard style={{ padding: '18px 20px', display: 'flex', flexDirection: 'column', gap: '12px', backgroundColor: '#0a0a0a' }}>
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '8px' }}>
         <div>
           <h3 style={{ fontSize: '0.92rem', fontWeight: 700, margin: 0, color: '#ffffff', letterSpacing: '-0.02em' }}>
-            Two-Tier Multi-Agent Debate Loop
+            <ShinyText text="Two-Tier Multi-Agent Debate Loop" speed={4} />
           </h3>
           <p style={{ fontSize: '0.73rem', color: 'var(--text-secondary)', margin: 0 }}>
             Triage Synthesizer ✦ Adversarial Boundary Auditor
@@ -24,7 +27,7 @@ export default function AgentDebateStream({ debateTurns }) {
         </div>
 
         <span className="vercel-pill">
-          {debateTurns.length} Debate Rounds Completed
+          <CountUp to={debateTurns.length} duration={0.8} /> Debate Rounds Completed
         </span>
       </div>
 
@@ -77,7 +80,7 @@ export default function AgentDebateStream({ debateTurns }) {
                     {turn.status}
                   </span>
                   <span style={{ fontSize: '0.7rem', color: '#888888', fontFamily: 'var(--font-mono)' }}>
-                    {Math.round(turn.confidence_score * 100)}%
+                    <CountUp to={Math.round(turn.confidence_score * 100)} suffix="%" duration={1} />
                   </span>
                 </div>
               </div>
@@ -90,6 +93,6 @@ export default function AgentDebateStream({ debateTurns }) {
           );
         })}
       </div>
-    </div>
+    </SpotlightCard>
   );
 }

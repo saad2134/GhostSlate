@@ -1,5 +1,8 @@
 import React from 'react';
 import { Play, CheckCircle2, AlertTriangle, ShieldCheck, Cpu, Code2, Zap } from 'lucide-react';
+import SpotlightCard from './ui/SpotlightCard';
+import ShimmerButton from './ui/ShimmerButton';
+import ShinyText from './ui/ShinyText';
 
 export default function ChaosSimulator({
   scenarios,
@@ -33,26 +36,21 @@ export default function ChaosSimulator({
   const activeIndex = getStageIndex(stage);
 
   return (
-    <div className="vercel-card" style={{ padding: '18px 20px', margin: '0 20px 20px 20px', backgroundColor: '#050505' }}>
+    <SpotlightCard style={{ padding: '18px 20px', margin: '0 20px 20px 20px', backgroundColor: '#050505' }}>
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '14px', flexWrap: 'wrap', gap: '12px' }}>
         <div>
           <h2 style={{ fontSize: '1rem', fontWeight: 700, margin: 0, color: '#ffffff', letterSpacing: '-0.02em' }}>
-            Chaos Injection Simulator ✦ AST Self-Healing Pipeline
+            <ShinyText text="Chaos Injection Simulator ✦ AST Self-Healing Pipeline" speed={4} />
           </h2>
           <p style={{ fontSize: '0.76rem', color: 'var(--text-secondary)', margin: '2px 0 0 0' }}>
             Simulate runtime state corruption ✦ Trigger surgical AST repair & isolated verification
           </p>
         </div>
 
-        {/* Vercel High-Contrast Action Button */}
-        <button
+        {/* Aceternity Shimmer Action Button */}
+        <ShimmerButton
           onClick={() => onTriggerHeal(selectedScenarioId)}
           disabled={loading}
-          className="vercel-btn-primary"
-          style={{
-            cursor: loading ? 'wait' : 'pointer',
-            opacity: loading ? 0.7 : 1
-          }}
         >
           {loading ? (
             <>
@@ -72,10 +70,10 @@ export default function ChaosSimulator({
               <span>Inject Chaos ✦ Auto-Heal Live</span>
             </>
           )}
-        </button>
+        </ShimmerButton>
       </div>
 
-      {/* Scenario Grid */}
+      {/* Aceternity Spotlight Scenario Grid */}
       <div style={{
         display: 'grid',
         gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))',
@@ -85,16 +83,16 @@ export default function ChaosSimulator({
         {scenarios.map((sc) => {
           const isSelected = sc.id === selectedScenarioId;
           return (
-            <div
+            <SpotlightCard
               key={sc.id}
               onClick={() => onSelectScenario(sc.id)}
+              isActive={isSelected}
+              activeBorderColor="#ffffff"
+              spotlightColor="rgba(255, 255, 255, 0.08)"
               style={{
                 padding: '12px 14px',
-                borderRadius: '6px',
-                backgroundColor: isSelected ? '#111111' : '#0a0a0a',
-                border: isSelected ? '1px solid #ffffff' : '1px solid var(--border-subtle)',
                 cursor: 'pointer',
-                transition: 'all 0.15s ease'
+                backgroundColor: isSelected ? '#111111' : '#0a0a0a'
               }}
             >
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '6px' }}>
@@ -119,7 +117,7 @@ export default function ChaosSimulator({
               <p style={{ fontSize: '0.73rem', color: 'var(--text-secondary)', margin: 0, lineClamp: 2, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
                 {sc.description}
               </p>
-            </div>
+            </SpotlightCard>
           );
         })}
       </div>
@@ -174,6 +172,6 @@ export default function ChaosSimulator({
           100% { transform: rotate(360deg); }
         }
       `}</style>
-    </div>
+    </SpotlightCard>
   );
 }

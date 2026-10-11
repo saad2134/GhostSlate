@@ -1,5 +1,9 @@
 import React, { useState } from 'react';
 import { GitFork, Crosshair } from 'lucide-react';
+import SpotlightCard from './ui/SpotlightCard';
+import ShinyText from './ui/ShinyText';
+import DecryptedText from './ui/DecryptedText';
+import CountUp from './ui/CountUp';
 
 export default function ASTVisualizer({ astNodes, isolatedNode }) {
   const [filterType, setFilterType] = useState('all');
@@ -9,10 +13,10 @@ export default function ASTVisualizer({ astNodes, isolatedNode }) {
 
   if (nodes.length === 0) {
     return (
-      <div className="vercel-card" style={{ padding: '20px', textAlign: 'center', color: 'var(--text-muted)' }}>
+      <SpotlightCard style={{ padding: '20px', textAlign: 'center', color: 'var(--text-muted)' }}>
         <GitFork size={26} style={{ opacity: 0.5, marginBottom: '6px' }} />
         <p style={{ fontSize: '0.78rem' }}>Parsing AST syntax tree and extracting scope hierarchy...</p>
-      </div>
+      </SpotlightCard>
     );
   }
 
@@ -25,11 +29,11 @@ export default function ASTVisualizer({ astNodes, isolatedNode }) {
   });
 
   return (
-    <div className="vercel-card" style={{ padding: '18px 20px', display: 'flex', flexDirection: 'column', gap: '12px', backgroundColor: '#0a0a0a' }}>
+    <SpotlightCard style={{ padding: '18px 20px', display: 'flex', flexDirection: 'column', gap: '12px', backgroundColor: '#0a0a0a' }}>
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '8px' }}>
         <div>
           <h3 style={{ fontSize: '0.92rem', fontWeight: 700, margin: 0, color: '#ffffff', letterSpacing: '-0.02em' }}>
-            Tree-Sitter AST Scoping ✦ Node Isolation
+            <ShinyText text="Tree-Sitter AST Scoping ✦ Node Isolation" speed={4} />
           </h3>
           <p style={{ fontSize: '0.73rem', color: 'var(--text-secondary)', margin: 0 }}>
             Surgical syntax node targeting ✦ Eliminates destructive whole-file rewrites
@@ -41,7 +45,7 @@ export default function ASTVisualizer({ astNodes, isolatedNode }) {
             Tree-Sitter C Grammar
           </span>
           <span className="vercel-pill">
-            {nodes.length} Nodes
+            <CountUp to={nodes.length} duration={0.8} /> Nodes
           </span>
         </div>
       </div>
@@ -62,7 +66,11 @@ export default function ASTVisualizer({ astNodes, isolatedNode }) {
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
             <Crosshair size={15} color="#f59e0b" />
             <span style={{ fontSize: '0.76rem', fontWeight: 600, color: '#fbbf24' }}>
-              Target Node: <code>{isolatedNode.node_type}</code> (L{isolatedNode.start_point[0]}:{isolatedNode.start_point[1]} ✦ L{isolatedNode.end_point[0]}:{isolatedNode.end_point[1]})
+              <DecryptedText
+                text={`Target Node: ${isolatedNode.node_type} (L${isolatedNode.start_point[0]}:${isolatedNode.start_point[1]} ✦ L${isolatedNode.end_point[0]}:${isolatedNode.end_point[1]})`}
+                speed={25}
+                maxIterations={10}
+              />
             </span>
           </div>
           <span className="vercel-pill" style={{ color: '#ffffff', borderColor: '#444444', fontSize: '0.68rem' }}>
@@ -159,6 +167,6 @@ export default function ASTVisualizer({ astNodes, isolatedNode }) {
           </pre>
         </div>
       )}
-    </div>
+    </SpotlightCard>
   );
 }

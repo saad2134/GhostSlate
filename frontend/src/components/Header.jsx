@@ -1,6 +1,9 @@
 import React from 'react';
 import { Cpu, GitPullRequest } from 'lucide-react';
 import appIcon from '../assets/app-icon.png';
+import ShinyText from './ui/ShinyText';
+import DecryptedText from './ui/DecryptedText';
+import ShimmerButton from './ui/ShimmerButton';
 
 export default function Header({
   provider,
@@ -8,6 +11,8 @@ export default function Header({
   onOpenExportModal,
   session
 }) {
+  const isVerified = session?.verification?.is_verified;
+
   return (
     <header className="vercel-card" style={{
       margin: '16px 20px',
@@ -37,17 +42,16 @@ export default function Header({
         <div>
           <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
             <h1 style={{
-              fontSize: '1.15rem',
+              fontSize: '1.18rem',
               fontWeight: 700,
               letterSpacing: '-0.03em',
-              color: '#ffffff',
               margin: 0
             }}>
-              GhostSlate
+              <ShinyText text="GhostSlate" speed={3.5} />
             </h1>
             <span className="vercel-pill" style={{ color: '#ffffff', borderColor: '#333333', backgroundColor: '#0a0a0a' }}>
               <span style={{ width: '6px', height: '6px', borderRadius: '50%', backgroundColor: '#10b981', display: 'inline-block', boxShadow: '0 0 8px rgba(16, 185, 129, 0.4)' }}></span>
-              Hexagonal Engine Active ✦ v1.0.0
+              <DecryptedText text="Hexagonal Engine Active ✦ v1.0.0" speed={30} maxIterations={10} />
             </span>
           </div>
           <p style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', margin: 0 }}>
@@ -90,19 +94,21 @@ export default function Header({
           </select>
         </div>
 
-        {/* Vercel-Style Export Button */}
-        <button
+        {/* Aceternity Shimmer Export Button */}
+        <ShimmerButton
           onClick={onOpenExportModal}
-          disabled={!session || !session.verification?.is_verified}
-          className="vercel-btn-primary"
+          disabled={!isVerified}
+          background={isVerified ? '#ffffff' : '#222222'}
+          textColor={isVerified ? '#000000' : '#888888'}
           style={{
-            opacity: session?.verification?.is_verified ? 1 : 0.4,
-            cursor: session?.verification?.is_verified ? 'pointer' : 'not-allowed'
+            padding: '7px 16px',
+            fontSize: '0.78rem',
+            border: isVerified ? '1px solid #ffffff' : '1px solid #333333'
           }}
         >
-          <GitPullRequest size={14} />
-          Export PR ✦ SARIF
-        </button>
+          <GitPullRequest size={13} />
+          <span>Export PR ✦ SARIF</span>
+        </ShimmerButton>
       </div>
     </header>
   );
