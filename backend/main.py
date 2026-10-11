@@ -198,6 +198,27 @@ async def websocket_stream(websocket: WebSocket):
     except Exception as e:
         await websocket.send_json({"stage": "error", "message": str(e)})
 
+import os
+from fastapi.staticfiles import StaticFiles
+from fastapi.responses import FileResponse
+
+# Production static frontend bundle mounting
+_root_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+_frontend_dist = os.path.join(_root_dir, "frontend", "dist")
+if os.path.exists(_frontend_dist):
+    _assets_dir = os.path.join(_frontend_dist, "assets")
+    if os.path.exists(_assets_dir):
+        app.mount("/assets", StaticFiles(directory=_assets_dir), name="assets")
+
+    @app.get("/{full_path:path}")
+    async def serve_frontend(full_path: str):
+        if full_path.startswith("api/") or full_path == "api":
+            raise HTTPException(status_code=404, detail="API route not found")
+        target_file = os.path.join(_frontend_dist, full_path)
+        if os.path.isfile(target_file):
+            return FileResponse(target_file)
+        return FileResponse(os.path.join(_frontend_dist, "index.html"))
+
 if __name__ == "__main__":
     import uvicorn
     uvicorn.run("backend.main:app", host="127.0.0.1", port=8000, reload=True)

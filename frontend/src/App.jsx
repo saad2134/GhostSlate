@@ -10,7 +10,7 @@ import ExportModal from './components/ExportModal';
 import KeyboardShortcutsModal from './components/KeyboardShortcutsModal';
 import BackgroundGrid from './components/ui/BackgroundGrid';
 
-const API_BASE = 'http://127.0.0.1:8000';
+const API_BASE = import.meta.env.VITE_API_BASE ?? (typeof window !== 'undefined' && window.location.port === '5180' ? 'http://127.0.0.1:8000' : '');
 
 export default function App() {
   const [provider, setProvider] = useState('deterministic');
