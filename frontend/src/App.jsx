@@ -130,35 +130,37 @@ export default function App() {
       {/* Footer */}
       <footer style={{
         margin: '0 20px 20px 20px',
-        padding: '16px 24px',
+        padding: '16px 20px',
         borderTop: '1px solid var(--border-subtle)',
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'space-between',
         flexWrap: 'wrap',
         gap: '12px',
-        fontSize: '0.78rem',
-        color: 'var(--text-muted)'
+        fontSize: '0.75rem',
+        color: 'var(--text-secondary)'
       }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-          <strong style={{ color: '#f8fafc' }}>GhostSlate</strong>
-          <span>•</span>
+          <strong style={{ color: '#ffffff' }}>GhostSlate</strong>
+          <span style={{ color: '#666666' }}>✦</span>
           <span>
             Created by{' '}
             <a
               href="https://github.com/saad2134"
               target="_blank"
               rel="noopener noreferrer"
-              style={{ color: '#818cf8', textDecoration: 'none', fontWeight: 600 }}
+              style={{ color: '#ffffff', textDecoration: 'underline', textUnderlineOffset: '3px', fontWeight: 500 }}
             >
               Saaduddin Mohammed (github.com/saad2134)
             </a>
           </span>
         </div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-          <span>Architecture: <strong style={{ color: '#818cf8' }}>Hexagonal Ports & Adapters</strong></span>
-          <span>AST Engines: <strong style={{ color: '#34d399' }}>Tree-sitter C + Python AST</strong></span>
-          <span>Sandbox: <strong style={{ color: '#38bdf8' }}>Isolated Ephemeral Subprocess</strong></span>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '14px', color: 'var(--text-muted)' }}>
+          <span>Architecture: <strong style={{ color: '#ffffff' }}>Hexagonal Ports & Adapters</strong></span>
+          <span style={{ color: '#444444' }}>✦</span>
+          <span>AST Engines: <strong style={{ color: '#ffffff' }}>Tree-Sitter C + Python AST</strong></span>
+          <span style={{ color: '#444444' }}>✦</span>
+          <span>Sandbox: <strong style={{ color: '#ffffff' }}>Isolated Subprocess</strong></span>
         </div>
       </footer>
 

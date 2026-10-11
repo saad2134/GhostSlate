@@ -1,14 +1,14 @@
 import React, { useState } from 'react';
-import { Terminal, CheckCircle2, XCircle, ShieldCheck, Clock, Zap } from 'lucide-react';
+import { Terminal, CheckCircle2, XCircle, Clock, Zap } from 'lucide-react';
 
 export default function SandboxTerminal({ verification }) {
-  const [activeTab, setActiveTab] = useState('post'); // 'pre' or 'post'
+  const [activeTab, setActiveTab] = useState('post');
 
   if (!verification) {
     return (
-      <div className="glass-panel" style={{ padding: '20px', textAlign: 'center', color: 'var(--text-muted)' }}>
-        <Terminal size={28} style={{ opacity: 0.5, marginBottom: '6px' }} />
-        <p style={{ fontSize: '0.8rem' }}>Awaiting sandbox test execution...</p>
+      <div className="vercel-card" style={{ padding: '20px', textAlign: 'center', color: 'var(--text-muted)' }}>
+        <Terminal size={26} style={{ opacity: 0.5, marginBottom: '6px' }} />
+        <p style={{ fontSize: '0.78rem' }}>Awaiting sandbox test execution...</p>
       </div>
     );
   }
@@ -16,136 +16,130 @@ export default function SandboxTerminal({ verification }) {
   const isVerified = verification.is_verified;
 
   return (
-    <div className={`glass-panel ${isVerified ? 'pulse-green-glow' : ''}`} style={{ padding: '20px', display: 'flex', flexDirection: 'column', gap: '14px' }}>
+    <div className="vercel-card" style={{
+      padding: '18px 20px',
+      display: 'flex',
+      flexDirection: 'column',
+      gap: '12px',
+      backgroundColor: '#0a0a0a',
+      borderColor: isVerified ? '#333333' : '#ef4444'
+    }}>
       {/* Header and Proof Badges */}
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '10px' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-          <div style={{
-            width: '32px',
-            height: '32px',
-            borderRadius: '8px',
-            background: isVerified ? 'rgba(16, 185, 129, 0.15)' : 'rgba(244, 63, 94, 0.15)',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center'
-          }}>
-            <Terminal size={18} color={isVerified ? '#10b981' : '#f43f5e'} />
-          </div>
-          <div>
-            <h3 style={{ fontSize: '0.98rem', fontWeight: 700, margin: 0, display: 'flex', alignItems: 'center', gap: '8px' }}>
-              Deterministic Sandbox Subprocess Runner
-              {isVerified && (
-                <span className="glass-pill" style={{ color: '#10b981', borderColor: 'rgba(16, 185, 129, 0.3)', fontSize: '0.72rem' }}>
-                  100% GREEN VERIFIED
-                </span>
-              )}
-            </h3>
-            <p style={{ fontSize: '0.74rem', color: 'var(--text-muted)', margin: 0 }}>
-              Isolated subprocess execution in ephemeral temporary workspace — Zero demo flakiness
-            </p>
-          </div>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '8px' }}>
+        <div>
+          <h3 style={{ fontSize: '0.92rem', fontWeight: 700, margin: 0, color: '#ffffff', letterSpacing: '-0.02em', display: 'flex', alignItems: 'center', gap: '8px' }}>
+            Deterministic Sandbox Subprocess Runner
+            {isVerified && (
+              <span className="vercel-pill" style={{ color: '#10b981', backgroundColor: '#051b11', borderColor: 'rgba(16, 185, 129, 0.4)', fontSize: '0.68rem', fontWeight: 600 }}>
+                ● 100% GREEN VERIFIED
+              </span>
+            )}
+          </h3>
+          <p style={{ fontSize: '0.73rem', color: 'var(--text-secondary)', margin: 0 }}>
+            Isolated subprocess execution in ephemeral temporary workspace ✦ Zero demo flakiness
+          </p>
         </div>
 
-        {/* Verification Proof Tokens */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+        {/* Proof Badges */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flexWrap: 'wrap' }}>
           <div style={{
             display: 'flex',
             alignItems: 'center',
-            gap: '6px',
-            background: 'rgba(0, 0, 0, 0.3)',
-            padding: '4px 10px',
-            borderRadius: '6px',
+            gap: '5px',
+            backgroundColor: '#050505',
+            padding: '3px 8px',
+            borderRadius: '4px',
             border: '1px solid var(--border-subtle)',
-            fontSize: '0.72rem',
-            color: 'var(--text-muted)'
+            fontSize: '0.7rem',
+            color: 'var(--text-secondary)'
           }}>
-            <Clock size={13} color="#38bdf8" />
+            <Clock size={12} color="#a1a1a1" />
             <span>Duration: <strong style={{ color: '#fff' }}>{verification.duration_ms}ms</strong></span>
           </div>
 
           <div style={{
             display: 'flex',
             alignItems: 'center',
-            gap: '6px',
-            background: isVerified ? 'rgba(16, 185, 129, 0.15)' : 'rgba(244, 63, 94, 0.15)',
-            padding: '4px 10px',
-            borderRadius: '6px',
-            border: '1px solid ' + (isVerified ? 'rgba(16, 185, 129, 0.3)' : 'rgba(244, 63, 94, 0.3)'),
-            fontSize: '0.72rem',
-            color: isVerified ? '#10b981' : '#f43f5e',
-            fontWeight: 700
+            gap: '5px',
+            backgroundColor: isVerified ? '#051b11' : '#1c1012',
+            padding: '3px 8px',
+            borderRadius: '4px',
+            border: '1px solid ' + (isVerified ? 'rgba(16, 185, 129, 0.4)' : '#ef4444'),
+            fontSize: '0.7rem',
+            color: isVerified ? '#10b981' : '#ef4444',
+            fontWeight: 600
           }}>
-            <Zap size={13} />
+            <Zap size={12} />
             <span>Exit Code: {verification.exit_code}</span>
           </div>
         </div>
       </div>
 
       {/* Terminal View Tabs */}
-      <div style={{ display: 'flex', gap: '8px' }}>
+      <div style={{ display: 'flex', gap: '6px' }}>
         <button
           onClick={() => setActiveTab('pre')}
           style={{
-            background: activeTab === 'pre' ? 'rgba(244, 63, 94, 0.2)' : 'rgba(255, 255, 255, 0.03)',
-            border: activeTab === 'pre' ? '1px solid #f43f5e' : '1px solid var(--border-subtle)',
-            color: activeTab === 'pre' ? '#fda4af' : '#94a3b8',
-            padding: '6px 12px',
-            borderRadius: '6px',
-            fontSize: '0.76rem',
-            fontWeight: 600,
+            backgroundColor: activeTab === 'pre' ? '#ffffff' : '#050505',
+            border: activeTab === 'pre' ? '1px solid #ffffff' : '1px solid var(--border-subtle)',
+            color: activeTab === 'pre' ? '#000000' : 'var(--text-secondary)',
+            padding: '4px 10px',
+            borderRadius: '4px',
+            fontSize: '0.74rem',
+            fontWeight: 500,
             display: 'flex',
             alignItems: 'center',
-            gap: '6px',
+            gap: '5px',
             cursor: 'pointer'
           }}
         >
-          <XCircle size={14} color="#f43f5e" />
-          Pre-Patch Run (❌ Red Failed)
+          <XCircle size={13} color={activeTab === 'pre' ? '#000000' : '#ef4444'} />
+          <span>Pre-Patch Run ✦ Red Failed</span>
         </button>
 
         <button
           onClick={() => setActiveTab('post')}
           style={{
-            background: activeTab === 'post' ? 'rgba(16, 185, 129, 0.2)' : 'rgba(255, 255, 255, 0.03)',
-            border: activeTab === 'post' ? '1px solid #10b981' : '1px solid var(--border-subtle)',
-            color: activeTab === 'post' ? '#6ee7b7' : '#94a3b8',
-            padding: '6px 12px',
-            borderRadius: '6px',
-            fontSize: '0.76rem',
-            fontWeight: 600,
+            backgroundColor: activeTab === 'post' ? '#ffffff' : '#050505',
+            border: activeTab === 'post' ? '1px solid #ffffff' : '1px solid var(--border-subtle)',
+            color: activeTab === 'post' ? '#000000' : 'var(--text-secondary)',
+            padding: '4px 10px',
+            borderRadius: '4px',
+            fontSize: '0.74rem',
+            fontWeight: 500,
             display: 'flex',
             alignItems: 'center',
-            gap: '6px',
+            gap: '5px',
             cursor: 'pointer'
           }}
         >
-          <CheckCircle2 size={14} color="#10b981" />
-          Post-Patch Run (✅ 100% Green Passed)
+          <CheckCircle2 size={13} color={activeTab === 'post' ? '#000000' : '#ffffff'} />
+          <span>Post-Patch Run ✦ 100% Green Passed</span>
         </button>
       </div>
 
       {/* Terminal Console Output Window */}
       <div style={{
-        background: '#090d16',
-        borderRadius: '8px',
-        padding: '14px 16px',
+        backgroundColor: '#000000',
+        borderRadius: '6px',
+        padding: '12px 14px',
         border: '1px solid var(--border-subtle)',
-        maxHeight: '260px',
+        maxHeight: '250px',
         overflowY: 'auto',
         fontFamily: 'var(--font-mono)',
-        fontSize: '0.78rem'
+        fontSize: '0.76rem'
       }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '8px', opacity: 0.5 }}>
-          <span style={{ width: '10px', height: '10px', borderRadius: '50%', background: '#f43f5e', display: 'inline-block' }}></span>
-          <span style={{ width: '10px', height: '10px', borderRadius: '50%', background: '#f59e0b', display: 'inline-block' }}></span>
-          <span style={{ width: '10px', height: '10px', borderRadius: '50%', background: '#10b981', display: 'inline-block' }}></span>
-          <span style={{ fontSize: '0.7rem', color: '#64748b', marginLeft: '6px' }}>pytest -v --no-header --tb=short (Subprocess Isolation)</span>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '8px', opacity: 0.6 }}>
+          <span style={{ width: '8px', height: '8px', borderRadius: '50%', backgroundColor: '#333333', display: 'inline-block' }}></span>
+          <span style={{ width: '8px', height: '8px', borderRadius: '50%', backgroundColor: '#444444', display: 'inline-block' }}></span>
+          <span style={{ width: '8px', height: '8px', borderRadius: '50%', backgroundColor: '#555555', display: 'inline-block' }}></span>
+          <span style={{ fontSize: '0.68rem', color: '#888888', marginLeft: '6px' }}>pytest -v --no-header --tb=short ✦ Subprocess Isolation</span>
         </div>
 
         <pre style={{
           margin: 0,
           whiteSpace: 'pre-wrap',
-          color: activeTab === 'pre' ? '#fda4af' : '#6ee7b7',
+          color: activeTab === 'pre' ? '#fca5a5' : '#ededed',
           lineHeight: 1.5
         }}>
           {activeTab === 'pre'

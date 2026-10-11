@@ -49,7 +49,7 @@ export default function ExportModal({ isOpen, onClose, session }) {
       left: 0,
       right: 0,
       bottom: 0,
-      backgroundColor: 'rgba(0, 0, 0, 0.75)',
+      backgroundColor: 'rgba(0, 0, 0, 0.85)',
       backdropFilter: 'blur(8px)',
       zIndex: 9999,
       display: 'flex',
@@ -57,44 +57,33 @@ export default function ExportModal({ isOpen, onClose, session }) {
       justifyContent: 'center',
       padding: '20px'
     }}>
-      <div className="glass-panel-glow" style={{
+      <div style={{
         width: '100%',
         maxWidth: '750px',
         maxHeight: '90vh',
-        backgroundColor: '#0c1220',
+        backgroundColor: '#0a0a0a',
+        border: '1px solid #333333',
         display: 'flex',
         flexDirection: 'column',
-        borderRadius: '14px',
+        borderRadius: '8px',
         overflow: 'hidden'
       }}>
         {/* Modal Header */}
         <div style={{
-          padding: '16px 22px',
+          padding: '14px 20px',
           borderBottom: '1px solid var(--border-subtle)',
           display: 'flex',
           alignItems: 'center',
-          justifyContent: 'space-between'
+          justifyContent: 'space-between',
+          backgroundColor: '#000000'
         }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-            <div style={{
-              width: '32px',
-              height: '32px',
-              borderRadius: '8px',
-              background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center'
-            }}>
-              <GitPullRequest size={18} color="#ffffff" />
-            </div>
-            <div>
-              <h3 style={{ fontSize: '1rem', fontWeight: 700, margin: 0 }}>
-                1-Click Pull Request & SARIF Artifact Exporter
-              </h3>
-              <p style={{ fontSize: '0.74rem', color: 'var(--text-muted)', margin: 0 }}>
-                Verified program repair ready for production merge & CI/CD compliance
-              </p>
-            </div>
+          <div>
+            <h3 style={{ fontSize: '0.95rem', fontWeight: 700, margin: 0, color: '#ffffff', letterSpacing: '-0.02em' }}>
+              1-Click Pull Request ✦ SARIF Artifact Exporter
+            </h3>
+            <p style={{ fontSize: '0.72rem', color: 'var(--text-secondary)', margin: '2px 0 0 0' }}>
+              Verified program repair ready for merge ✦ CI/CD compliance
+            </p>
           </div>
 
           <button
@@ -102,122 +91,113 @@ export default function ExportModal({ isOpen, onClose, session }) {
             style={{
               background: 'transparent',
               border: 'none',
-              color: 'var(--text-muted)',
-              cursor: 'pointer'
+              color: 'var(--text-secondary)',
+              cursor: 'pointer',
+              padding: '4px'
             }}
           >
-            <X size={20} />
+            <X size={18} />
           </button>
         </div>
 
         {/* Tab Selection */}
         <div style={{
           display: 'flex',
-          gap: '8px',
-          padding: '12px 22px',
+          gap: '6px',
+          padding: '10px 20px',
           borderBottom: '1px solid var(--border-subtle)',
-          background: 'rgba(0, 0, 0, 0.2)'
+          backgroundColor: '#050505'
         }}>
           <button
             onClick={() => setActiveTab('pr')}
             style={{
-              background: activeTab === 'pr' ? 'rgba(99, 102, 241, 0.2)' : 'transparent',
-              border: activeTab === 'pr' ? '1px solid #6366f1' : '1px solid transparent',
-              color: activeTab === 'pr' ? '#fff' : '#94a3b8',
-              padding: '6px 14px',
-              borderRadius: '6px',
-              fontSize: '0.78rem',
-              fontWeight: 600,
+              backgroundColor: activeTab === 'pr' ? '#ffffff' : '#111111',
+              border: activeTab === 'pr' ? '1px solid #ffffff' : '1px solid var(--border-subtle)',
+              color: activeTab === 'pr' ? '#000000' : 'var(--text-secondary)',
+              padding: '5px 12px',
+              borderRadius: '4px',
+              fontSize: '0.75rem',
+              fontWeight: 500,
               cursor: 'pointer',
               display: 'flex',
               alignItems: 'center',
               gap: '6px'
             }}
           >
-            <FileText size={14} />
-            GitHub PR Markdown
+            <FileText size={13} />
+            <span>GitHub PR Markdown</span>
           </button>
 
           <button
             onClick={() => setActiveTab('diff')}
             style={{
-              background: activeTab === 'diff' ? 'rgba(99, 102, 241, 0.2)' : 'transparent',
-              border: activeTab === 'diff' ? '1px solid #6366f1' : '1px solid transparent',
-              color: activeTab === 'diff' ? '#fff' : '#94a3b8',
-              padding: '6px 14px',
-              borderRadius: '6px',
-              fontSize: '0.78rem',
-              fontWeight: 600,
+              backgroundColor: activeTab === 'diff' ? '#ffffff' : '#111111',
+              border: activeTab === 'diff' ? '1px solid #ffffff' : '1px solid var(--border-subtle)',
+              color: activeTab === 'diff' ? '#000000' : 'var(--text-secondary)',
+              padding: '5px 12px',
+              borderRadius: '4px',
+              fontSize: '0.75rem',
+              fontWeight: 500,
               cursor: 'pointer',
               display: 'flex',
               alignItems: 'center',
               gap: '6px'
             }}
           >
-            <GitPullRequest size={14} />
-            Unified Git Patch
+            <GitPullRequest size={13} />
+            <span>Unified Git Patch</span>
           </button>
 
           <button
             onClick={() => setActiveTab('sarif')}
             style={{
-              background: activeTab === 'sarif' ? 'rgba(99, 102, 241, 0.2)' : 'transparent',
-              border: activeTab === 'sarif' ? '1px solid #6366f1' : '1px solid transparent',
-              color: activeTab === 'sarif' ? '#fff' : '#94a3b8',
-              padding: '6px 14px',
-              borderRadius: '6px',
-              fontSize: '0.78rem',
-              fontWeight: 600,
+              backgroundColor: activeTab === 'sarif' ? '#ffffff' : '#111111',
+              border: activeTab === 'sarif' ? '1px solid #ffffff' : '1px solid var(--border-subtle)',
+              color: activeTab === 'sarif' ? '#000000' : 'var(--text-secondary)',
+              padding: '5px 12px',
+              borderRadius: '4px',
+              fontSize: '0.75rem',
+              fontWeight: 500,
               cursor: 'pointer',
               display: 'flex',
               alignItems: 'center',
               gap: '6px'
             }}
           >
-            <FileJson size={14} />
-            SARIF v2.1.0 Report
+            <FileJson size={13} />
+            <span>SARIF v2.1.0 Report</span>
           </button>
         </div>
 
         {/* Tab Content */}
-        <div style={{ padding: '20px 22px', flex: 1, overflowY: 'auto' }}>
+        <div style={{ padding: '16px 20px', flex: 1, overflowY: 'auto' }}>
           {activeTab === 'pr' && (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <span style={{ fontSize: '0.78rem', color: '#a5b4fc', fontFamily: 'var(--font-mono)' }}>
+                <span style={{ fontSize: '0.75rem', color: '#a1a1a1', fontFamily: 'var(--font-mono)' }}>
                   Branch: {prData?.branch_name || 'ghostslate/fix-ast-invariant'}
                 </span>
                 <button
                   onClick={() => handleCopy(prData?.markdown_body || '', 'pr')}
-                  style={{
-                    background: 'rgba(255, 255, 255, 0.05)',
-                    border: '1px solid var(--border-subtle)',
-                    color: copiedType === 'pr' ? '#10b981' : '#fff',
-                    padding: '6px 12px',
-                    borderRadius: '6px',
-                    fontSize: '0.75rem',
-                    fontWeight: 600,
-                    cursor: 'pointer',
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '6px'
-                  }}
+                  className="vercel-btn-secondary"
+                  style={{ padding: '4px 10px', fontSize: '0.72rem' }}
                 >
-                  {copiedType === 'pr' ? <Check size={14} /> : <Copy size={14} />}
-                  {copiedType === 'pr' ? 'Copied' : 'Copy PR Description'}
+                  {copiedType === 'pr' ? <Check size={13} color="#ffffff" /> : <Copy size={13} />}
+                  <span>{copiedType === 'pr' ? 'Copied' : 'Copy Description'}</span>
                 </button>
               </div>
               <pre style={{
-                background: '#090d16',
-                padding: '14px',
-                borderRadius: '8px',
-                fontSize: '0.76rem',
+                backgroundColor: '#000000',
+                padding: '12px',
+                borderRadius: '6px',
+                fontSize: '0.74rem',
                 fontFamily: 'var(--font-mono)',
-                color: '#e2e8f0',
+                color: '#ededed',
                 whiteSpace: 'pre-wrap',
                 margin: 0,
-                maxHeight: '320px',
-                overflowY: 'auto'
+                maxHeight: '300px',
+                overflowY: 'auto',
+                border: '1px solid var(--border-subtle)'
               }}>
                 {prData?.markdown_body || 'Loading PR markdown...'}
               </pre>
@@ -225,39 +205,29 @@ export default function ExportModal({ isOpen, onClose, session }) {
           )}
 
           {activeTab === 'diff' && (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-              <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px' }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+              <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '6px' }}>
                 <button
                   onClick={() => handleCopy(prData?.unified_diff || '', 'diff')}
-                  style={{
-                    background: 'rgba(255, 255, 255, 0.05)',
-                    border: '1px solid var(--border-subtle)',
-                    color: copiedType === 'diff' ? '#10b981' : '#fff',
-                    padding: '6px 12px',
-                    borderRadius: '6px',
-                    fontSize: '0.75rem',
-                    fontWeight: 600,
-                    cursor: 'pointer',
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '6px'
-                  }}
+                  className="vercel-btn-secondary"
+                  style={{ padding: '4px 10px', fontSize: '0.72rem' }}
                 >
-                  {copiedType === 'diff' ? <Check size={14} /> : <Copy size={14} />}
-                  {copiedType === 'diff' ? 'Copied' : 'Copy Git Patch'}
+                  {copiedType === 'diff' ? <Check size={13} color="#ffffff" /> : <Copy size={13} />}
+                  <span>{copiedType === 'diff' ? 'Copied' : 'Copy Git Patch'}</span>
                 </button>
               </div>
               <pre style={{
-                background: '#090d16',
-                padding: '14px',
-                borderRadius: '8px',
-                fontSize: '0.76rem',
+                backgroundColor: '#000000',
+                padding: '12px',
+                borderRadius: '6px',
+                fontSize: '0.74rem',
                 fontFamily: 'var(--font-mono)',
-                color: '#34d399',
+                color: '#ededed',
                 whiteSpace: 'pre-wrap',
                 margin: 0,
-                maxHeight: '320px',
-                overflowY: 'auto'
+                maxHeight: '300px',
+                overflowY: 'auto',
+                border: '1px solid var(--border-subtle)'
               }}>
                 {prData?.unified_diff || 'No diff available'}
               </pre>
@@ -265,39 +235,29 @@ export default function ExportModal({ isOpen, onClose, session }) {
           )}
 
           {activeTab === 'sarif' && (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-              <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px' }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+              <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '6px' }}>
                 <button
                   onClick={() => handleDownload(JSON.stringify(prData?.sarif_report || {}, null, 2), 'ghostslate-audit.sarif', 'application/json')}
-                  style={{
-                    background: 'rgba(255, 255, 255, 0.05)',
-                    border: '1px solid var(--border-subtle)',
-                    color: '#fff',
-                    padding: '6px 12px',
-                    borderRadius: '6px',
-                    fontSize: '0.75rem',
-                    fontWeight: 600,
-                    cursor: 'pointer',
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '6px'
-                  }}
+                  className="vercel-btn-secondary"
+                  style={{ padding: '4px 10px', fontSize: '0.72rem' }}
                 >
-                  <Download size={14} />
-                  Download .sarif
+                  <Download size={13} />
+                  <span>Download .sarif</span>
                 </button>
               </div>
               <pre style={{
-                background: '#090d16',
-                padding: '14px',
-                borderRadius: '8px',
-                fontSize: '0.74rem',
+                backgroundColor: '#000000',
+                padding: '12px',
+                borderRadius: '6px',
+                fontSize: '0.72rem',
                 fontFamily: 'var(--font-mono)',
-                color: '#38bdf8',
+                color: '#ededed',
                 whiteSpace: 'pre-wrap',
                 margin: 0,
-                maxHeight: '320px',
-                overflowY: 'auto'
+                maxHeight: '300px',
+                overflowY: 'auto',
+                border: '1px solid var(--border-subtle)'
               }}>
                 {JSON.stringify(prData?.sarif_report || {}, null, 2)}
               </pre>

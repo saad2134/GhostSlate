@@ -1,5 +1,6 @@
 import React from 'react';
-import { Shield, Cpu, GitPullRequest } from 'lucide-react';
+import { Cpu, GitPullRequest } from 'lucide-react';
+import appIcon from '../assets/app-icon.png';
 
 export default function Header({
   provider,
@@ -8,50 +9,66 @@ export default function Header({
   session
 }) {
   return (
-    <header className="glass-panel" style={{ margin: '16px 20px', padding: '14px 24px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '16px' }}>
-      {/* Brand & Tagline */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
-        <div style={{
-          width: '42px',
-          height: '42px',
-          borderRadius: '10px',
-          background: 'linear-gradient(135deg, #6366f1 0%, #a855f7 100%)',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          boxShadow: '0 0 20px rgba(99, 102, 241, 0.4)'
-        }}>
-          <Shield size={24} color="#ffffff" />
-        </div>
+    <header className="vercel-card" style={{
+      margin: '16px 20px',
+      padding: '12px 20px',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+      flexWrap: 'wrap',
+      gap: '16px',
+      backgroundColor: '#000000',
+      borderColor: 'var(--border-subtle)'
+    }}>
+      {/* Brand & App Icon */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+        <img
+          src={appIcon}
+          alt="GhostSlate Icon"
+          style={{
+            width: '36px',
+            height: '36px',
+            borderRadius: '6px',
+            border: '1px solid #333333',
+            objectFit: 'cover',
+            backgroundColor: '#0a0a0a'
+          }}
+        />
         <div>
           <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-            <h1 style={{ fontSize: '1.25rem', fontWeight: 800, letterSpacing: '-0.02em', background: 'linear-gradient(to right, #ffffff, #cbd5e1)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
+            <h1 style={{
+              fontSize: '1.15rem',
+              fontWeight: 700,
+              letterSpacing: '-0.03em',
+              color: '#ffffff',
+              margin: 0
+            }}>
               GhostSlate
             </h1>
-            <span className="glass-pill" style={{ color: '#10b981', borderColor: 'rgba(16, 185, 129, 0.3)', display: 'flex', alignItems: 'center', gap: '5px' }}>
-              <span style={{ width: '6px', height: '6px', borderRadius: '50%', backgroundColor: '#10b981', display: 'inline-block' }}></span>
-              Hexagonal Engine Active
+            <span className="vercel-pill" style={{ color: '#ffffff', borderColor: '#333333', backgroundColor: '#0a0a0a' }}>
+              <span style={{ width: '6px', height: '6px', borderRadius: '50%', backgroundColor: '#10b981', display: 'inline-block', boxShadow: '0 0 8px rgba(16, 185, 129, 0.4)' }}></span>
+              Hexagonal Engine Active ✦ v1.0.0
             </span>
           </div>
-          <p style={{ fontSize: '0.78rem', color: 'var(--text-muted)', margin: 0 }}>
-            Autonomous AST Program Repair & Self-Healing Execution Sandbox
+          <p style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', margin: 0 }}>
+            Autonomous AST Program Repair ✦ Time-Travel Debugger & Self-Healing Sandbox
           </p>
         </div>
       </div>
 
-      {/* Hexagonal Adapter Status & Provider Switcher */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flexWrap: 'wrap' }}>
+      {/* Provider Selector & Export Button */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap' }}>
         <div style={{
           display: 'flex',
           alignItems: 'center',
           gap: '8px',
-          background: 'rgba(255, 255, 255, 0.03)',
+          backgroundColor: '#0a0a0a',
           padding: '6px 12px',
-          borderRadius: '8px',
+          borderRadius: '6px',
           border: '1px solid var(--border-subtle)',
-          fontSize: '0.8rem'
+          fontSize: '0.78rem'
         }}>
-          <Cpu size={14} color="#818cf8" />
+          <Cpu size={14} color="#a1a1a1" />
           <span style={{ color: 'var(--text-muted)' }}>Provider:</span>
           <select
             value={provider}
@@ -59,44 +76,32 @@ export default function Header({
             style={{
               background: 'transparent',
               border: 'none',
-              color: '#f8fafc',
-              fontSize: '0.8rem',
-              fontWeight: 600,
+              color: '#ffffff',
+              fontSize: '0.78rem',
+              fontWeight: 500,
               cursor: 'pointer',
-              outline: 'none'
+              outline: 'none',
+              fontFamily: 'var(--font-sans)'
             }}
           >
-            <option value="deterministic" style={{ background: '#0f172a', color: '#fff' }}>Deterministic Engine (Offline / Zero-Flake)</option>
-            <option value="gemini" style={{ background: '#0f172a', color: '#fff' }}>Gemini 2.0 Flash (Adapter Connected)</option>
-            <option value="openai" style={{ background: '#0f172a', color: '#fff' }}>OpenAI GPT-4o Mini (Adapter Ready)</option>
+            <option value="deterministic" style={{ background: '#0a0a0a', color: '#fff' }}>Deterministic Engine (Offline ✦ Zero-Flake)</option>
+            <option value="gemini" style={{ background: '#0a0a0a', color: '#fff' }}>Gemini 2.0 Flash (Adapter Connected)</option>
+            <option value="openai" style={{ background: '#0a0a0a', color: '#fff' }}>OpenAI GPT-4o Mini (Adapter Ready)</option>
           </select>
         </div>
 
-        {/* PR Export Button */}
+        {/* Vercel-Style Export Button */}
         <button
           onClick={onOpenExportModal}
           disabled={!session || !session.verification?.is_verified}
-          className="interactive-card"
+          className="vercel-btn-primary"
           style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: '6px',
-            background: session?.verification?.is_verified
-              ? 'linear-gradient(135deg, #10b981 0%, #059669 100%)'
-              : 'rgba(255, 255, 255, 0.05)',
-            border: '1px solid ' + (session?.verification?.is_verified ? '#10b981' : 'var(--border-subtle)'),
-            color: '#ffffff',
-            padding: '8px 16px',
-            borderRadius: '8px',
-            fontSize: '0.8rem',
-            fontWeight: 600,
-            cursor: session?.verification?.is_verified ? 'pointer' : 'not-allowed',
-            opacity: session?.verification?.is_verified ? 1 : 0.5,
-            boxShadow: session?.verification?.is_verified ? '0 0 15px rgba(16, 185, 129, 0.3)' : 'none'
+            opacity: session?.verification?.is_verified ? 1 : 0.4,
+            cursor: session?.verification?.is_verified ? 'pointer' : 'not-allowed'
           }}
         >
-          <GitPullRequest size={14} color="#ffffff" />
-          Export PR & SARIF
+          <GitPullRequest size={14} />
+          Export PR ✦ SARIF
         </button>
       </div>
     </header>

@@ -1,5 +1,5 @@
 import React from 'react';
-import { Flame, Play, CheckCircle2, AlertTriangle, ShieldCheck, Cpu, Code2, Zap } from 'lucide-react';
+import { Play, CheckCircle2, AlertTriangle, ShieldCheck, Cpu, Code2, Zap } from 'lucide-react';
 
 export default function ChaosSimulator({
   scenarios,
@@ -12,11 +12,11 @@ export default function ChaosSimulator({
   const selectedScenario = scenarios.find(s => s.id === selectedScenarioId) || scenarios[0];
 
   const pipelineStages = [
-    { key: 'recording_trace', label: '1. Invariant Breach', icon: AlertTriangle, color: '#f43f5e' },
-    { key: 'ast_isolation', label: '2. AST Node Isolation', icon: Code2, color: '#f59e0b' },
-    { key: 'agent_debate', label: '3. Two-Tier Agent Loop', icon: Cpu, color: '#8b5cf6' },
-    { key: 'sandbox_verifying', label: '4. Subprocess Pytest', icon: Zap, color: '#06b6d4' },
-    { key: 'healed', label: '5. 100% Green Verified', icon: ShieldCheck, color: '#10b981' },
+    { key: 'recording_trace', label: '1. Invariant Breach', icon: AlertTriangle, accentColor: '#ef4444' },
+    { key: 'ast_isolation', label: '2. AST Node Isolation', icon: Code2, accentColor: '#f59e0b' },
+    { key: 'agent_debate', label: '3. Two-Tier Agent Loop', icon: Cpu, accentColor: '#ffffff' },
+    { key: 'sandbox_verifying', label: '4. Subprocess Pytest', icon: Zap, accentColor: '#38bdf8' },
+    { key: 'healed', label: '5. Green Verified', icon: ShieldCheck, accentColor: '#10b981' },
   ];
 
   const getStageIndex = (currentStage) => {
@@ -33,81 +33,54 @@ export default function ChaosSimulator({
   const activeIndex = getStageIndex(stage);
 
   return (
-    <div className="glass-panel" style={{ padding: '20px 24px', margin: '0 20px 20px 20px' }}>
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '16px', flexWrap: 'wrap', gap: '12px' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-          <div style={{
-            width: '32px',
-            height: '32px',
-            borderRadius: '8px',
-            background: 'rgba(244, 63, 94, 0.15)',
-            border: '1px solid rgba(244, 63, 94, 0.3)',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center'
-          }}>
-            <Flame size={18} color="#f43f5e" />
-          </div>
-          <div>
-            <h2 style={{ fontSize: '1.05rem', fontWeight: 700, margin: 0 }}>
-              Chaos Injection Simulator & Verification Pipeline
-            </h2>
-            <p style={{ fontSize: '0.78rem', color: 'var(--text-muted)', margin: 0 }}>
-              Select a production bug scenario to simulate runtime state corruption and trigger autonomous AST self-repair.
-            </p>
-          </div>
+    <div className="vercel-card" style={{ padding: '18px 20px', margin: '0 20px 20px 20px', backgroundColor: '#050505' }}>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '14px', flexWrap: 'wrap', gap: '12px' }}>
+        <div>
+          <h2 style={{ fontSize: '1rem', fontWeight: 700, margin: 0, color: '#ffffff', letterSpacing: '-0.02em' }}>
+            Chaos Injection Simulator ✦ AST Self-Healing Pipeline
+          </h2>
+          <p style={{ fontSize: '0.76rem', color: 'var(--text-secondary)', margin: '2px 0 0 0' }}>
+            Simulate runtime state corruption ✦ Trigger surgical AST repair & isolated verification
+          </p>
         </div>
 
-        {/* 1-Click Trigger Button */}
+        {/* Vercel High-Contrast Action Button */}
         <button
           onClick={() => onTriggerHeal(selectedScenarioId)}
           disabled={loading}
-          className="interactive-card"
+          className="vercel-btn-primary"
           style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: '8px',
-            background: loading
-              ? 'rgba(99, 102, 241, 0.3)'
-              : 'linear-gradient(135deg, #6366f1 0%, #4338ca 100%)',
-            border: '1px solid #818cf8',
-            color: '#ffffff',
-            padding: '10px 22px',
-            borderRadius: '10px',
-            fontSize: '0.88rem',
-            fontWeight: 700,
             cursor: loading ? 'wait' : 'pointer',
-            boxShadow: '0 0 20px rgba(99, 102, 241, 0.4)',
-            transition: 'all 0.2s ease'
+            opacity: loading ? 0.7 : 1
           }}
         >
           {loading ? (
             <>
               <div style={{
-                width: '16px',
-                height: '16px',
-                border: '2px solid #ffffff',
+                width: '14px',
+                height: '14px',
+                border: '2px solid #000000',
                 borderTopColor: 'transparent',
                 borderRadius: '50%',
-                animation: 'spin 0.8s linear infinite'
+                animation: 'spin 0.7s linear infinite'
               }}></div>
-              Repairing AST in Sandbox...
+              <span>Repairing AST in Sandbox...</span>
             </>
           ) : (
             <>
-              <Play size={16} fill="#ffffff" />
-              Inject Chaos & Auto-Heal Live
+              <Play size={14} fill="#000000" />
+              <span>Inject Chaos ✦ Auto-Heal Live</span>
             </>
           )}
         </button>
       </div>
 
-      {/* Scenario Selection Grid */}
+      {/* Scenario Grid */}
       <div style={{
         display: 'grid',
         gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))',
-        gap: '12px',
-        marginBottom: '20px'
+        gap: '10px',
+        marginBottom: '16px'
       }}>
         {scenarios.map((sc) => {
           const isSelected = sc.id === selectedScenarioId;
@@ -115,36 +88,35 @@ export default function ChaosSimulator({
             <div
               key={sc.id}
               onClick={() => onSelectScenario(sc.id)}
-              className="interactive-card"
               style={{
-                padding: '14px 16px',
-                borderRadius: '10px',
-                background: isSelected ? 'rgba(99, 102, 241, 0.12)' : 'rgba(255, 255, 255, 0.02)',
-                border: isSelected ? '1px solid #6366f1' : '1px solid var(--border-subtle)',
+                padding: '12px 14px',
+                borderRadius: '6px',
+                backgroundColor: isSelected ? '#111111' : '#0a0a0a',
+                border: isSelected ? '1px solid #ffffff' : '1px solid var(--border-subtle)',
                 cursor: 'pointer',
-                boxShadow: isSelected ? '0 0 15px rgba(99, 102, 241, 0.2)' : 'none'
+                transition: 'all 0.15s ease'
               }}
             >
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '6px' }}>
                 <span style={{
-                  fontSize: '0.72rem',
-                  fontWeight: 700,
+                  fontSize: '0.68rem',
+                  fontWeight: 600,
                   textTransform: 'uppercase',
-                  padding: '2px 8px',
-                  borderRadius: '6px',
-                  background: isSelected ? 'rgba(99, 102, 241, 0.25)' : 'rgba(255, 255, 255, 0.05)',
-                  color: isSelected ? '#a5b4fc' : 'var(--text-muted)'
+                  padding: '2px 6px',
+                  borderRadius: '4px',
+                  backgroundColor: isSelected ? '#ffffff' : '#171717',
+                  color: isSelected ? '#000000' : 'var(--text-secondary)'
                 }}>
                   {sc.category}
                 </span>
-                <span style={{ fontSize: '0.75rem', color: '#10b981', fontWeight: 600 }}>
+                <span style={{ fontSize: '0.7rem', color: '#a1a1a1', fontFamily: 'var(--font-mono)' }}>
                   Python AST
                 </span>
               </div>
-              <h3 style={{ fontSize: '0.88rem', fontWeight: 700, color: isSelected ? '#ffffff' : '#e2e8f0', marginBottom: '4px' }}>
+              <h3 style={{ fontSize: '0.84rem', fontWeight: 600, color: '#ffffff', marginBottom: '4px' }}>
                 {sc.title}
               </h3>
-              <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)', margin: 0, lineClamp: 2, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
+              <p style={{ fontSize: '0.73rem', color: 'var(--text-secondary)', margin: 0, lineClamp: 2, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
                 {sc.description}
               </p>
             </div>
@@ -152,11 +124,11 @@ export default function ChaosSimulator({
         })}
       </div>
 
-      {/* 5-Stage Live Pipeline Indicator */}
+      {/* 5-Stage High-Contrast Pipeline */}
       <div style={{
-        background: 'rgba(0, 0, 0, 0.25)',
-        borderRadius: '10px',
-        padding: '12px 18px',
+        backgroundColor: '#0a0a0a',
+        borderRadius: '6px',
+        padding: '10px 14px',
         border: '1px solid var(--border-subtle)',
         display: 'flex',
         alignItems: 'center',
@@ -175,25 +147,21 @@ export default function ChaosSimulator({
               style={{
                 display: 'flex',
                 alignItems: 'center',
-                gap: '8px',
-                padding: '6px 12px',
-                borderRadius: '8px',
-                background: isCurrent ? 'rgba(255, 255, 255, 0.08)' : 'transparent',
-                border: isCurrent ? `1px solid ${stg.color}` : '1px solid transparent',
-                opacity: isPassed ? 1 : 0.45,
-                transition: 'all 0.3s ease'
+                gap: '6px',
+                padding: '4px 10px',
+                borderRadius: '4px',
+                backgroundColor: isCurrent ? '#ffffff' : (isPassed ? '#171717' : 'transparent'),
+                color: isCurrent ? '#000000' : (isPassed ? '#ffffff' : 'var(--text-muted)'),
+                border: isCurrent ? '1px solid #ffffff' : '1px solid transparent',
+                fontSize: '0.75rem',
+                fontWeight: isCurrent ? 700 : 500,
+                transition: 'all 0.15s ease'
               }}
             >
-              <Icon size={15} color={isPassed ? stg.color : '#94a3b8'} />
-              <span style={{
-                fontSize: '0.78rem',
-                fontWeight: isCurrent ? 700 : 600,
-                color: isPassed ? '#f8fafc' : '#94a3b8'
-              }}>
-                {stg.label}
-              </span>
+              <Icon size={14} color={isCurrent ? '#000000' : (isPassed ? stg.accentColor : '#666666')} />
+              <span>{stg.label}</span>
               {isPassed && idx < activeIndex && (
-                <CheckCircle2 size={13} color="#10b981" />
+                <CheckCircle2 size={12} color="#10b981" />
               )}
             </div>
           );

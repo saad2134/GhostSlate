@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { GitFork, Code2, Search, CheckCircle, Crosshair } from 'lucide-react';
+import { GitFork, Crosshair } from 'lucide-react';
 
 export default function ASTVisualizer({ astNodes, isolatedNode }) {
   const [filterType, setFilterType] = useState('all');
@@ -9,9 +9,9 @@ export default function ASTVisualizer({ astNodes, isolatedNode }) {
 
   if (nodes.length === 0) {
     return (
-      <div className="glass-panel" style={{ padding: '20px', textAlign: 'center', color: 'var(--text-muted)' }}>
-        <GitFork size={28} style={{ opacity: 0.5, marginBottom: '6px' }} />
-        <p style={{ fontSize: '0.8rem' }}>Parsing AST syntax tree and extracting scope hierarchy...</p>
+      <div className="vercel-card" style={{ padding: '20px', textAlign: 'center', color: 'var(--text-muted)' }}>
+        <GitFork size={26} style={{ opacity: 0.5, marginBottom: '6px' }} />
+        <p style={{ fontSize: '0.78rem' }}>Parsing AST syntax tree and extracting scope hierarchy...</p>
       </div>
     );
   }
@@ -25,36 +25,23 @@ export default function ASTVisualizer({ astNodes, isolatedNode }) {
   });
 
   return (
-    <div className="glass-panel" style={{ padding: '20px', display: 'flex', flexDirection: 'column', gap: '14px' }}>
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '10px' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-          <div style={{
-            width: '32px',
-            height: '32px',
-            borderRadius: '8px',
-            background: 'rgba(245, 158, 11, 0.15)',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center'
-          }}>
-            <GitFork size={18} color="#f59e0b" />
-          </div>
-          <div>
-            <h3 style={{ fontSize: '0.98rem', fontWeight: 700, margin: 0 }}>
-              Tree-Sitter AST Scoping & Node Isolation
-            </h3>
-            <p style={{ fontSize: '0.74rem', color: 'var(--text-muted)', margin: 0 }}>
-              Isolating surgical syntax nodes to eliminate whole-file LLM hallucination
-            </p>
-          </div>
+    <div className="vercel-card" style={{ padding: '18px 20px', display: 'flex', flexDirection: 'column', gap: '12px', backgroundColor: '#0a0a0a' }}>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '8px' }}>
+        <div>
+          <h3 style={{ fontSize: '0.92rem', fontWeight: 700, margin: 0, color: '#ffffff', letterSpacing: '-0.02em' }}>
+            Tree-Sitter AST Scoping ✦ Node Isolation
+          </h3>
+          <p style={{ fontSize: '0.73rem', color: 'var(--text-secondary)', margin: 0 }}>
+            Surgical syntax node targeting ✦ Eliminates destructive whole-file rewrites
+          </p>
         </div>
 
-        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-          <span className="glass-pill" style={{ color: '#38bdf8', borderColor: 'rgba(56, 189, 248, 0.3)' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+          <span className="vercel-pill">
             Tree-Sitter C Grammar
           </span>
-          <span className="glass-pill" style={{ color: '#a855f7', borderColor: 'rgba(168, 85, 247, 0.3)' }}>
-            {astNodes?.length || 0} Nodes
+          <span className="vercel-pill">
+            {nodes.length} Nodes
           </span>
         </div>
       </div>
@@ -62,47 +49,42 @@ export default function ASTVisualizer({ astNodes, isolatedNode }) {
       {/* Isolated Target Node Banner */}
       {isolatedNode && (
         <div style={{
-          background: 'rgba(245, 158, 11, 0.12)',
-          border: '1px solid rgba(245, 158, 11, 0.35)',
-          borderRadius: '8px',
-          padding: '10px 14px',
+          backgroundColor: '#111111',
+          border: '1px solid #ffffff',
+          borderRadius: '6px',
+          padding: '8px 12px',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'space-between',
           flexWrap: 'wrap',
-          gap: '8px'
+          gap: '6px'
         }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <Crosshair size={18} color="#f59e0b" />
-            <div>
-              <span style={{ fontSize: '0.8rem', fontWeight: 700, color: '#fbbf24' }}>
-                Isolated Target Syntax Node: <code>{isolatedNode.node_type}</code>
-              </span>
-              <span style={{ fontSize: '0.74rem', color: 'var(--text-muted)', marginLeft: '10px' }}>
-                Span: L{isolatedNode.start_point[0]}:{isolatedNode.start_point[1]} → L{isolatedNode.end_point[0]}:{isolatedNode.end_point[1]}
-              </span>
-            </div>
+            <Crosshair size={15} color="#f59e0b" />
+            <span style={{ fontSize: '0.76rem', fontWeight: 600, color: '#fbbf24' }}>
+              Target Node: <code>{isolatedNode.node_type}</code> (L{isolatedNode.start_point[0]}:{isolatedNode.start_point[1]} ✦ L{isolatedNode.end_point[0]}:{isolatedNode.end_point[1]})
+            </span>
           </div>
-          <span className="glass-pill" style={{ color: '#10b981', borderColor: 'rgba(16, 185, 129, 0.3)', fontSize: '0.7rem' }}>
-            Scope: {isolatedNode.enclosing_scope || 'Enclosing Function'}
+          <span className="vercel-pill" style={{ color: '#ffffff', borderColor: '#444444', fontSize: '0.68rem' }}>
+            Scope: {isolatedNode.enclosing_scope || 'Enclosing Block'}
           </span>
         </div>
       )}
 
-      {/* Filter Tabs */}
-      <div style={{ display: 'flex', gap: '6px', overflowX: 'auto', paddingBottom: '4px' }}>
+      {/* Filter Tabs (Vercel Style) */}
+      <div style={{ display: 'flex', gap: '4px', overflowX: 'auto', paddingBottom: '2px' }}>
         {nodeTypes.map(type => (
           <button
             key={type}
             onClick={() => setFilterType(type)}
             style={{
-              background: filterType === type ? 'rgba(99, 102, 241, 0.25)' : 'rgba(255, 255, 255, 0.03)',
-              border: filterType === type ? '1px solid #6366f1' : '1px solid var(--border-subtle)',
-              color: filterType === type ? '#ffffff' : '#94a3b8',
-              padding: '4px 10px',
-              borderRadius: '6px',
-              fontSize: '0.72rem',
-              fontWeight: 600,
+              backgroundColor: filterType === type ? '#ffffff' : '#111111',
+              border: filterType === type ? '1px solid #ffffff' : '1px solid var(--border-subtle)',
+              color: filterType === type ? '#000000' : 'var(--text-secondary)',
+              padding: '3px 8px',
+              borderRadius: '4px',
+              fontSize: '0.7rem',
+              fontWeight: 500,
               cursor: 'pointer',
               whiteSpace: 'nowrap'
             }}
@@ -112,16 +94,16 @@ export default function ASTVisualizer({ astNodes, isolatedNode }) {
         ))}
       </div>
 
-      {/* Node Cloud / Hierarchy */}
+      {/* Node Pills */}
       <div style={{
-        maxHeight: '140px',
+        maxHeight: '130px',
         overflowY: 'auto',
         display: 'flex',
         flexWrap: 'wrap',
-        gap: '6px',
-        background: 'rgba(0, 0, 0, 0.25)',
-        padding: '10px',
-        borderRadius: '8px',
+        gap: '5px',
+        backgroundColor: '#050505',
+        padding: '8px',
+        borderRadius: '6px',
         border: '1px solid var(--border-subtle)'
       }}>
         {filteredNodes.slice(0, 45).map(node => {
@@ -132,21 +114,20 @@ export default function ASTVisualizer({ astNodes, isolatedNode }) {
             <span
               key={node.node_id}
               onClick={() => setSelectedNode(node)}
-              className="interactive-card"
               style={{
-                fontSize: '0.7rem',
+                fontSize: '0.68rem',
                 fontFamily: 'var(--font-mono)',
-                padding: '3px 8px',
-                borderRadius: '5px',
-                background: isTarget
-                  ? 'rgba(245, 158, 11, 0.25)'
-                  : (isCurrent ? 'rgba(99, 102, 241, 0.25)' : 'rgba(255, 255, 255, 0.04)'),
+                padding: '2px 6px',
+                borderRadius: '4px',
+                backgroundColor: isTarget
+                  ? '#ffffff'
+                  : (isCurrent ? '#222222' : '#0a0a0a'),
                 border: isTarget
-                  ? '1px solid #f59e0b'
-                  : (isCurrent ? '1px solid #6366f1' : '1px solid rgba(255, 255, 255, 0.06)'),
-                color: isTarget ? '#fbbf24' : (isCurrent ? '#ffffff' : '#94a3b8'),
+                  ? '1px solid #ffffff'
+                  : (isCurrent ? '1px solid #666666' : '1px solid #1a1a1a'),
+                color: isTarget ? '#000000' : (isCurrent ? '#ffffff' : '#888888'),
                 cursor: 'pointer',
-                fontWeight: isTarget ? 700 : 500
+                fontWeight: isTarget ? 700 : 400
               }}
             >
               {isTarget ? '🎯 ' : ''}{node.node_type} (L{node.start_point[0]})
@@ -158,18 +139,18 @@ export default function ASTVisualizer({ astNodes, isolatedNode }) {
       {/* Node Detail Snippet */}
       {activeNode && (
         <div style={{
-          background: 'rgba(0, 0, 0, 0.4)',
-          borderRadius: '8px',
-          padding: '10px 14px',
+          backgroundColor: '#050505',
+          borderRadius: '6px',
+          padding: '8px 12px',
           border: '1px solid var(--border-subtle)'
         }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '6px', fontSize: '0.74rem', color: 'var(--text-muted)' }}>
-            <span>Selected AST Node Snippet ({activeNode.node_type})</span>
-            <span>Lines {activeNode.start_point[0]}–{activeNode.end_point[0]}</span>
+          <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '4px', fontSize: '0.72rem', color: 'var(--text-muted)' }}>
+            <span>AST Node Snippet ✦ {activeNode.node_type}</span>
+            <span>Lines {activeNode.start_point[0]} ✦ {activeNode.end_point[0]}</span>
           </div>
           <pre style={{
-            fontSize: '0.76rem',
-            color: '#e2e8f0',
+            fontSize: '0.74rem',
+            color: '#ededed',
             fontFamily: 'var(--font-mono)',
             whiteSpace: 'pre-wrap',
             margin: 0

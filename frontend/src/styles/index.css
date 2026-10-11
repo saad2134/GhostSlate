@@ -1,30 +1,44 @@
-@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap');
 
 :root {
-  --bg-dark: #080b12;
-  --bg-card: #0f1626;
-  --bg-card-hover: #141d33;
-  --bg-panel: rgba(15, 22, 38, 0.75);
-  --border-subtle: rgba(255, 255, 255, 0.08);
-  --border-active: rgba(99, 102, 241, 0.4);
+  /* Vercel Clean Grayscale High-Contrast Theme Tokens */
+  --bg-page: #000000;
+  --bg-card: #0a0a0a;
+  --bg-card-hover: #121212;
+  --bg-surface: #111111;
+  --bg-input: #050505;
   
-  --primary: #6366f1;
-  --primary-glow: rgba(99, 102, 241, 0.25);
-  --primary-hover: #4f46e5;
+  --border-subtle: #222222;
+  --border-medium: #333333;
+  --border-hover: #555555;
+  --border-active: #ffffff;
   
-  --accent-purple: #8b5cf6;
-  --accent-cyan: #06b6d4;
-  --accent-emerald: #10b981;
-  --accent-emerald-glow: rgba(16, 185, 129, 0.25);
-  --accent-rose: #f43f5e;
-  --accent-rose-glow: rgba(244, 63, 94, 0.25);
-  --accent-amber: #f59e0b;
+  --text-primary: #ffffff;
+  --text-secondary: #a1a1a1;
+  --text-muted: #666666;
+  --text-dim: #444444;
   
-  --text-main: #f8fafc;
-  --text-muted: #94a3b8;
-  --text-dim: #64748b;
+  --btn-primary-bg: #ffffff;
+  --btn-primary-text: #000000;
+  --btn-primary-hover: #e5e5e5;
   
-  --font-sans: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+  --btn-secondary-bg: #0a0a0a;
+  --btn-secondary-text: #ffffff;
+  --btn-secondary-border: #333333;
+  --btn-secondary-hover: #171717;
+  
+  /* High-Contrast Functional Accents */
+  --status-success: #ededed;
+  --status-success-bg: rgba(255, 255, 255, 0.08);
+  --status-success-border: #444444;
+  --status-green: #22c55e;
+  
+  --status-error: #ffffff;
+  --status-error-bg: rgba(255, 255, 255, 0.05);
+  --status-error-border: #ef4444;
+  --status-red: #ef4444;
+  
+  --font-sans: 'Geist', 'Inter', system-ui, -apple-system, sans-serif;
   --font-mono: 'JetBrains Mono', monospace;
 }
 
@@ -32,92 +46,113 @@
   box-sizing: border-box;
   margin: 0;
   padding: 0;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
 body {
-  background-color: var(--bg-dark);
-  color: var(--text-main);
+  background-color: var(--bg-page);
+  color: var(--text-primary);
   font-family: var(--font-sans);
   line-height: 1.5;
   overflow-x: hidden;
-  background-image: 
-    radial-gradient(circle at 15% 10%, rgba(99, 102, 241, 0.08) 0%, transparent 40%),
-    radial-gradient(circle at 85% 20%, rgba(139, 92, 246, 0.06) 0%, transparent 45%),
-    radial-gradient(circle at 50% 90%, rgba(16, 185, 129, 0.04) 0%, transparent 50%);
-  background-attachment: fixed;
   min-height: 100vh;
+  letter-spacing: -0.01em;
 }
 
-/* Glassmorphism Classes */
-.glass-panel {
-  background: var(--bg-panel);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
+/* Vercel Grid & Card Primitives */
+.vercel-card {
+  background-color: var(--bg-card);
   border: 1px solid var(--border-subtle);
-  border-radius: 12px;
-  box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.5);
+  border-radius: 8px;
+  transition: border-color 0.15s ease, background-color 0.15s ease;
 }
 
-.glass-panel-glow {
-  background: var(--bg-panel);
-  backdrop-filter: blur(16px);
+.vercel-card:hover {
+  border-color: var(--border-hover);
+}
+
+.vercel-card-active {
+  background-color: var(--bg-card);
   border: 1px solid var(--border-active);
-  border-radius: 12px;
-  box-shadow: 0 0 25px var(--primary-glow);
+  border-radius: 8px;
 }
 
-.glass-pill {
-  background: rgba(255, 255, 255, 0.05);
-  backdrop-filter: blur(8px);
+.vercel-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background-color: #111111;
   border: 1px solid var(--border-subtle);
+  color: var(--text-secondary);
   border-radius: 9999px;
-  padding: 4px 12px;
-  font-size: 0.75rem;
-  font-weight: 600;
+  padding: 3px 10px;
+  font-size: 0.72rem;
+  font-weight: 500;
   letter-spacing: 0.02em;
 }
 
-/* Custom Scrollbars */
+.vercel-pill-active {
+  background-color: #ffffff;
+  border: 1px solid #ffffff;
+  color: #000000;
+  font-weight: 600;
+}
+
+.vercel-btn-primary {
+  background-color: var(--btn-primary-bg);
+  color: var(--btn-primary-text);
+  border: 1px solid #ffffff;
+  border-radius: 6px;
+  padding: 8px 16px;
+  font-size: 0.82rem;
+  font-weight: 600;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  transition: all 0.15s ease;
+}
+
+.vercel-btn-primary:hover:not(:disabled) {
+  background-color: var(--btn-primary-hover);
+  transform: translateY(-1px);
+}
+
+.vercel-btn-secondary {
+  background-color: var(--btn-secondary-bg);
+  color: var(--btn-secondary-text);
+  border: 1px solid var(--btn-secondary-border);
+  border-radius: 6px;
+  padding: 7px 14px;
+  font-size: 0.8rem;
+  font-weight: 500;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  transition: all 0.15s ease;
+}
+
+.vercel-btn-secondary:hover:not(:disabled) {
+  background-color: var(--btn-secondary-hover);
+  border-color: var(--border-hover);
+}
+
+/* Custom Minimal Scrollbar */
 ::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
+  width: 5px;
+  height: 5px;
 }
 ::-webkit-scrollbar-track {
-  background: rgba(0, 0, 0, 0.2);
+  background: #000000;
 }
 ::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.15);
-  border-radius: 4px;
+  background: #262626;
+  border-radius: 3px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: rgba(255, 255, 255, 0.3);
-}
-
-/* Neon Glows & Animations */
-@keyframes pulseGlow {
-  0%, 100% {
-    box-shadow: 0 0 15px rgba(244, 63, 94, 0.3);
-  }
-  50% {
-    box-shadow: 0 0 28px rgba(244, 63, 94, 0.6);
-  }
-}
-
-.pulse-red-glow {
-  animation: pulseGlow 2s infinite ease-in-out;
-}
-
-@keyframes greenGlow {
-  0%, 100% {
-    box-shadow: 0 0 15px rgba(16, 185, 129, 0.3);
-  }
-  50% {
-    box-shadow: 0 0 28px rgba(16, 185, 129, 0.6);
-  }
-}
-
-.pulse-green-glow {
-  animation: greenGlow 2.5s infinite ease-in-out;
+  background: #404040;
 }
 
 /* Code Typography */
@@ -125,11 +160,9 @@ code, pre, .font-mono {
   font-family: var(--font-mono);
 }
 
-/* Interactive transitions */
-button, input, select, .interactive-card {
-  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-button:active {
-  transform: scale(0.98);
+/* High-contrast divider */
+.vercel-divider {
+  height: 1px;
+  background-color: var(--border-subtle);
+  width: 100%;
 }
