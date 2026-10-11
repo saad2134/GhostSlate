@@ -76,12 +76,48 @@ export default function Header({
             }}>
               <ShinyText text="GhostSlate" speed={3.5} />
             </h1>
-            <span className="vercel-pill hide-on-mobile-xs" style={{ color: '#ffffff', borderColor: '#333333', backgroundColor: '#0a0a0a' }}>
-              <span style={{ width: '6px', height: '6px', borderRadius: '50%', backgroundColor: '#10b981', display: 'inline-block', boxShadow: '0 0 8px rgba(16, 185, 129, 0.4)' }}></span>
+            <span
+              className="hide-on-mobile-xs"
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '6px',
+                height: '24px',
+                padding: '0 8px',
+                borderRadius: '6px',
+                fontSize: '0.69rem',
+                fontWeight: 600,
+                color: '#ffffff',
+                backgroundColor: '#0a0a0a',
+                border: '1px solid #333333',
+                lineHeight: 1,
+                boxSizing: 'border-box',
+                whiteSpace: 'nowrap'
+              }}
+            >
+              <span style={{ width: '5px', height: '5px', borderRadius: '50%', backgroundColor: '#10b981', display: 'inline-block', boxShadow: '0 0 6px rgba(16, 185, 129, 0.5)', flexShrink: 0 }}></span>
               <DecryptedText text="Hexagonal Engine Active ✦ v1.0.0" speed={30} maxIterations={10} />
             </span>
-            <span className="vercel-pill" style={{ color: '#10b981', borderColor: 'rgba(16, 185, 129, 0.4)', backgroundColor: '#0a0a0a', fontSize: '0.68rem', padding: '2px 8px' }}>
-              ✦ Stream Sync: Resilient
+            <span
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '6px',
+                height: '24px',
+                padding: '0 8px',
+                borderRadius: '6px',
+                fontSize: '0.69rem',
+                fontWeight: 600,
+                color: '#10b981',
+                backgroundColor: '#05140d',
+                border: '1px solid rgba(16, 185, 129, 0.4)',
+                lineHeight: 1,
+                boxSizing: 'border-box',
+                whiteSpace: 'nowrap'
+              }}
+            >
+              <span style={{ width: '5px', height: '5px', borderRadius: '50%', backgroundColor: '#10b981', display: 'inline-block', boxShadow: '0 0 6px rgba(16, 185, 129, 0.5)', flexShrink: 0 }}></span>
+              <span>Stream Sync: Resilient</span>
             </span>
           </div>
           <p style={{ fontSize: '0.73rem', color: 'var(--text-secondary)', margin: '2px 0 0 0' }}>
