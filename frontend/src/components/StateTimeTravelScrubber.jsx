@@ -5,25 +5,24 @@ import ShinyText from './ui/ShinyText';
 import DecryptedText from './ui/DecryptedText';
 
 export default function StateTimeTravelScrubber({ snapshots, violation, streamSync }) {
-  const [currentStepIndex, setCurrentStepIndex] = useState(0);
+  const [selectedStepIndex, setSelectedStepIndex] = useState(null);
   const [isPlaying, setIsPlaying] = useState(false);
 
-  useEffect(() => {
-    if (snapshots && snapshots.length > 0) {
-      setCurrentStepIndex(snapshots.length - 1);
-    }
-  }, [snapshots]);
+  const currentStepIndex = selectedStepIndex !== null && selectedStepIndex < (snapshots?.length || 0)
+    ? selectedStepIndex
+    : (snapshots && snapshots.length > 0 ? snapshots.length - 1 : 0);
 
   useEffect(() => {
     let interval;
     if (isPlaying && snapshots && snapshots.length > 1) {
       interval = setInterval(() => {
-        setCurrentStepIndex((prev) => {
-          if (prev >= snapshots.length - 1) {
+        setSelectedStepIndex((prev) => {
+          const current = prev !== null ? prev : (snapshots.length - 1);
+          if (current >= snapshots.length - 1) {
             setIsPlaying(false);
-            return prev;
+            return current;
           }
-          return prev + 1;
+          return current + 1;
         });
       }, 1200);
     }
@@ -68,7 +67,7 @@ export default function StateTimeTravelScrubber({ snapshots, violation, streamSy
         {/* Controls */}
         <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
           <button
-            onClick={() => setCurrentStepIndex(prev => Math.max(0, prev - 1))}
+            onClick={() => setSelectedStepIndex(Math.max(0, currentStepIndex - 1))}
             disabled={currentStepIndex === 0}
             className="vercel-btn-secondary"
             style={{ padding: '5px 8px', opacity: currentStepIndex === 0 ? 0.3 : 1 }}
@@ -86,7 +85,7 @@ export default function StateTimeTravelScrubber({ snapshots, violation, streamSy
           </button>
 
           <button
-            onClick={() => setCurrentStepIndex(prev => Math.min(snapshots.length - 1, prev + 1))}
+            onClick={() => setSelectedStepIndex(Math.min(snapshots.length - 1, currentStepIndex + 1))}
             disabled={currentStepIndex === snapshots.length - 1}
             className="vercel-btn-secondary"
             style={{ padding: '5px 8px', opacity: currentStepIndex === snapshots.length - 1 ? 0.3 : 1 }}
@@ -159,7 +158,7 @@ export default function StateTimeTravelScrubber({ snapshots, violation, streamSy
           return (
             <button
               key={snap.sequence_id || snap.step}
-              onClick={() => { setCurrentStepIndex(idx); setIsPlaying(false); }}
+              onClick={() => { setSelectedStepIndex(idx); setIsPlaying(false); }}
               title={isResequenced ? `Sequence #${snap.sequence_id || snap.step} arrived out-of-order ✦ Synchronized by Causal Barrier` : (isInterrupt ? snap.interrupt_context : undefined)}
               style={{
                 flex: 1,

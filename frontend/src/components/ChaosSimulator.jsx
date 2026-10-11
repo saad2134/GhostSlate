@@ -1,5 +1,5 @@
 import React from 'react';
-import { Play, CheckCircle2, AlertTriangle, ShieldCheck, Cpu, Code2, Zap, FileCode, RotateCcw, Sparkles } from 'lucide-react';
+import { Play, CheckCircle2, AlertTriangle, ShieldCheck, Cpu, Code2, Zap, FileCode, RotateCcw } from 'lucide-react';
 import SpotlightCard from './ui/SpotlightCard';
 import ShimmerButton from './ui/ShimmerButton';
 import ShinyText from './ui/ShinyText';
@@ -16,8 +16,6 @@ export default function ChaosSimulator({
   customTest,
   setCustomTest
 }) {
-  const selectedScenario = scenarios.find(s => s.id === selectedScenarioId) || scenarios[0];
-
   const pipelineStages = [
     { key: 'recording_trace', label: '1. Invariant Breach', icon: AlertTriangle, accentColor: '#ef4444' },
     { key: 'ast_isolation', label: '2. AST Node Isolation', icon: Code2, accentColor: '#f59e0b' },
@@ -51,31 +49,47 @@ export default function ChaosSimulator({
           </p>
         </div>
 
-        {/* Aceternity Shimmer Action Button */}
-        <ShimmerButton
-          onClick={() => onTriggerHeal(selectedScenarioId)}
-          disabled={loading}
-          style={{ padding: '9px 20px', fontSize: '0.82rem' }}
-        >
-          {loading ? (
-            <>
-              <div style={{
-                width: '14px',
-                height: '14px',
-                border: '2px solid #000000',
-                borderTopColor: 'transparent',
-                borderRadius: '50%',
-                animation: 'spin 0.7s linear infinite'
-              }}></div>
-              <span>Repairing AST in Sandbox...</span>
-            </>
-          ) : (
-            <>
-              <Play size={14} fill="#000000" />
-              <span>Inject Chaos ✦ Auto-Heal Live</span>
-            </>
-          )}
-        </ShimmerButton>
+        {/* Action Button & FAIE Headless Crawler Reset Cycle CTA */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+          <button
+            id="btn-reset-scenario"
+            aria-label="Reset simulation cycle to initial state"
+            title="Reset simulation cycle to initial state"
+            onClick={() => onSelectScenario(scenarios[0]?.id || 'race_condition')}
+            className="vercel-btn-secondary"
+            style={{ padding: '8px 12px', fontSize: '0.78rem' }}
+          >
+            <RotateCcw size={13} />
+            <span className="hide-on-mobile-xs">Reset Cycle</span>
+          </button>
+
+          <ShimmerButton
+            id="btn-trigger-chaos"
+            aria-label="Inject Chaos and Run Automated AST Repair"
+            onClick={() => onTriggerHeal(selectedScenarioId)}
+            disabled={loading}
+            style={{ padding: '9px 18px', fontSize: '0.82rem' }}
+          >
+            {loading ? (
+              <>
+                <div style={{
+                  width: '14px',
+                  height: '14px',
+                  border: '2px solid #000000',
+                  borderTopColor: 'transparent',
+                  borderRadius: '50%',
+                  animation: 'spin 0.7s linear infinite'
+                }}></div>
+                <span>Repairing AST in Sandbox...</span>
+              </>
+            ) : (
+              <>
+                <Play size={14} fill="#000000" />
+                <span>Inject Chaos ✦ Auto-Heal Live</span>
+              </>
+            )}
+          </ShimmerButton>
+        </div>
       </div>
 
       {/* Aceternity Spotlight Scenario Grid with Generous Padding */}

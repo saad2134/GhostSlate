@@ -1,0 +1,6 @@
+{
+  "name": "GhostSlate",
+  "description": "Autonomous AST Program Repair & Self-Healing Execution Sandbox built with Tree-Sitter and Hexagonal Ports & Adapters Architecture.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

@@ -24,7 +24,6 @@ export default function DecryptedText({
     let iteration = 0;
     const targetText = String(text);
     const textLength = targetText.length;
-    setIsDecrypted(false);
 
     if (intervalRef.current) clearInterval(intervalRef.current);
 

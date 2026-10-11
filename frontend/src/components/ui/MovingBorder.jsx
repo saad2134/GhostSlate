@@ -8,12 +8,9 @@ export default function MovingBorder({
   children,
   duration = 3000,
   rx = '8px',
-  ry = '8px',
-  borderColor = 'rgba(255, 255, 255, 0.1)',
   glowColor = '#ffffff',
   className = '',
   containerClassName = '',
-  borderClassName = '',
   style = {},
   as: Component = 'div',
   ...props

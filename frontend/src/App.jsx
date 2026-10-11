@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import Header from './components/Header';
 import ChaosSimulator from './components/ChaosSimulator';
 import StateTimeTravelScrubber from './components/StateTimeTravelScrubber';
@@ -47,22 +47,7 @@ def test_data_buffer_boundary():
     assert len(buf.items) == 4
 `);
 
-  // Fetch scenarios on mount and run initial session
-  useEffect(() => {
-    fetch(`${API_BASE}/api/scenarios`)
-      .then(res => res.json())
-      .then(data => {
-        setScenarios(data);
-        if (data.length > 0) {
-          triggerHeal(data[0].id);
-        }
-      })
-      .catch(err => {
-        console.error('Failed to load scenarios:', err);
-      });
-  }, []);
-
-  const triggerHeal = async (scenarioId, overrideCode, overrideTest) => {
+  const triggerHeal = useCallback(async (scenarioId, overrideCode, overrideTest) => {
     setSelectedScenarioId(scenarioId);
     setLoading(true);
     setStage('recording_trace');
@@ -96,7 +81,22 @@ def test_data_buffer_boundary():
       setLoading(false);
       setStage('failed');
     }
-  };
+  }, [customCode, customTest]);
+
+  // Fetch scenarios on mount and run initial session
+  useEffect(() => {
+    fetch(`${API_BASE}/api/scenarios`)
+      .then(res => res.json())
+      .then(data => {
+        setScenarios(data);
+        if (data.length > 0) {
+          triggerHeal(data[0].id);
+        }
+      })
+      .catch(err => {
+        console.error('Failed to load scenarios:', err);
+      });
+  }, [triggerHeal]);
 
   // Hands-free keyboard shortcuts navigation (1-6 scenarios, Space heal, E export, ? shortcuts)
   useEffect(() => {
@@ -120,10 +120,14 @@ def test_data_buffer_boundary():
     };
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [scenarios, selectedScenarioId, customCode, customTest]);
+  }, [scenarios, selectedScenarioId, triggerHeal]);
 
   return (
     <BackgroundGrid>
+      <a href="#main-content" className="skip-to-content" aria-label="Skip to main content">
+        Skip to main content
+      </a>
+
       <div className="responsive-app-container">
         {/* Top Header */}
         <Header
@@ -134,7 +138,7 @@ def test_data_buffer_boundary():
           session={session}
         />
 
-        <main className="responsive-main">
+        <main id="main-content" className="responsive-main">
           {/* Chaos Injection Simulator & 5-Stage Stepper */}
           <ChaosSimulator
             scenarios={scenarios}

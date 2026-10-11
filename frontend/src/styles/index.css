@@ -176,6 +176,26 @@ code, pre, .font-mono {
   --card-p: 20px;
 }
 
+/* WCAG AA Skip to Content Link */
+.skip-to-content {
+  position: absolute;
+  top: -60px;
+  left: 20px;
+  background-color: #ffffff;
+  color: #000000;
+  padding: 8px 16px;
+  font-size: 0.82rem;
+  font-weight: 700;
+  border-radius: 4px;
+  text-decoration: none;
+  z-index: 99999;
+  transition: top 0.2s ease-in-out;
+  box-shadow: 0 4px 12px rgba(255, 255, 255, 0.25);
+}
+.skip-to-content:focus {
+  top: 14px;
+}
+
 .responsive-app-container {
   min-height: 100vh;
   display: flex;
