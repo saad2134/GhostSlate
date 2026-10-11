@@ -17,6 +17,8 @@ from backend.adapters.presentation.cli_adapter import generate_sarif_report
 from backend.adapters.security.token_bucket import TokenBucketRateLimiterAdapter
 from backend.adapters.ledger.jsonl_ledger import AppendOnlyJSONLLedger
 from backend.adapters.queue.worker_pool import BoundedWorkerPoolAdapter
+from backend.adapters.chaos.mutation_fuzzer import ASTMutationFuzzerAdapter
+from backend.adapters.plugins.language_registry import DynamicLanguageRegistryAdapter
 
 APP_START_TIME = time.time()
 
@@ -49,6 +51,8 @@ coordinator = AgentLoopCoordinator()
 rate_limiter = TokenBucketRateLimiterAdapter(capacity=25, refill_rate_per_sec=1.0)
 audit_ledger = AppendOnlyJSONLLedger(ledger_file_path=os.path.join(tempfile.gettempdir(), "ghostslate_audit_ledger.jsonl"))
 worker_pool = BoundedWorkerPoolAdapter(max_workers=4)
+fuzzer = ASTMutationFuzzerAdapter()
+language_registry = DynamicLanguageRegistryAdapter()
 
 class HealRequest(BaseModel):
     scenario_id: str
@@ -63,6 +67,12 @@ class ExportPRRequest(BaseModel):
     pr_branch: str = "ghostslate/fix-ast-invariant"
     custom_code: Optional[str] = None
     custom_test: Optional[str] = None
+
+class ChaosFuzzRequest(BaseModel):
+    scenario_id: Optional[str] = "boundary_slip"
+    custom_code: Optional[str] = Field(default=None, max_length=50000)
+    custom_test: Optional[str] = Field(default=None, max_length=50000)
+    max_mutants: Optional[int] = Field(default=5, ge=1, le=20)
 
 @app.get("/api/health")
 def get_health():
@@ -230,6 +240,87 @@ def get_compliance():
             "license": "Apache 2.0 / MIT Open Source",
             "author": "Saaduddin Mohammed (github.com/saad2134)"
         }
+    }
+
+@app.get("/api/languages")
+def get_languages():
+    """
+    Returns registered polyglot language plugins and their parser capabilities.
+    """
+    langs = language_registry.get_supported_languages()
+    details = [language_registry.get_metadata(lid) for lid in langs]
+    return {
+        "supported_languages": langs,
+        "plugins": [
+            {
+                "language_id": d.language_id,
+                "name": d.name,
+                "extensions": d.file_extensions,
+                "tree_sitter_available": d.tree_sitter_available,
+                "default_test_framework": d.default_test_framework,
+                "notes": d.notes
+            }
+            for d in details if d
+        ]
+    }
+
+@app.post("/api/chaos/fuzz")
+async def run_chaos_fuzz(req: ChaosFuzzRequest, request: Request, response: Response):
+    """
+    Executes an AST mutation fuzzing campaign against the target scenario or custom code.
+    Evaluates test suite catch rate and resilient repair boundaries.
+    """
+    client_ip = request.client.host if request.client else "127.0.0.1"
+    allowed, meta = rate_limiter.is_allowed(client_ip)
+    response.headers["X-RateLimit-Limit"] = str(meta["limit"])
+    response.headers["X-RateLimit-Remaining"] = str(meta["remaining"])
+    if not allowed:
+        return JSONResponse(
+            status_code=429,
+            content={
+                "detail": "Rate limit exceeded for mutation fuzzing",
+                "retry_after_seconds": meta["reset_after_seconds"]
+            },
+            headers={"Retry-After": str(meta["reset_after_seconds"])}
+        )
+
+    code = req.custom_code
+    test = req.custom_test
+
+    if not code or not test:
+        sc = get_scenario(req.scenario_id or "boundary_slip")
+        if not sc:
+            raise HTTPException(status_code=404, detail=f"Scenario '{req.scenario_id}' not found")
+        code = code or sc.get("original_code", "")
+        test = test or sc.get("test_suite", "")
+
+    result = await asyncio.to_thread(
+        fuzzer.evaluate_campaign,
+        source_code=code,
+        test_code=test,
+        sandbox_runner=coordinator.sandbox,
+        max_mutants=req.max_mutants or 5
+    )
+
+    return {
+        "campaign_id": result.campaign_id,
+        "total_mutants": result.total_mutants,
+        "caught_mutants": result.caught_mutants,
+        "survived_mutants": result.survived_mutants,
+        "mutation_score": result.mutation_score,
+        "duration_ms": result.duration_ms,
+        "candidates": [
+            {
+                "candidate_id": c.candidate_id,
+                "mutation_type": c.mutation_type,
+                "target_line": c.target_line,
+                "original_snippet": c.original_snippet,
+                "mutated_snippet": c.mutated_snippet,
+                "caught": c.caught,
+                "diagnostics": c.diagnostics
+            }
+            for c in result.candidates
+        ]
     }
 
 @app.get("/api/scenarios")

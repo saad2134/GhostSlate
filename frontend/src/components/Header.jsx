@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Cpu, GitPullRequest, Keyboard, ChevronDown, Check, Code, Globe, Shield, BookOpen, DollarSign, ClipboardCheck, Users } from 'lucide-react';
+import { Cpu, GitPullRequest, Keyboard, ChevronDown, Check, Code, Globe, Shield, BookOpen, DollarSign, ClipboardCheck, Users, Activity } from 'lucide-react';
 import appIcon from '../assets/app-icon.png';
 import ShinyText from './ui/ShinyText';
 import DecryptedText from './ui/DecryptedText';
@@ -12,6 +12,7 @@ export default function Header({
   onOpenShortcuts,
   onOpenPocModal,
   onOpenTeamModal,
+  onOpenTelemetryModal,
   session,
   activeView = 'studio',
   setActiveView
@@ -290,6 +291,18 @@ export default function Header({
           >
             <Users size={13} color="#10b981" />
             <span className="hide-on-mobile-xs">Team Mode</span>
+          </button>
+
+          {/* Real-Time APM & Prometheus Telemetry Button */}
+          <button
+            onClick={onOpenTelemetryModal}
+            className="vercel-btn-secondary"
+            title="Real-Time APM & Prometheus Telemetry (/api/metrics)"
+            aria-label="Real-Time APM and Prometheus Telemetry"
+            style={{ padding: '7px 12px', fontSize: '0.78rem' }}
+          >
+            <Activity size={13} color="#38bdf8" />
+            <span className="hide-on-mobile-xs">Telemetry</span>
           </button>
 
           {/* Aceternity Shimmer Export Button */}

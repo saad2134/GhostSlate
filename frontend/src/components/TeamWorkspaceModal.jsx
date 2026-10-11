@@ -11,15 +11,60 @@ import {
   GitBranch, 
   FileCheck2,
   Lock,
-  ArrowRight
+  ArrowRight,
+  Key
 } from 'lucide-react';
 import ShinyText from './ui/ShinyText';
 
 export default function TeamWorkspaceModal({ isOpen, onClose, onLaunchScenario }) {
   if (!isOpen) return null;
 
-  const [activeTab, setActiveTab] = useState('consensus'); // 'consensus' | 'audit_stream' | 'rbac'
+  const [activeTab, setActiveTab] = useState('consensus'); // 'consensus' | 'audit_stream' | 'rules_tokens'
   const [copied, setCopied] = useState(false);
+  const [apiToken, setApiToken] = useState('gs_live_9f81a4b2c019d84e72aa1b');
+  const [tokenCopied, setTokenCopied] = useState(false);
+
+  const [rules, setRules] = useState([
+    {
+      id: 'ast_security',
+      name: 'GS-SEC-01 AST Sandbox Barrier',
+      desc: 'Disallow arbitrary imports, os.system, exec(), eval() dynamic code execution',
+      enabled: true
+    },
+    {
+      id: 'canary_gate',
+      name: 'AST Resource & Memory Canary Gate',
+      desc: 'Reject candidate patches exceeding 64MB RSS growth or 3x duration blowup',
+      enabled: true
+    },
+    {
+      id: 'watermark_order',
+      name: 'Monotonic Watermark Barrier',
+      desc: 'Enforce causal sequence reordering with microsecond jitter absorption',
+      enabled: true
+    },
+    {
+      id: 'multi_role_quorum',
+      name: 'Cryptographic Multi-Signature Quorum',
+      desc: 'Require 3 of 3 signatures (Platform Architect, InfoSec Auditor, Pytest Runner)',
+      enabled: true
+    }
+  ]);
+
+  const toggleRule = (id) => {
+    setRules(prev => prev.map(r => r.id === id ? { ...r, enabled: !r.enabled } : r));
+  };
+
+  const handleCopyToken = () => {
+    if (navigator?.clipboard?.writeText) {
+      navigator.clipboard.writeText(apiToken)
+        .then(() => {
+          setTokenCopied(true);
+          setTimeout(() => setTokenCopied(false), 2000);
+        })
+        .catch(err => console.warn('Clipboard write denied:', err));
+    }
+  };
 
   // Mock consensus participants
   const [participants, setParticipants] = useState([
@@ -116,18 +161,23 @@ export default function TeamWorkspaceModal({ isOpen, onClose, onLaunchScenario }
       justifyContent: 'center',
       padding: 'clamp(10px, 3vw, 20px)'
     }}>
-      <div style={{
-        width: '100%',
-        maxWidth: '720px',
-        maxHeight: '90vh',
-        backgroundColor: '#0a0a0a',
-        border: '1px solid #333333',
-        borderRadius: '8px',
-        overflow: 'hidden',
-        display: 'flex',
-        flexDirection: 'column',
-        boxShadow: '0 24px 60px rgba(0, 0, 0, 0.9)'
-      }}>
+      <div
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="team-workspace-modal-title"
+        style={{
+          width: '100%',
+          maxWidth: '740px',
+          maxHeight: '90vh',
+          backgroundColor: '#0a0a0a',
+          border: '1px solid #333333',
+          borderRadius: '8px',
+          overflow: 'hidden',
+          display: 'flex',
+          flexDirection: 'column',
+          boxShadow: '0 24px 60px rgba(0, 0, 0, 0.9)'
+        }}
+      >
         {/* Header */}
         <div style={{
           padding: '16px 20px',
@@ -140,7 +190,7 @@ export default function TeamWorkspaceModal({ isOpen, onClose, onLaunchScenario }
           <div>
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
               <Users size={18} color="#38bdf8" />
-              <h3 style={{ fontSize: '0.98rem', fontWeight: 700, margin: 0, color: '#ffffff' }}>
+              <h3 id="team-workspace-modal-title" style={{ fontSize: '0.98rem', fontWeight: 700, margin: 0, color: '#ffffff' }}>
                 <ShinyText text="Team Workspace & Multi-Role Consensus Mode" speed={4} />
               </h3>
             </div>
@@ -181,7 +231,7 @@ export default function TeamWorkspaceModal({ isOpen, onClose, onLaunchScenario }
           flexWrap: 'wrap',
           gap: '8px'
         }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flexWrap: 'wrap' }}>
             <button
               onClick={() => setActiveTab('consensus')}
               style={{
@@ -211,6 +261,21 @@ export default function TeamWorkspaceModal({ isOpen, onClose, onLaunchScenario }
               }}
             >
               Immutable Audit Stream
+            </button>
+            <button
+              onClick={() => setActiveTab('rules_tokens')}
+              style={{
+                padding: '5px 12px',
+                borderRadius: '6px',
+                fontSize: '12px',
+                fontWeight: 600,
+                background: activeTab === 'rules_tokens' ? '#171717' : 'transparent',
+                border: activeTab === 'rules_tokens' ? '1px solid #333333' : '1px solid transparent',
+                color: activeTab === 'rules_tokens' ? '#ffffff' : '#888888',
+                cursor: 'pointer'
+              }}
+            >
+              Invariant Rules & API Tokens
             </button>
           </div>
 
@@ -321,6 +386,137 @@ export default function TeamWorkspaceModal({ isOpen, onClose, onLaunchScenario }
                   </div>
                 </div>
               ))}
+            </div>
+          )}
+
+          {activeTab === 'rules_tokens' && (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+              {/* Organization API Token Section */}
+              <div style={{
+                background: '#050505',
+                border: '1px solid #222222',
+                borderRadius: '8px',
+                padding: '14px 16px',
+                display: 'flex',
+                flexDirection: 'column',
+                gap: '10px'
+              }}>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '8px' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <Key size={16} color="#38bdf8" />
+                    <span style={{ fontSize: '13px', fontWeight: 600, color: '#ffffff' }}>Organization Scoped API Token</span>
+                  </div>
+                  <span style={{ fontSize: '11px', color: '#10b981', background: 'rgba(16, 185, 129, 0.1)', padding: '2px 8px', borderRadius: '4px', border: '1px solid rgba(16, 185, 129, 0.25)' }}>
+                    Active ✦ Ephemeral Subprocess Isolation
+                  </span>
+                </div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+                  <input
+                    type="text"
+                    readOnly
+                    value={apiToken}
+                    style={{
+                      flex: 1,
+                      minWidth: '220px',
+                      background: '#0a0a0a',
+                      border: '1px solid #333333',
+                      borderRadius: '6px',
+                      padding: '8px 12px',
+                      fontSize: '12px',
+                      fontFamily: 'monospace',
+                      color: '#ffffff',
+                      outline: 'none'
+                    }}
+                  />
+                  <button
+                    onClick={handleCopyToken}
+                    style={{
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: '6px',
+                      padding: '8px 14px',
+                      background: tokenCopied ? '#10b981' : '#171717',
+                      border: '1px solid #333333',
+                      borderRadius: '6px',
+                      color: tokenCopied ? '#000000' : '#ffffff',
+                      fontSize: '12px',
+                      fontWeight: 600,
+                      cursor: 'pointer'
+                    }}
+                  >
+                    {tokenCopied ? <Check size={13} /> : <Copy size={13} />}
+                    <span>{tokenCopied ? 'Copied' : 'Copy Token'}</span>
+                  </button>
+                  <button
+                    onClick={() => {
+                      const next = 'gs_live_' + Math.random().toString(36).substring(2, 12) + Math.random().toString(36).substring(2, 10);
+                      setApiToken(next);
+                    }}
+                    style={{
+                      padding: '8px 12px',
+                      background: 'transparent',
+                      border: '1px solid #333333',
+                      borderRadius: '6px',
+                      color: 'var(--text-secondary)',
+                      fontSize: '12px',
+                      cursor: 'pointer'
+                    }}
+                  >
+                    Rotate Token
+                  </button>
+                </div>
+                <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap', marginTop: '2px' }}>
+                  {['read:ast', 'verify:sandbox', 'admin:quorum', 'export:sarif'].map((scope) => (
+                    <span key={scope} style={{ fontSize: '10px', color: '#888888', background: '#111111', padding: '2px 6px', borderRadius: '4px', border: '1px solid #222222', fontFamily: 'monospace' }}>
+                      {scope}
+                    </span>
+                  ))}
+                </div>
+              </div>
+
+              {/* Invariant Rules Section */}
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                  <span style={{ fontSize: '13px', fontWeight: 600, color: '#ffffff' }}>Active AST Governance Invariants</span>
+                  <span style={{ fontSize: '11px', color: '#888888' }}>{rules.filter(r => r.enabled).length}/{rules.length} Enforced</span>
+                </div>
+                {rules.map((rule) => (
+                  <div
+                    key={rule.id}
+                    style={{
+                      background: '#050505',
+                      border: '1px solid #222222',
+                      borderRadius: '8px',
+                      padding: '12px 14px',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'space-between',
+                      gap: '12px',
+                      flexWrap: 'wrap'
+                    }}
+                  >
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '3px' }}>
+                      <span style={{ fontSize: '12px', fontWeight: 600, color: '#ffffff' }}>{rule.name}</span>
+                      <span style={{ fontSize: '11px', color: '#777777' }}>{rule.desc}</span>
+                    </div>
+                    <button
+                      onClick={() => toggleRule(rule.id)}
+                      style={{
+                        padding: '4px 10px',
+                        borderRadius: '4px',
+                        fontSize: '11px',
+                        fontWeight: 600,
+                        background: rule.enabled ? 'rgba(16, 185, 129, 0.15)' : '#111111',
+                        border: rule.enabled ? '1px solid rgba(16, 185, 129, 0.4)' : '1px solid #333333',
+                        color: rule.enabled ? '#10b981' : '#666666',
+                        cursor: 'pointer'
+                      }}
+                    >
+                      {rule.enabled ? 'ENFORCED ✦ STRICT' : 'DISABLED'}
+                    </button>
+                  </div>
+                ))}
+              </div>
             </div>
           )}
         </div>

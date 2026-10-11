@@ -243,19 +243,30 @@ class SandboxRunner(ExecutionSandboxPort):
                 text=True
             )
 
-            if self.profiler:
-                try:
-                    stats = self.profiler.profile_process(proc.pid)
-                    peak_rss = stats.get("rss_mb", 0.0)
-                except Exception:
-                    pass
+            # Sample peak memory while process runs
+            t_start = time.time()
+            max_wait = min(timeout, 5.0)
+            while proc.poll() is None and (time.time() - t_start) < max_wait:
+                if self.profiler:
+                    try:
+                        stats = self.profiler.profile_process(proc.pid)
+                        peak_rss = max(peak_rss, stats.get("rss_mb", 0.0))
+                    except Exception:
+                        pass
+                time.sleep(0.01)
 
-            stdout, stderr = proc.communicate(timeout=min(timeout, 5.0))
+            stdout, stderr = proc.communicate(timeout=1.0)
             output = (stdout + "\n" + stderr).strip()
             success = (proc.returncode == 0)
             return success, output, proc.returncode, peak_rss
 
         except subprocess.TimeoutExpired:
+            if 'proc' in locals() and proc:
+                try:
+                    proc.kill()
+                    proc.wait(timeout=0.5)
+                except Exception:
+                    pass
             return False, f"TIMEOUT: Sandbox execution exceeded {timeout}s limit.", -1, peak_rss
         except Exception as e:
             return False, f"SANDBOX RUNNER ERROR: {str(e)}", -2, peak_rss

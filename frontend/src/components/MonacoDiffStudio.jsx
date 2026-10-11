@@ -66,20 +66,30 @@ export default function MonacoDiffStudio({ patch, originalCode, language = 'pyth
                 borderRadius: '4px',
                 fontSize: '0.68rem',
                 fontWeight: 600,
-                color: '#10b981',
-                backgroundColor: 'rgba(16, 185, 129, 0.1)',
-                border: '1px solid rgba(16, 185, 129, 0.25)',
+                color: showLlmComparison ? '#ef4444' : '#10b981',
+                backgroundColor: showLlmComparison ? 'rgba(239, 68, 68, 0.1)' : 'rgba(16, 185, 129, 0.1)',
+                border: showLlmComparison ? '1px solid rgba(239, 68, 68, 0.25)' : '1px solid rgba(16, 185, 129, 0.25)',
               }}
             >
-              <span>Surgical Scope: {patch ? (patch.end_line - patch.start_line + 1) : 0} lines</span>
-              <span style={{ color: '#444444' }}>✦</span>
-              <span>97.6% Blast Radius Reduction</span>
-              <span style={{ color: '#444444' }}>✦</span>
-              <span>0 Comments Wiped</span>
+              {showLlmComparison ? (
+                <span>Simulated Overwrite: Full-File ✦ 100% Comments Wiped ✦ High Regression Risk</span>
+              ) : (
+                <>
+                  <span>Surgical Scope: {patch ? (patch.end_line - patch.start_line + 1) : 0} lines</span>
+                  <span style={{ color: '#444444' }}>✦</span>
+                  <span>97.6% Blast Radius Reduction</span>
+                  <span style={{ color: '#444444' }}>✦</span>
+                  <span>0 Comments Wiped</span>
+                </>
+              )}
             </span>
           </div>
           <p style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', margin: '4px 0 0 0' }}>
-            Surgical AST mutation (Lines {patch?.start_line || 1} ✦ {patch?.end_line || 1}) ✦ Non-destructive syntax surgery
+            {showLlmComparison ? (
+              <span>Simulated Unbounded Model Rewrite ✦ Entire file re-synthesized ✦ Indentation & surrounding logic mutated</span>
+            ) : (
+              <span>Surgical AST mutation (Lines {patch?.start_line || 1} ✦ {patch?.end_line || 1}) ✦ Non-destructive syntax surgery</span>
+            )}
           </p>
         </div>
 

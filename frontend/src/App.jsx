@@ -10,6 +10,7 @@ import ExportModal from './components/ExportModal';
 import KeyboardShortcutsModal from './components/KeyboardShortcutsModal';
 import EnterprisePocModal from './components/EnterprisePocModal';
 import TeamWorkspaceModal from './components/TeamWorkspaceModal';
+import TelemetryDashboardModal from './components/TelemetryDashboardModal';
 import BackgroundGrid from './components/ui/BackgroundGrid';
 import ErrorBoundary from './components/ErrorBoundary';
 
@@ -32,6 +33,7 @@ export default function App() {
   const [isShortcutsModalOpen, setIsShortcutsModalOpen] = useState(false);
   const [isPocModalOpen, setIsPocModalOpen] = useState(false);
   const [isTeamModalOpen, setIsTeamModalOpen] = useState(false);
+  const [isTelemetryModalOpen, setIsTelemetryModalOpen] = useState(false);
   const [activeView, setActiveView] = useState('studio'); // 'studio', 'overview', 'architecture', 'compliance', 'pricing'
 
   // Custom Evaluator Sandbox code & test assertion state
@@ -211,6 +213,7 @@ def test_data_buffer_boundary():
           onOpenShortcuts={() => setIsShortcutsModalOpen(true)}
           onOpenPocModal={() => setIsPocModalOpen(true)}
           onOpenTeamModal={() => setIsTeamModalOpen(true)}
+          onOpenTelemetryModal={() => setIsTelemetryModalOpen(true)}
           session={session}
           activeView={activeView}
           setActiveView={setActiveView}
@@ -391,6 +394,12 @@ def test_data_buffer_boundary():
           isOpen={isTeamModalOpen}
           onClose={() => setIsTeamModalOpen(false)}
           onLaunchScenario={(id) => handleLaunchStudio(id)}
+        />
+
+        {/* Real-Time APM & Prometheus Telemetry Stream Modal */}
+        <TelemetryDashboardModal
+          isOpen={isTelemetryModalOpen}
+          onClose={() => setIsTelemetryModalOpen(false)}
         />
       </div>
     </BackgroundGrid>

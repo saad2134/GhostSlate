@@ -94,17 +94,22 @@ export default function ExportModal({ isOpen, onClose, session, apiBase = '' }) 
       justifyContent: 'center',
       padding: 'clamp(10px, 3vw, 20px)'
     }}>
-      <div style={{
-        width: '100%',
-        maxWidth: '750px',
-        maxHeight: '90vh',
-        backgroundColor: '#0a0a0a',
-        border: '1px solid #333333',
-        display: 'flex',
-        flexDirection: 'column',
-        borderRadius: '8px',
-        overflow: 'hidden'
-      }}>
+      <div
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="export-modal-title"
+        style={{
+          width: '100%',
+          maxWidth: '750px',
+          maxHeight: '90vh',
+          backgroundColor: '#0a0a0a',
+          border: '1px solid #333333',
+          display: 'flex',
+          flexDirection: 'column',
+          borderRadius: '8px',
+          overflow: 'hidden'
+        }}
+      >
         {/* Modal Header */}
         <div style={{
           padding: '14px 20px',
@@ -115,7 +120,7 @@ export default function ExportModal({ isOpen, onClose, session, apiBase = '' }) 
           backgroundColor: '#000000'
         }}>
           <div>
-            <h3 style={{ fontSize: '0.95rem', fontWeight: 700, margin: 0, color: '#ffffff', letterSpacing: '-0.02em' }}>
+            <h3 id="export-modal-title" style={{ fontSize: '0.95rem', fontWeight: 700, margin: 0, color: '#ffffff', letterSpacing: '-0.02em' }}>
               <ShinyText text="1-Click Pull Request ✦ SARIF Artifact Exporter" speed={4} />
             </h3>
             <p style={{ fontSize: '0.72rem', color: 'var(--text-secondary)', margin: '2px 0 0 0' }}>

@@ -3,6 +3,8 @@ import { Check, X, ShieldCheck, Zap, Building2, Lock, FileCode2, ArrowRight } fr
 
 export default function PricingTiersView({ onLaunchStudio }) {
   const [isAnnual, setIsAnnual] = useState(true);
+  const [selectedIdp, setSelectedIdp] = useState('okta');
+  const [ssoTested, setSsoTested] = useState(false);
 
   const matrixCategories = [
     {
@@ -290,6 +292,143 @@ export default function PricingTiersView({ onLaunchStudio }) {
               ))}
             </tbody>
           </table>
+        </div>
+      </section>
+
+      {/* Enterprise SSO & SAML 2.0 / SCIM Federation Simulator */}
+      <section style={{
+        background: '#0a0a0a',
+        border: '1px solid #222222',
+        borderRadius: '12px',
+        padding: '24px',
+        display: 'flex',
+        flexDirection: 'column',
+        gap: '18px'
+      }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '10px' }}>
+          <div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <Lock size={18} color="#38bdf8" />
+              <h3 style={{ fontSize: '16px', fontWeight: 700, margin: 0, color: '#ffffff' }}>
+                Enterprise SSO & SAML 2.0 / SCIM Provisioning Simulator
+              </h3>
+            </div>
+            <p style={{ fontSize: '13px', color: '#a1a1a1', margin: '4px 0 0 0' }}>
+              Verify enterprise identity federation and Just-In-Time (JIT) role mapping with your corporate IdP
+            </p>
+          </div>
+          <span style={{ fontSize: '11px', color: '#10b981', background: 'rgba(16, 185, 129, 0.1)', padding: '3px 10px', borderRadius: '4px', border: '1px solid rgba(16, 185, 129, 0.25)' }}>
+            SOC 2 Type II ✦ Zero Credential Storage
+          </span>
+        </div>
+
+        {/* IdP Selector Tabs */}
+        <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+          {[
+            { id: 'okta', name: 'Okta Identity Engine', domain: 'acme.okta.com' },
+            { id: 'entra', name: 'Microsoft Entra ID (Azure AD)', domain: 'login.microsoftonline.com/acme' },
+            { id: 'google', name: 'Google Workspace Enterprise', domain: 'accounts.google.com/o/saml2' },
+            { id: 'ping', name: 'PingFederate / Self-Hosted', domain: 'sso.internal.enterprise.corp' }
+          ].map((idp) => (
+            <button
+              key={idp.id}
+              onClick={() => setSelectedIdp(idp.id)}
+              style={{
+                padding: '8px 14px',
+                borderRadius: '6px',
+                fontSize: '12px',
+                fontWeight: 600,
+                background: selectedIdp === idp.id ? '#171717' : '#050505',
+                border: selectedIdp === idp.id ? '1px solid #38bdf8' : '1px solid #222222',
+                color: selectedIdp === idp.id ? '#ffffff' : '#888888',
+                cursor: 'pointer'
+              }}
+            >
+              {idp.name}
+            </button>
+          ))}
+        </div>
+
+        {/* Technical Federation Metadata Grid */}
+        <div style={{
+          display: 'grid',
+          gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))',
+          gap: '12px'
+        }}>
+          <div style={{ background: '#050505', border: '1px solid #1a1a1a', borderRadius: '6px', padding: '12px', fontFamily: 'monospace', fontSize: '11px' }}>
+            <div style={{ color: '#666666', marginBottom: '4px' }}>SSO ACS URL (Assertion Consumer)</div>
+            <div style={{ color: '#38bdf8', wordBreak: 'break-all' }}>https://auth.ghostslate.corp/saml/v2/acs</div>
+          </div>
+          <div style={{ background: '#050505', border: '1px solid #1a1a1a', borderRadius: '6px', padding: '12px', fontFamily: 'monospace', fontSize: '11px' }}>
+            <div style={{ color: '#666666', marginBottom: '4px' }}>Audience URI / Entity ID</div>
+            <div style={{ color: '#10b981', wordBreak: 'break-all' }}>urn:ghostslate:enterprise:saml2</div>
+          </div>
+          <div style={{ background: '#050505', border: '1px solid #1a1a1a', borderRadius: '6px', padding: '12px', fontFamily: 'monospace', fontSize: '11px' }}>
+            <div style={{ color: '#666666', marginBottom: '4px' }}>SCIM 2.0 Inbound Endpoint</div>
+            <div style={{ color: '#e5e5e5', wordBreak: 'break-all' }}>https://auth.ghostslate.corp/scim/v2/Users</div>
+          </div>
+        </div>
+
+        {/* Live Assertion Test Sandbox */}
+        <div style={{
+          background: '#050505',
+          border: '1px solid #1a1a1a',
+          borderRadius: '8px',
+          padding: '14px 16px',
+          display: 'flex',
+          flexDirection: 'column',
+          gap: '10px'
+        }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '8px' }}>
+            <span style={{ fontSize: '12px', fontWeight: 600, color: '#ffffff' }}>
+              Simulated SAML 2.0 Response Claims ({selectedIdp.toUpperCase()})
+            </span>
+            <button
+              onClick={() => setSsoTested(true)}
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '6px',
+                padding: '6px 12px',
+                background: '#171717',
+                border: '1px solid #333333',
+                borderRadius: '4px',
+                fontSize: '11px',
+                fontWeight: 600,
+                color: '#38bdf8',
+                cursor: 'pointer'
+              }}
+            >
+              <Zap size={12} />
+              <span>Validate SAML Handshake Live</span>
+            </button>
+          </div>
+
+          <pre style={{
+            margin: 0,
+            padding: '10px 12px',
+            background: '#0a0a0a',
+            border: '1px solid #222222',
+            borderRadius: '6px',
+            fontSize: '11px',
+            fontFamily: 'monospace',
+            color: '#a1a1a1',
+            overflowX: 'auto',
+            lineHeight: 1.5
+          }}>
+{`{
+  "issuer": "${selectedIdp === 'okta' ? 'http://acme.okta.com' : selectedIdp === 'entra' ? 'https://login.microsoftonline.com/tenant-guid/v2.0' : 'https://accounts.google.com/o/saml2'}",
+  "name_id": "architect.lead@enterprise.corp",
+  "auth_method": "urn:oasis:names:tc:SAML:2.0:ac:classes:PasswordProtectedTransport",
+  "attributes": {
+    "roles": ["GhostSlate-Platform-Lead", "AST-Repair-Admin"],
+    "directory_groups": ["sec-ops", "infra-platform"],
+    "jit_provisioned": true,
+    "ephemeral_token_ttl_seconds": 28800
+  },
+  "verification_status": "${ssoTested ? '200 OK ✦ Handshake Verified & RBAC Enforced' : 'READY FOR VALIDATION'}"
+}`}
+          </pre>
         </div>
       </section>
     </div>

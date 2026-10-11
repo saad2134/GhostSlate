@@ -102,18 +102,23 @@ ${checklistItems.map(item => {
       justifyContent: 'center',
       padding: 'clamp(10px, 3vw, 20px)'
     }}>
-      <div style={{
-        width: '100%',
-        maxWidth: '680px',
-        maxHeight: '90vh',
-        backgroundColor: '#0a0a0a',
-        border: '1px solid #333333',
-        borderRadius: '8px',
-        overflow: 'hidden',
-        display: 'flex',
-        flexDirection: 'column',
-        boxShadow: '0 24px 60px rgba(0, 0, 0, 0.9)'
-      }}>
+      <div
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="enterprise-poc-modal-title"
+        style={{
+          width: '100%',
+          maxWidth: '680px',
+          maxHeight: '90vh',
+          backgroundColor: '#0a0a0a',
+          border: '1px solid #333333',
+          borderRadius: '8px',
+          overflow: 'hidden',
+          display: 'flex',
+          flexDirection: 'column',
+          boxShadow: '0 24px 60px rgba(0, 0, 0, 0.9)'
+        }}
+      >
         {/* Header */}
         <div style={{
           padding: '16px 20px',
@@ -126,7 +131,7 @@ ${checklistItems.map(item => {
           <div>
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
               <ClipboardCheck size={18} color="#38bdf8" />
-              <h3 style={{ fontSize: '0.98rem', fontWeight: 700, margin: 0, color: '#ffffff' }}>
+              <h3 id="enterprise-poc-modal-title" style={{ fontSize: '0.98rem', fontWeight: 700, margin: 0, color: '#ffffff' }}>
                 <ShinyText text="Enterprise 14-Day POC Evaluation Checklist" speed={4} />
               </h3>
             </div>

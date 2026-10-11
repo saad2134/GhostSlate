@@ -79,9 +79,24 @@ class SubprocessResourceProfiler(ResourceProfilerPort):
                         if ctypes.windll.psapi.GetProcessMemoryInfo(
                             handle, ctypes.byref(counters), counters.cb
                         ):
-                            rss_mb = counters.WorkingSetSize / (1024.0 * 1024.0)
+                            # GS-DEF-39: Use PeakWorkingSetSize to capture test memory peaks
+                            rss_mb = counters.PeakWorkingSetSize / (1024.0 * 1024.0)
                     finally:
                         ctypes.windll.kernel32.CloseHandle(handle)
+            except Exception:
+                pass
+
+        # GS-DEF-43: Zero-dependency Linux /proc status fallback
+        elif sys.platform.startswith("linux"):
+            try:
+                proc_status = f"/proc/{pid}/status"
+                if os.path.exists(proc_status):
+                    with open(proc_status, "r", encoding="utf-8") as f:
+                        for line in f:
+                            if line.startswith("VmHWM:") or line.startswith("VmRSS:"):
+                                parts = line.split()
+                                if len(parts) >= 2:
+                                    rss_mb = max(rss_mb, float(parts[1]) / 1024.0)
             except Exception:
                 pass
 

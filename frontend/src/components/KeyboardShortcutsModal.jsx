@@ -28,15 +28,20 @@ export default function KeyboardShortcutsModal({ isOpen, onClose }) {
       justifyContent: 'center',
       padding: 'clamp(10px, 3vw, 20px)'
     }}>
-      <div style={{
-        width: '100%',
-        maxWidth: '520px',
-        backgroundColor: '#0a0a0a',
-        border: '1px solid #333333',
-        borderRadius: '8px',
-        overflow: 'hidden',
-        boxShadow: '0 24px 60px rgba(0, 0, 0, 0.9)'
-      }}>
+      <div
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="keyboard-shortcuts-modal-title"
+        style={{
+          width: '100%',
+          maxWidth: '520px',
+          backgroundColor: '#0a0a0a',
+          border: '1px solid #333333',
+          borderRadius: '8px',
+          overflow: 'hidden',
+          boxShadow: '0 24px 60px rgba(0, 0, 0, 0.9)'
+        }}
+      >
         {/* Header */}
         <div style={{
           padding: '14px 20px',
@@ -48,7 +53,7 @@ export default function KeyboardShortcutsModal({ isOpen, onClose }) {
         }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
             <Keyboard size={18} color="#ffffff" />
-            <h3 style={{ fontSize: '0.95rem', fontWeight: 700, margin: 0, color: '#ffffff' }}>
+            <h3 id="keyboard-shortcuts-modal-title" style={{ fontSize: '0.95rem', fontWeight: 700, margin: 0, color: '#ffffff' }}>
               <ShinyText text="Keyboard Shortcuts ✦ Rapid Navigation" speed={4} />
             </h3>
           </div>

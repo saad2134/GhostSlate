@@ -9,6 +9,8 @@ from backend.core.ports.rate_limiter import RateLimiterPort
 from backend.core.ports.ledger import AuditLedgerPort
 from backend.core.ports.profiler import ResourceProfilerPort
 from backend.core.ports.workspace import WorkspaceIsolationPort
+from backend.core.ports.fuzzer import ChaosFuzzerPort, FuzzingCandidate, FuzzingCampaignResult
+from backend.core.ports.plugin import LanguagePluginPort, LanguageMetadata, LanguageScopingResult
 
 __all__ = [
     "ExecutionSandboxPort",
@@ -24,5 +26,11 @@ __all__ = [
     "AuditLedgerPort",
     "ResourceProfilerPort",
     "WorkspaceIsolationPort",
+    "ChaosFuzzerPort",
+    "FuzzingCandidate",
+    "FuzzingCampaignResult",
+    "LanguagePluginPort",
+    "LanguageMetadata",
+    "LanguageScopingResult",
 ]
 
