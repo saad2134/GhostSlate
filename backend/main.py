@@ -302,25 +302,30 @@ async def run_heal(req: HealRequest, request: Request, response: Response):
         raise HTTPException(status_code=500, detail=f"Self-healing execution failed: {str(e)}")
 
 @app.get("/api/ledger")
-def get_audit_ledger():
+async def get_audit_ledger(limit: int = 50, offset: int = 0):
     """
     Exposes the append-only cryptographic audit ledger and validates unbroken
     SHA-256 chain integrity across all historical self-healing sessions.
+    Offloaded to worker thread to prevent event-loop head-of-line blocking.
     """
-    is_valid, verified_count = audit_ledger.verify_chain_integrity()
-    entries = audit_ledger.get_entries()
+    is_valid, verified_count = await asyncio.to_thread(audit_ledger.verify_chain_integrity)
+    total_entries = await asyncio.to_thread(audit_ledger.get_entries)
+    paginated_entries = await asyncio.to_thread(audit_ledger.get_entries, limit, offset)
     return {
         "chain_valid": is_valid,
         "verified_blocks": verified_count,
-        "total_blocks": len(entries),
-        "entries": entries
+        "total_blocks": len(total_entries),
+        "limit": limit,
+        "offset": offset,
+        "entries": paginated_entries
     }
 
 @app.post("/api/export/pr")
-async def export_pr(req: ExportPRRequest):
+async def export_pr(req: ExportPRRequest, request: Request, response: Response):
     """
     GS-BE-05: Queries session repository to reuse cached healed session,
     avoiding redundant subprocess executions and correctly preserving custom code.
+    Protected by TokenBucketRateLimiterAdapter against unthrottled subprocess execution.
     """
     session = None
     if req.session_id:
@@ -328,8 +333,25 @@ async def export_pr(req: ExportPRRequest):
     if not session:
         session = coordinator.session_repo.get_latest_by_scenario(req.scenario_id)
     
-    # If no cached session exists, run a new healing session in worker thread
+    # If no cached session exists, rate limit fresh healing session in worker thread
     if not session:
+        client_ip = request.client.host if request.client else "127.0.0.1"
+        allowed, meta = rate_limiter.is_allowed(client_ip)
+        response.headers["X-RateLimit-Limit"] = str(meta["limit"])
+        response.headers["X-RateLimit-Remaining"] = str(meta["remaining"])
+        if not allowed:
+            return JSONResponse(
+                status_code=429,
+                content={
+                    "detail": "Rate limit exceeded for PR export fresh computation",
+                    "retry_after_seconds": meta["reset_after_seconds"]
+                },
+                headers={
+                    "Retry-After": str(meta["reset_after_seconds"]),
+                    "X-RateLimit-Limit": str(meta["limit"]),
+                    "X-RateLimit-Remaining": "0"
+                }
+            )
         session = await asyncio.to_thread(
             coordinator.run_healing_session,
             scenario_id=req.scenario_id,

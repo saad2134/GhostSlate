@@ -62,6 +62,10 @@ class VerificationResult(BaseModel):
     post_duration_ms: float = 0.0
     canary_passed: bool = True
     canary_diagnostics: Optional[str] = None
+    pre_rss_mb: float = 0.0
+    post_rss_mb: float = 0.0
+    peak_rss_mb: float = 0.0
+    memory_canary_passed: bool = True
 
 class AgentDebateTurn(BaseModel):
     id: str

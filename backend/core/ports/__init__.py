@@ -7,6 +7,8 @@ from backend.core.ports.queue import TaskQueuePort, WorkerPoolPort
 from backend.core.ports.tracing import TraceHookPort, DistributedTracerPort
 from backend.core.ports.rate_limiter import RateLimiterPort
 from backend.core.ports.ledger import AuditLedgerPort
+from backend.core.ports.profiler import ResourceProfilerPort
+from backend.core.ports.workspace import WorkspaceIsolationPort
 
 __all__ = [
     "ExecutionSandboxPort",
@@ -20,5 +22,7 @@ __all__ = [
     "DistributedTracerPort",
     "RateLimiterPort",
     "AuditLedgerPort",
+    "ResourceProfilerPort",
+    "WorkspaceIsolationPort",
 ]
 

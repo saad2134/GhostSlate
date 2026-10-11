@@ -9,6 +9,7 @@ import SandboxTerminal from './components/SandboxTerminal';
 import ExportModal from './components/ExportModal';
 import KeyboardShortcutsModal from './components/KeyboardShortcutsModal';
 import EnterprisePocModal from './components/EnterprisePocModal';
+import TeamWorkspaceModal from './components/TeamWorkspaceModal';
 import BackgroundGrid from './components/ui/BackgroundGrid';
 import ErrorBoundary from './components/ErrorBoundary';
 
@@ -30,6 +31,7 @@ export default function App() {
   const [isExportModalOpen, setIsExportModalOpen] = useState(false);
   const [isShortcutsModalOpen, setIsShortcutsModalOpen] = useState(false);
   const [isPocModalOpen, setIsPocModalOpen] = useState(false);
+  const [isTeamModalOpen, setIsTeamModalOpen] = useState(false);
   const [activeView, setActiveView] = useState('studio'); // 'studio', 'overview', 'architecture', 'compliance', 'pricing'
 
   // Custom Evaluator Sandbox code & test assertion state
@@ -143,11 +145,15 @@ def test_data_buffer_boundary():
         e.target.closest?.('.monaco-editor') ||
         e.target.closest?.('[contenteditable="true"]') ||
         isExportModalOpen ||
-        isShortcutsModalOpen
+        isShortcutsModalOpen ||
+        isPocModalOpen ||
+        isTeamModalOpen
       ) {
         if (e.key === 'Escape') {
           setIsExportModalOpen(false);
           setIsShortcutsModalOpen(false);
+          setIsPocModalOpen(false);
+          setIsTeamModalOpen(false);
         }
         return;
       }
@@ -172,12 +178,14 @@ def test_data_buffer_boundary():
       } else if (e.key === 'Escape') {
         setIsExportModalOpen(false);
         setIsShortcutsModalOpen(false);
+        setIsPocModalOpen(false);
+        setIsTeamModalOpen(false);
       }
     };
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [scenarios, selectedScenarioId, triggerHeal, activeView, isExportModalOpen, isShortcutsModalOpen]);
+  }, [scenarios, selectedScenarioId, triggerHeal, activeView, isExportModalOpen, isShortcutsModalOpen, isPocModalOpen, isTeamModalOpen]);
 
   const [showQuickstart, setShowQuickstart] = useState(true);
 
@@ -202,6 +210,7 @@ def test_data_buffer_boundary():
           onOpenExportModal={() => setIsExportModalOpen(true)}
           onOpenShortcuts={() => setIsShortcutsModalOpen(true)}
           onOpenPocModal={() => setIsPocModalOpen(true)}
+          onOpenTeamModal={() => setIsTeamModalOpen(true)}
           session={session}
           activeView={activeView}
           setActiveView={setActiveView}
@@ -374,6 +383,13 @@ def test_data_buffer_boundary():
         <EnterprisePocModal
           isOpen={isPocModalOpen}
           onClose={() => setIsPocModalOpen(false)}
+          onLaunchScenario={(id) => handleLaunchStudio(id)}
+        />
+
+        {/* Team Workspace & Multi-Role Consensus Mode Modal */}
+        <TeamWorkspaceModal
+          isOpen={isTeamModalOpen}
+          onClose={() => setIsTeamModalOpen(false)}
           onLaunchScenario={(id) => handleLaunchStudio(id)}
         />
       </div>

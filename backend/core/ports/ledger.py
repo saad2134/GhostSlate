@@ -3,7 +3,7 @@ Defines the contract for tamper-evident, append-only compliance logging for auto
 Author: Saaduddin Mohammed (github.com/saad2134)
 """
 from abc import ABC, abstractmethod
-from typing import Tuple, List, Dict, Any
+from typing import Tuple, List, Dict, Any, Optional
 
 class AuditLedgerPort(ABC):
     """Abstract port for tamper-evident cryptographic audit logs."""
@@ -30,6 +30,7 @@ class AuditLedgerPort(ABC):
         pass
 
     @abstractmethod
-    def get_entries(self) -> List[Dict[str, Any]]:
-        """Returns all recorded audit ledger blocks."""
+    def get_entries(self, limit: Optional[int] = None, offset: int = 0) -> List[Dict[str, Any]]:
+        """Returns recorded audit ledger blocks with optional pagination."""
         pass
+

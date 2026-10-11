@@ -53,13 +53,21 @@ class BoundedWorkerPoolAdapter(TaskQueuePort):
         }
 
         with self._lock:
+            # Memory leak guard: cap jobs registry to prevent memory growth under burst loads
+            while len(self._jobs) >= 256:
+                oldest_key = next(iter(self._jobs))
+                del self._jobs[oldest_key]
             self._jobs[job_id] = job_info
+
+            # Memory leak guard: prune completed task references
+            self._tasks = [t for t in self._tasks if not t.done()]
 
         # Schedule processing in background
         task = asyncio.create_task(
             self._process_job(job_id, scenario_id, custom_code, custom_test)
         )
-        self._tasks.append(task)
+        with self._lock:
+            self._tasks.append(task)
         return job_id
 
     async def wait_all(self, timeout: float = 20.0) -> None:

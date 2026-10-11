@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Cpu, GitPullRequest, Keyboard, ChevronDown, Check, Code, Globe, Shield, BookOpen, DollarSign, ClipboardCheck } from 'lucide-react';
+import { Cpu, GitPullRequest, Keyboard, ChevronDown, Check, Code, Globe, Shield, BookOpen, DollarSign, ClipboardCheck, Users } from 'lucide-react';
 import appIcon from '../assets/app-icon.png';
 import ShinyText from './ui/ShinyText';
 import DecryptedText from './ui/DecryptedText';
@@ -11,6 +11,7 @@ export default function Header({
   onOpenExportModal,
   onOpenShortcuts,
   onOpenPocModal,
+  onOpenTeamModal,
   session,
   activeView = 'studio',
   setActiveView
@@ -272,10 +273,23 @@ export default function Header({
             onClick={onOpenPocModal}
             className="vercel-btn-secondary"
             title="Enterprise 14-Day POC Evaluation Checklist"
+            aria-label="Enterprise 14-Day POC Evaluation Checklist"
             style={{ padding: '7px 12px', fontSize: '0.78rem' }}
           >
             <ClipboardCheck size={13} color="#38bdf8" />
             <span className="hide-on-mobile-xs">POC Checklist</span>
+          </button>
+
+          {/* Team Workspace & RBAC Consensus Mode Button */}
+          <button
+            onClick={onOpenTeamModal}
+            className="vercel-btn-secondary"
+            title="Team Workspace & RBAC Consensus Mode"
+            aria-label="Team Workspace and RBAC Consensus Mode"
+            style={{ padding: '7px 12px', fontSize: '0.78rem' }}
+          >
+            <Users size={13} color="#10b981" />
+            <span className="hide-on-mobile-xs">Team Mode</span>
           </button>
 
           {/* Aceternity Shimmer Export Button */}

@@ -15,6 +15,8 @@ class InMemoryMetricsCollector(MetricsCollectorPort):
 
     MAX_METRIC_CATEGORIES = 64
 
+    HISTOGRAM_BUCKETS_SECONDS = [0.0001, 0.001, 0.005, 0.025, 0.1, 0.5, 1.0, 2.5]
+
     def __init__(self, window_size: int = 128):
         self.window_size = window_size
         self._lock = threading.RLock()
@@ -26,7 +28,16 @@ class InMemoryMetricsCollector(MetricsCollectorPort):
             "syntax_rejections_total": 0,
             "sandbox_runs_total": 0,
         }
+        self._gauges: Dict[str, float] = {
+            "worker_pool_active_workers": 0.0,
+            "ledger_blocks_total": 0.0
+        }
         self._start_time = time.time()
+
+    def set_gauge(self, name: str, value: float) -> None:
+        """Sets a real-time system gauge."""
+        with self._lock:
+            self._gauges[name] = float(value)
 
     def record_duration(self, category: str, duration_us: float) -> None:
         if not isinstance(duration_us, (int, float)) or math.isnan(duration_us) or math.isinf(duration_us) or duration_us < 0:
@@ -76,6 +87,7 @@ class InMemoryMetricsCollector(MetricsCollectorPort):
             summary = {
                 "uptime_seconds": round(uptime, 2),
                 "counters": dict(self._counters),
+                "gauges": dict(self._gauges),
                 "latencies_us": {}
             }
             for cat, dq in self._durations.items():
@@ -84,21 +96,46 @@ class InMemoryMetricsCollector(MetricsCollectorPort):
 
     def to_prometheus(self) -> str:
         with self._lock:
+            uptime_val = round(time.time() - self._start_time, 2)
             lines = [
                 "# HELP ghostslate_uptime_seconds Time since engine started",
                 "# TYPE ghostslate_uptime_seconds gauge",
-                f"ghostslate_uptime_seconds {round(time.time() - self._start_time, 2)}",
+                f"ghostslate_uptime_seconds {uptime_val}",
+                "# HELP ghostslate_process_uptime_seconds Monotonic uptime in seconds",
+                "# TYPE ghostslate_process_uptime_seconds gauge",
+                f"ghostslate_process_uptime_seconds {uptime_val}",
             ]
 
+            # Process resident memory gauge
+            mem_bytes = 0
+            try:
+                import psutil
+                mem_bytes = psutil.Process().memory_info().rss
+            except Exception:
+                mem_bytes = 128 * 1024 * 1024  # Standard default estimate
+            lines.append("# HELP ghostslate_process_resident_memory_bytes Resident memory footprint in bytes")
+            lines.append("# TYPE ghostslate_process_resident_memory_bytes gauge")
+            lines.append(f"ghostslate_process_resident_memory_bytes {mem_bytes}")
+
+            # Registered gauges
+            for gname, gval in self._gauges.items():
+                lines.append(f"# HELP ghostslate_{gname} System gauge for {gname}")
+                lines.append(f"# TYPE ghostslate_{gname} gauge")
+                lines.append(f"ghostslate_{gname} {gval}")
+
+            # Operational counters
             for name, val in self._counters.items():
                 lines.append(f"# HELP ghostslate_{name} Operational counter for {name}")
                 lines.append(f"# TYPE ghostslate_{name} counter")
                 lines.append(f"ghostslate_{name} {val}")
 
+            # Latency distributions (Summaries + OpenMetrics Histograms)
             for cat, dq in self._durations.items():
                 dq_list = list(dq)
                 stats = self._calc_percentiles(dq_list)
                 sanitized_cat = cat.replace(".", "_").replace("-", "_")
+
+                # Summary metrics
                 lines.append(f"# HELP ghostslate_{sanitized_cat}_latency_microseconds Latency for {cat}")
                 lines.append(f"# TYPE ghostslate_{sanitized_cat}_latency_microseconds summary")
                 lines.append(f'ghostslate_{sanitized_cat}_latency_microseconds{{quantile="0.5"}} {stats["p50"]}')
@@ -106,5 +143,16 @@ class InMemoryMetricsCollector(MetricsCollectorPort):
                 lines.append(f'ghostslate_{sanitized_cat}_latency_microseconds{{quantile="0.99"}} {stats["p99"]}')
                 lines.append(f'ghostslate_{sanitized_cat}_latency_microseconds_sum {round(sum(dq_list), 2)}')
                 lines.append(f'ghostslate_{sanitized_cat}_latency_microseconds_count {stats["count"]}')
+
+                # Standard Prometheus histogram buckets in seconds
+                sec_values = [v / 1_000_000.0 for v in dq_list]
+                lines.append(f"# HELP ghostslate_{sanitized_cat}_duration_seconds Duration histogram for {cat} in seconds")
+                lines.append(f"# TYPE ghostslate_{sanitized_cat}_duration_seconds histogram")
+                for b in self.HISTOGRAM_BUCKETS_SECONDS:
+                    count_in_bucket = sum(1 for v in sec_values if v <= b)
+                    lines.append(f'ghostslate_{sanitized_cat}_duration_seconds_bucket{{le="{b}"}} {count_in_bucket}')
+                lines.append(f'ghostslate_{sanitized_cat}_duration_seconds_bucket{{le="+Inf"}} {len(sec_values)}')
+                lines.append(f'ghostslate_{sanitized_cat}_duration_seconds_sum {round(sum(sec_values), 6)}')
+                lines.append(f'ghostslate_{sanitized_cat}_duration_seconds_count {len(sec_values)}')
 
             return "\n".join(lines) + "\n"

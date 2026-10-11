@@ -203,7 +203,8 @@ ${checklistItems.map(item => {
                   display: 'flex',
                   alignItems: 'flex-start',
                   justifyContent: 'space-between',
-                  gap: '14px',
+                  gap: '12px',
+                  flexWrap: 'wrap',
                   transition: 'all 0.15s ease'
                 }}
               >

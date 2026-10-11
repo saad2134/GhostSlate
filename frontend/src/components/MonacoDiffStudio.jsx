@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { DiffEditor } from '@monaco-editor/react';
-import { Split, AlignJustify, Check, Copy, Sparkles, FileDiff } from 'lucide-react';
+import { Split, AlignJustify, Check, Copy, Sparkles, FileDiff, AlertTriangle, ArrowLeftRight } from 'lucide-react';
 import SpotlightCard from './ui/SpotlightCard';
 import ShinyText from './ui/ShinyText';
 
@@ -8,8 +8,23 @@ export default function MonacoDiffStudio({ patch, originalCode, language = 'pyth
   const isMobile = typeof window !== 'undefined' && window.innerWidth < 768;
   const [inlineView, setInlineView] = useState(isMobile);
   const [copied, setCopied] = useState(false);
+  const [showLlmComparison, setShowLlmComparison] = useState(false);
 
-  const modifiedCode = patch?.full_patched_code || originalCode;
+  // Generate simulated blind LLM rewrite for visual comparison
+  const getSimulatedLlmCode = () => {
+    if (!originalCode) return '';
+    const lines = originalCode.split('\n');
+    // Strip comments, alter indentation, inject hallucinated import
+    const transformed = lines
+      .filter(l => !l.trim().startsWith('#'))
+      .map(l => l.replace(/    /g, '  '))
+      .join('\n');
+    return `# Blind LLM Rewrite (Cursor / Copilot Style)\n# WARNING: Wiped 100% of inline comments and re-indented 2-space\nimport typing\nimport logging  # Hallucinated extra import\n\n` + transformed;
+  };
+
+  const modifiedCode = showLlmComparison
+    ? getSimulatedLlmCode()
+    : (patch?.full_patched_code || originalCode);
 
   const handleCopyDiff = () => {
     if (patch?.diff_unified && navigator?.clipboard?.writeText) {
@@ -69,7 +84,22 @@ export default function MonacoDiffStudio({ patch, originalCode, language = 'pyth
         </div>
 
         {/* Controls */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+          <button
+            onClick={() => setShowLlmComparison(!showLlmComparison)}
+            className="vercel-btn-secondary"
+            style={{
+              padding: '7px 12px',
+              fontSize: '0.76rem',
+              color: showLlmComparison ? '#ef4444' : '#a1a1a1',
+              borderColor: showLlmComparison ? 'rgba(239, 68, 68, 0.4)' : undefined,
+              backgroundColor: showLlmComparison ? 'rgba(239, 68, 68, 0.1)' : undefined
+            }}
+          >
+            {showLlmComparison ? <AlertTriangle size={13} color="#ef4444" /> : <ArrowLeftRight size={13} />}
+            <span>{showLlmComparison ? 'Viewing Blind LLM Rewrite' : 'Compare with Blind LLM'}</span>
+          </button>
+
           <button
             onClick={() => setInlineView(!inlineView)}
             className="vercel-btn-secondary"
@@ -90,24 +120,65 @@ export default function MonacoDiffStudio({ patch, originalCode, language = 'pyth
         </div>
       </div>
 
-      {/* Explanation Banner (Properly Padded) */}
-      {patch?.explanation && (
+      {/* Blind LLM Comparison Diagnostic Banner */}
+      {showLlmComparison ? (
         <div style={{
-          backgroundColor: '#050505',
-          border: '1px solid var(--border-subtle)',
+          backgroundColor: '#140808',
+          border: '1px solid rgba(239, 68, 68, 0.4)',
           borderRadius: '8px',
-          padding: '14px 18px',
-          margin: '10px 0',
+          padding: '12px 16px',
           display: 'flex',
           alignItems: 'center',
-          gap: '12px'
+          justifyContent: 'space-between',
+          flexWrap: 'wrap',
+          gap: '10px'
         }}>
-          <Sparkles size={16} color="#ffffff" style={{ flexShrink: 0 }} />
-          <p style={{ fontSize: '0.77rem', color: '#d4d4d4', margin: 0, lineHeight: 1.5 }}>
-            <strong style={{ color: '#ffffff' }}>AST Repair Rationale: </strong>
-            {patch.explanation}
-          </p>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+            <AlertTriangle size={18} color="#ef4444" style={{ flexShrink: 0 }} />
+            <div>
+              <strong style={{ color: '#ef4444', fontSize: '13px' }}>
+                Simulated Blind LLM Full-File Overwrite (Cursor / Copilot style)
+              </strong>
+              <p style={{ margin: '2px 0 0 0', fontSize: '12px', color: '#d4d4d4' }}>
+                Notice: 100% of inline comments wiped, 2-space indentation rewritten, and hallucinated import injected.
+              </p>
+            </div>
+          </div>
+          <button
+            onClick={() => setShowLlmComparison(false)}
+            style={{
+              padding: '5px 12px',
+              background: '#0a0a0a',
+              border: '1px solid #333333',
+              borderRadius: '6px',
+              color: '#ffffff',
+              fontSize: '12px',
+              fontWeight: 600,
+              cursor: 'pointer'
+            }}
+          >
+            Restore GhostSlate Surgical Patch
+          </button>
         </div>
+      ) : (
+        patch?.explanation && (
+          <div style={{
+            backgroundColor: '#050505',
+            border: '1px solid var(--border-subtle)',
+            borderRadius: '8px',
+            padding: '14px 18px',
+            margin: '0',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '12px'
+          }}>
+            <Sparkles size={16} color="#ffffff" style={{ flexShrink: 0 }} />
+            <p style={{ fontSize: '0.77rem', color: '#d4d4d4', margin: 0, lineHeight: 1.5 }}>
+              <strong style={{ color: '#ffffff' }}>AST Repair Rationale: </strong>
+              {patch.explanation}
+            </p>
+          </div>
+        )
       )}
 
       {/* Monaco Diff Editor */}

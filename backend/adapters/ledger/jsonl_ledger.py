@@ -118,7 +118,10 @@ class AppendOnlyJSONLLedger(AuditLedgerPort):
 
             return True, len(self._entries)
 
-    def get_entries(self) -> List[Dict[str, Any]]:
-        """Returns a snapshot of all ledger entries."""
+    def get_entries(self, limit: Optional[int] = None, offset: int = 0) -> List[Dict[str, Any]]:
+        """Returns a snapshot of recorded ledger entries with optional pagination."""
         with self._lock:
-            return list(self._entries)
+            sliced = self._entries[offset:]
+            if limit is not None:
+                sliced = sliced[:limit]
+            return list(sliced)
