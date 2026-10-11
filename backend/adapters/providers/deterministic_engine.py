@@ -1,0 +1,269 @@
+import uuid
+import datetime
+from typing import List, Tuple, Optional
+from backend.adapters.providers.base import ModelProviderPort
+from backend.core.models import PatchCandidate, AgentDebateTurn, InvariantViolation, ASTNodeInfo
+from backend.core.ast_engine import ASTEngine
+
+class DeterministicEngine(ModelProviderPort):
+    """
+    Offline deterministic synthesis engine.
+    Ensures 100% demo stability, zero API quota dependency, and microsecond latency.
+    """
+    def __init__(self):
+        self.ast_engine = ASTEngine()
+
+    def synthesize_repair(
+        self,
+        scenario_id: str,
+        original_code: str,
+        violation: InvariantViolation,
+        isolated_node: Optional[ASTNodeInfo]
+    ) -> Tuple[PatchCandidate, List[AgentDebateTurn]]:
+        now = datetime.datetime.now().strftime("%H:%M:%S")
+
+        if scenario_id == "race_condition":
+            return self._repair_race_condition(original_code, violation, isolated_node, now)
+        elif scenario_id == "off_by_one":
+            return self._repair_off_by_one(original_code, violation, isolated_node, now)
+        elif scenario_id == "null_pointer":
+            return self._repair_null_pointer(original_code, violation, isolated_node, now)
+        elif scenario_id == "financial_ledger":
+            return self._repair_financial_ledger(original_code, violation, isolated_node, now)
+        else:
+            return self._repair_race_condition(original_code, violation, isolated_node, now)
+
+    def _repair_race_condition(self, original_code, violation, isolated_node, now):
+        replacement = """        # PATCHED: Enforce atomic solvency constraint before mutating state
+        if self.balance >= amount and amount > 0:
+            current = self.balance
+            new_balance = current - amount
+            self.balance = new_balance
+            self.processed_orders.append(order_id)
+            return True
+        return False"""
+
+        patch = self.ast_engine.apply_surgical_patch(
+            source_code=original_code,
+            start_line=8,
+            end_line=15,
+            replacement_code=replacement,
+            explanation="Tightened guard condition to require `self.balance >= amount and amount > 0`. Prevents negative balance overdrafts.",
+            target_node_id=isolated_node.node_id if isolated_node else None,
+            target_node_type="IfStatement"
+        )
+
+        turns = [
+            AgentDebateTurn(
+                id=str(uuid.uuid4())[:8],
+                speaker="TriageAgent",
+                avatar="⚡",
+                timestamp=now,
+                message="Discovered critical invariant violation at Line 8: `self.balance >= 0` check ignores requested transaction `amount`, permitting overdrafts.",
+                status="proposing",
+                confidence_score=0.96
+            ),
+            AgentDebateTurn(
+                id=str(uuid.uuid4())[:8],
+                speaker="AdversarialCritic",
+                avatar="🛡️",
+                timestamp=now,
+                message="AUDIT WARNING: What happens if `amount` is negative or zero? A malicious client could inflate balances if `amount <= 0` is not barred.",
+                status="challenging",
+                confidence_score=0.89
+            ),
+            AgentDebateTurn(
+                id=str(uuid.uuid4())[:8],
+                speaker="TriageAgent",
+                avatar="⚡",
+                timestamp=now,
+                message="Valid objection. Hardened replacement AST node to enforce both `self.balance >= amount` AND `amount > 0`.",
+                status="proposing",
+                confidence_score=0.99
+            ),
+            AgentDebateTurn(
+                id=str(uuid.uuid4())[:8],
+                speaker="AdversarialCritic",
+                avatar="🛡️",
+                timestamp=now,
+                message="SYNTAX & INVARIANT PROOF VERIFIED: No scope creep. Preserved class constructor and order history state intact. Passing to sandbox.",
+                status="approved",
+                confidence_score=1.00
+            )
+        ]
+        return patch, turns
+
+    def _repair_off_by_one(self, original_code, violation, isolated_node, now):
+        replacement = """        # PATCHED: Strict inequality '<' preserves max_requests boundary invariant
+        if len(self.timestamps) < self.max_requests:
+            self.timestamps.append(current_time)
+            return True
+        return False"""
+
+        patch = self.ast_engine.apply_surgical_patch(
+            source_code=original_code,
+            start_line=12,
+            end_line=16,
+            replacement_code=replacement,
+            explanation="Changed `<= self.max_requests` to strict `< self.max_requests`. Rejects excess requests when window is at capacity.",
+            target_node_id=isolated_node.node_id if isolated_node else None,
+            target_node_type="IfStatement"
+        )
+
+        turns = [
+            AgentDebateTurn(
+                id=str(uuid.uuid4())[:8],
+                speaker="TriageAgent",
+                avatar="⚡",
+                timestamp=now,
+                message="Pinpointed boundary off-by-one fault in `is_allowed()` at Line 13. The `<=` operator admits N+1 requests instead of N.",
+                status="proposing",
+                confidence_score=0.98
+            ),
+            AgentDebateTurn(
+                id=str(uuid.uuid4())[:8],
+                speaker="AdversarialCritic",
+                avatar="🛡️",
+                timestamp=now,
+                message="CHECK: Does the cutoff timestamp pruning logic precede this boundary comparison? Verify array length semantics.",
+                status="challenging",
+                confidence_score=0.92
+            ),
+            AgentDebateTurn(
+                id=str(uuid.uuid4())[:8],
+                speaker="TriageAgent",
+                avatar="⚡",
+                timestamp=now,
+                message="Confirmed. Pruning runs prior at Line 10. Replacing AST node with strict `< self.max_requests` restores deterministic capacity invariant.",
+                status="proposing",
+                confidence_score=0.99
+            ),
+            AgentDebateTurn(
+                id=str(uuid.uuid4())[:8],
+                speaker="AdversarialCritic",
+                avatar="🛡️",
+                timestamp=now,
+                message="BOUNDARY INVARIANT PROVED: Strict 3/3 capacity guaranteed. Forwarding patch to subprocess runner.",
+                status="approved",
+                confidence_score=1.00
+            )
+        ]
+        return patch, turns
+
+    def _repair_null_pointer(self, original_code, violation, isolated_node, now):
+        replacement = """        # PATCHED: Null-coalescing guard against missing or None user profile payloads
+        user_meta = self.payload.get("user") if isinstance(self.payload, dict) else None
+        if not user_meta or not isinstance(user_meta, dict):
+            return "ANONYMOUS"
+        role = user_meta.get("role")
+        return str(role).upper() if role else "ANONYMOUS\""""
+
+        patch = self.ast_engine.apply_surgical_patch(
+            source_code=original_code,
+            start_line=6,
+            end_line=9,
+            replacement_code=replacement,
+            explanation="Added defensive null coalescing and type validation for `user_meta`. Safely defaults to 'ANONYMOUS' when payload is absent or None.",
+            target_node_id=isolated_node.node_id if isolated_node else None,
+            target_node_type="MethodBody"
+        )
+
+        turns = [
+            AgentDebateTurn(
+                id=str(uuid.uuid4())[:8],
+                speaker="TriageAgent",
+                avatar="⚡",
+                timestamp=now,
+                message="Caught unhandled AttributeError in `get_user_role()`. `self.payload.get('user')` returns None for guest tokens, crashing on `.get('role')`.",
+                status="proposing",
+                confidence_score=0.97
+            ),
+            AgentDebateTurn(
+                id=str(uuid.uuid4())[:8],
+                speaker="AdversarialCritic",
+                avatar="🛡️",
+                timestamp=now,
+                message="CHALLENGE: What if `role` exists but is None, empty string, or an integer? A blind `.upper()` call will still crash.",
+                status="challenging",
+                confidence_score=0.95
+            ),
+            AgentDebateTurn(
+                id=str(uuid.uuid4())[:8],
+                speaker="TriageAgent",
+                avatar="⚡",
+                timestamp=now,
+                message="Incorporated typecast and empty guard: `str(role).upper() if role else 'ANONYMOUS'`. Handles None, int, and missing keys.",
+                status="proposing",
+                confidence_score=1.00
+            ),
+            AgentDebateTurn(
+                id=str(uuid.uuid4())[:8],
+                speaker="AdversarialCritic",
+                avatar="🛡️",
+                timestamp=now,
+                message="TYPE SAFETY INVARIANT PASSED: Null dereference eliminated. Clean zero-crash guarantee.",
+                status="approved",
+                confidence_score=1.00
+            )
+        ]
+        return patch, turns
+
+    def _repair_financial_ledger(self, original_code, violation, isolated_node, now):
+        replacement = """        # PATCHED: Solvency validation guard ensuring sender holds sufficient funds
+        sender_balance = self.accounts.get(sender, 0.0)
+        if sender_balance < amount:
+            return False
+        self.accounts[sender] -= amount
+        self.accounts[receiver] = self.accounts.get(receiver, 0.0) + amount
+        self.audit_log.append((sender, receiver, amount))
+        return True"""
+
+        patch = self.ast_engine.apply_surgical_patch(
+            source_code=original_code,
+            start_line=9,
+            end_line=13,
+            replacement_code=replacement,
+            explanation="Added pre-transfer solvency check `sender_balance < amount` and safe dictionary access. Preserves total supply invariant.",
+            target_node_id=isolated_node.node_id if isolated_node else None,
+            target_node_type="MethodBody"
+        )
+
+        turns = [
+            AgentDebateTurn(
+                id=str(uuid.uuid4())[:8],
+                speaker="TriageAgent",
+                avatar="⚡",
+                timestamp=now,
+                message="Detected state invariant corruption in `transfer()`. Sender balance drops to negative, violating zero-sum conservation.",
+                status="proposing",
+                confidence_score=0.98
+            ),
+            AgentDebateTurn(
+                id=str(uuid.uuid4())[:8],
+                speaker="AdversarialCritic",
+                avatar="🛡️",
+                timestamp=now,
+                message="CHECK: Does receiver account exist in the dictionary? Using direct index access might raise KeyError on new accounts.",
+                status="challenging",
+                confidence_score=0.94
+            ),
+            AgentDebateTurn(
+                id=str(uuid.uuid4())[:8],
+                speaker="TriageAgent",
+                avatar="⚡",
+                timestamp=now,
+                message="Addressed. Using `.get(receiver, 0.0)` for safe credit initialization alongside strict sender balance guard.",
+                status="proposing",
+                confidence_score=0.99
+            ),
+            AgentDebateTurn(
+                id=str(uuid.uuid4())[:8],
+                speaker="AdversarialCritic",
+                avatar="🛡️",
+                timestamp=now,
+                message="CONSERVATION INVARIANT VERIFIED: Total supply preserved, negative balance prevented. Ready for sandbox test.",
+                status="approved",
+                confidence_score=1.00
+            )
+        ]
+        return patch, turns
