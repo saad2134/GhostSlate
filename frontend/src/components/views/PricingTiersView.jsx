@@ -6,6 +6,18 @@ export default function PricingTiersView({ onLaunchStudio }) {
   const [selectedIdp, setSelectedIdp] = useState('okta');
   const [ssoTested, setSsoTested] = useState(false);
 
+  const idpIssuers = {
+    okta: 'https://acme.okta.com',
+    entra: 'https://login.microsoftonline.com/acme/v2.0',
+    google: 'https://accounts.google.com/o/saml2',
+    ping: 'https://sso.internal.enterprise.corp'
+  };
+
+  const handleSelectIdp = (id) => {
+    setSelectedIdp(id);
+    setSsoTested(false);
+  };
+
   const matrixCategories = [
     {
       category: '1. Core AST Repair & Deterministic Verification',
@@ -332,7 +344,7 @@ export default function PricingTiersView({ onLaunchStudio }) {
           ].map((idp) => (
             <button
               key={idp.id}
-              onClick={() => setSelectedIdp(idp.id)}
+              onClick={() => handleSelectIdp(idp.id)}
               style={{
                 padding: '8px 14px',
                 borderRadius: '6px',
@@ -417,7 +429,7 @@ export default function PricingTiersView({ onLaunchStudio }) {
             lineHeight: 1.5
           }}>
 {`{
-  "issuer": "${selectedIdp === 'okta' ? 'http://acme.okta.com' : selectedIdp === 'entra' ? 'https://login.microsoftonline.com/tenant-guid/v2.0' : 'https://accounts.google.com/o/saml2'}",
+  "issuer": "${idpIssuers[selectedIdp] || 'https://auth.ghostslate.corp'}",
   "name_id": "architect.lead@enterprise.corp",
   "auth_method": "urn:oasis:names:tc:SAML:2.0:ac:classes:PasswordProtectedTransport",
   "attributes": {

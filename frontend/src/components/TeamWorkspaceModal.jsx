@@ -17,8 +17,6 @@ import {
 import ShinyText from './ui/ShinyText';
 
 export default function TeamWorkspaceModal({ isOpen, onClose, onLaunchScenario }) {
-  if (!isOpen) return null;
-
   const [activeTab, setActiveTab] = useState('consensus'); // 'consensus' | 'audit_stream' | 'rules_tokens'
   const [copied, setCopied] = useState(false);
   const [apiToken, setApiToken] = useState('gs_live_9f81a4b2c019d84e72aa1b');
@@ -145,6 +143,8 @@ export default function TeamWorkspaceModal({ isOpen, onClose, onLaunchScenario }
         .catch(err => console.warn('Clipboard write failed:', err));
     }
   };
+
+  if (!isOpen) return null;
 
   return (
     <div style={{
@@ -451,6 +451,7 @@ export default function TeamWorkspaceModal({ isOpen, onClose, onLaunchScenario }
                     onClick={() => {
                       const next = 'gs_live_' + Math.random().toString(36).substring(2, 12) + Math.random().toString(36).substring(2, 10);
                       setApiToken(next);
+                      setTokenCopied(false);
                     }}
                     style={{
                       padding: '8px 12px',

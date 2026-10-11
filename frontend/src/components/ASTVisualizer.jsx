@@ -8,6 +8,7 @@ import CountUp from './ui/CountUp';
 export default function ASTVisualizer({ astNodes, isolatedNode }) {
   const [filterType, setFilterType] = useState('all');
   const [selectedNode, setSelectedNode] = useState(null);
+  const [viewMode, setViewMode] = useState('tree'); // 'tree' | 'pills'
 
   const nodes = astNodes || [];
 
@@ -40,8 +41,40 @@ export default function ASTVisualizer({ astNodes, isolatedNode }) {
           </p>
         </div>
 
-        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-          <span className="vercel-pill" style={{ padding: '4px 10px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+          <div style={{ display: 'inline-flex', background: '#050505', border: '1px solid #222222', borderRadius: '6px', padding: '2px' }}>
+            <button
+              onClick={() => setViewMode('tree')}
+              style={{
+                padding: '3px 10px',
+                borderRadius: '4px',
+                fontSize: '11px',
+                fontWeight: 600,
+                background: viewMode === 'tree' ? '#222222' : 'transparent',
+                border: 'none',
+                color: viewMode === 'tree' ? '#ffffff' : '#888888',
+                cursor: 'pointer'
+              }}
+            >
+              Tree Graph
+            </button>
+            <button
+              onClick={() => setViewMode('pills')}
+              style={{
+                padding: '3px 10px',
+                borderRadius: '4px',
+                fontSize: '11px',
+                fontWeight: 600,
+                background: viewMode === 'pills' ? '#222222' : 'transparent',
+                border: 'none',
+                color: viewMode === 'pills' ? '#ffffff' : '#888888',
+                cursor: 'pointer'
+              }}
+            >
+              Node Pills
+            </button>
+          </div>
+          <span className="vercel-pill hide-on-mobile-xs" style={{ padding: '4px 10px' }}>
             Tree-Sitter C Grammar
           </span>
           <span className="vercel-pill" style={{ padding: '4px 10px' }}>
@@ -79,72 +112,156 @@ export default function ASTVisualizer({ astNodes, isolatedNode }) {
         </div>
       )}
 
-      {/* Filter Tabs (Properly Padded) */}
-      <div style={{ display: 'flex', gap: '8px', overflowX: 'auto', padding: '2px 0 4px 0' }}>
-        {nodeTypes.map(type => (
-          <button
-            key={type}
-            onClick={() => setFilterType(type)}
-            style={{
-              backgroundColor: filterType === type ? '#ffffff' : '#111111',
-              border: filterType === type ? '1px solid #ffffff' : '1px solid var(--border-subtle)',
-              color: filterType === type ? '#000000' : 'var(--text-secondary)',
-              padding: '6px 14px',
-              borderRadius: '6px',
-              fontSize: '0.74rem',
-              fontWeight: 600,
-              cursor: 'pointer',
-              whiteSpace: 'nowrap',
-              transition: 'all 0.15s ease'
-            }}
-          >
-            {type}
-          </button>
-        ))}
-      </div>
+      {/* Tree Graph View vs Node Pills View */}
+      {viewMode === 'tree' ? (
+        <div style={{
+          backgroundColor: '#050505',
+          border: '1px solid #222222',
+          borderRadius: '8px',
+          padding: '14px 16px',
+          fontFamily: 'var(--font-mono)',
+          fontSize: '12px',
+          display: 'flex',
+          flexDirection: 'column',
+          gap: '8px',
+          maxHeight: '220px',
+          overflowY: 'auto'
+        }}>
+          {/* Module Root */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#888888' }}>
+            <span style={{ color: '#38bdf8' }}>▼ Module (Root Scope)</span>
+            <span style={{ color: '#555555' }}>[Lines 1 ✦ {nodes[nodes.length - 1]?.end_point?.[0] || 25}]</span>
+          </div>
 
-      {/* Node Pills Box with Generous Padding */}
-      <div style={{
-        maxHeight: '140px',
-        overflowY: 'auto',
-        display: 'flex',
-        flexWrap: 'wrap',
-        gap: '6px',
-        backgroundColor: '#050505',
-        padding: '12px 14px',
-        borderRadius: '8px',
-        border: '1px solid var(--border-subtle)'
-      }}>
-        {filteredNodes.slice(0, 45).map(node => {
-          const isTarget = node.is_faulty_target || (isolatedNode && node.node_id === isolatedNode.node_id);
-          const isCurrent = activeNode && node.node_id === activeNode.node_id;
-
-          return (
-            <span
-              key={node.node_id}
-              onClick={() => setSelectedNode(node)}
-              style={{
-                fontSize: '0.72rem',
-                fontFamily: 'var(--font-mono)',
-                padding: '4px 8px',
-                borderRadius: '5px',
-                backgroundColor: isTarget
-                  ? '#ffffff'
-                  : (isCurrent ? '#222222' : '#0a0a0a'),
-                border: isTarget
-                  ? '1px solid #ffffff'
-                  : (isCurrent ? '1px solid #666666' : '1px solid #1a1a1a'),
-                color: isTarget ? '#000000' : (isCurrent ? '#ffffff' : '#888888'),
-                cursor: 'pointer',
-                fontWeight: isTarget ? 700 : 500,
-                transition: 'all 0.15s ease'
-              }}
-            >
-              {isTarget ? '🎯 ' : ''}{node.node_type} (L{node.start_point[0]})
+          {/* Enclosing Scope */}
+          <div style={{ paddingLeft: '16px', display: 'flex', alignItems: 'center', gap: '8px', color: '#10b981' }}>
+            <span style={{ color: '#444444' }}>├──</span>
+            <span style={{ fontWeight: 600 }}>{isolatedNode?.enclosing_scope || 'Enclosing Block'}</span>
+            <span style={{ color: '#10b981', fontSize: '10px', background: 'rgba(16, 185, 129, 0.1)', padding: '1px 6px', borderRadius: '3px' }}>
+              Protected Outer Scope (0 Mutations)
             </span>
-          );
-        })}
-      </div>
+          </div>
+
+          {/* Target Faulty Node */}
+          {isolatedNode && (
+            <div style={{
+              marginLeft: '32px',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '8px',
+              color: '#f59e0b',
+              background: 'rgba(245, 158, 11, 0.08)',
+              padding: '6px 10px',
+              borderRadius: '6px',
+              border: '1px solid rgba(245, 158, 11, 0.3)',
+              flexWrap: 'wrap'
+            }}>
+              <span style={{ color: '#f59e0b' }}>└── 🎯 Isolated Target Node:</span>
+              <strong style={{ color: '#ffffff' }}>{isolatedNode.node_type}</strong>
+              <span style={{ color: '#f59e0b', fontSize: '11px' }}>
+                (Lines {isolatedNode.start_point[0]}:{isolatedNode.start_point[1]} ✦ {isolatedNode.end_point[0]}:{isolatedNode.end_point[1]})
+              </span>
+              <span style={{ color: '#ef4444', fontSize: '10px', background: 'rgba(239, 68, 68, 0.15)', padding: '2px 6px', borderRadius: '3px', fontWeight: 600 }}>
+                Invariant Breach Coordinate
+              </span>
+            </div>
+          )}
+
+          {/* Sibling Nodes in Enclosing Scope */}
+          <div style={{ paddingLeft: '32px', display: 'flex', flexDirection: 'column', gap: '4px', marginTop: '4px' }}>
+            {nodes.slice(0, 10).map((node, i) => (
+              <div
+                key={node.node_id}
+                onClick={() => setSelectedNode(node)}
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '6px',
+                  color: (isolatedNode && node.node_id === isolatedNode.node_id) ? '#f59e0b' : '#a1a1a1',
+                  cursor: 'pointer',
+                  fontSize: '11px',
+                  padding: '3px 8px',
+                  borderRadius: '4px',
+                  background: activeNode?.node_id === node.node_id ? '#171717' : 'transparent'
+                }}
+              >
+                <span style={{ color: '#444444' }}>{i === 9 ? '└──' : '├──'}</span>
+                <span>{node.node_type}</span>
+                <span style={{ color: '#666666' }}>[Lines {node.start_point[0]} ✦ {node.end_point[0]}]</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      ) : (
+        <>
+          {/* Filter Tabs (Properly Padded) */}
+          <div style={{ display: 'flex', gap: '8px', overflowX: 'auto', padding: '2px 0 4px 0' }}>
+            {nodeTypes.map(type => (
+              <button
+                key={type}
+                onClick={() => setFilterType(type)}
+                style={{
+                  backgroundColor: filterType === type ? '#ffffff' : '#111111',
+                  border: filterType === type ? '1px solid #ffffff' : '1px solid var(--border-subtle)',
+                  color: filterType === type ? '#000000' : 'var(--text-secondary)',
+                  padding: '6px 14px',
+                  borderRadius: '6px',
+                  fontSize: '0.74rem',
+                  fontWeight: 600,
+                  cursor: 'pointer',
+                  whiteSpace: 'nowrap',
+                  transition: 'all 0.15s ease'
+                }}
+              >
+                {type}
+              </button>
+            ))}
+          </div>
+
+          {/* Node Pills Box with Generous Padding */}
+          <div style={{
+            maxHeight: '140px',
+            overflowY: 'auto',
+            display: 'flex',
+            flexWrap: 'wrap',
+            gap: '6px',
+            backgroundColor: '#050505',
+            padding: '12px 14px',
+            borderRadius: '8px',
+            border: '1px solid var(--border-subtle)'
+          }}>
+            {filteredNodes.slice(0, 45).map(node => {
+              const isTarget = node.is_faulty_target || (isolatedNode && node.node_id === isolatedNode.node_id);
+              const isCurrent = activeNode && node.node_id === activeNode.node_id;
+
+              return (
+                <span
+                  key={node.node_id}
+                  onClick={() => setSelectedNode(node)}
+                  style={{
+                    fontSize: '0.72rem',
+                    fontFamily: 'var(--font-mono)',
+                    padding: '4px 8px',
+                    borderRadius: '5px',
+                    backgroundColor: isTarget
+                      ? '#ffffff'
+                      : (isCurrent ? '#222222' : '#0a0a0a'),
+                    border: isTarget
+                      ? '1px solid #ffffff'
+                      : (isCurrent ? '1px solid #666666' : '1px solid #1a1a1a'),
+                    color: isTarget ? '#000000' : (isCurrent ? '#ffffff' : '#888888'),
+                    cursor: 'pointer',
+                    fontWeight: isTarget ? 700 : 500,
+                    transition: 'all 0.15s ease'
+                  }}
+                >
+                  {isTarget ? '🎯 ' : ''}{node.node_type} (L{node.start_point[0]})
+                </span>
+              );
+            })}
+          </div>
+        </>
+      )}
 
       {/* Node Detail Snippet */}
       {activeNode && (

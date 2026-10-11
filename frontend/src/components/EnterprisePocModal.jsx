@@ -3,8 +3,6 @@ import { X, CheckSquare, Square, ShieldCheck, Copy, Check, ExternalLink, ArrowRi
 import ShinyText from './ui/ShinyText';
 
 export default function EnterprisePocModal({ isOpen, onClose, onLaunchScenario }) {
-  if (!isOpen) return null;
-
   const [completedSteps, setCompletedSteps] = useState({
     egress: true,
     custom: false,
@@ -86,6 +84,8 @@ ${checklistItems.map(item => {
         .catch(err => console.warn('Clipboard write denied:', err));
     }
   };
+
+  if (!isOpen) return null;
 
   return (
     <div style={{

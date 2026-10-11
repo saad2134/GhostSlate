@@ -11,6 +11,7 @@ import KeyboardShortcutsModal from './components/KeyboardShortcutsModal';
 import EnterprisePocModal from './components/EnterprisePocModal';
 import TeamWorkspaceModal from './components/TeamWorkspaceModal';
 import TelemetryDashboardModal from './components/TelemetryDashboardModal';
+import AuditLedgerModal from './components/AuditLedgerModal';
 import BackgroundGrid from './components/ui/BackgroundGrid';
 import ErrorBoundary from './components/ErrorBoundary';
 
@@ -34,6 +35,7 @@ export default function App() {
   const [isPocModalOpen, setIsPocModalOpen] = useState(false);
   const [isTeamModalOpen, setIsTeamModalOpen] = useState(false);
   const [isTelemetryModalOpen, setIsTelemetryModalOpen] = useState(false);
+  const [isLedgerModalOpen, setIsLedgerModalOpen] = useState(false);
   const [activeView, setActiveView] = useState('studio'); // 'studio', 'overview', 'architecture', 'compliance', 'pricing'
 
   // Custom Evaluator Sandbox code & test assertion state
@@ -149,13 +151,17 @@ def test_data_buffer_boundary():
         isExportModalOpen ||
         isShortcutsModalOpen ||
         isPocModalOpen ||
-        isTeamModalOpen
+        isTeamModalOpen ||
+        isTelemetryModalOpen ||
+        isLedgerModalOpen
       ) {
         if (e.key === 'Escape') {
           setIsExportModalOpen(false);
           setIsShortcutsModalOpen(false);
           setIsPocModalOpen(false);
           setIsTeamModalOpen(false);
+          setIsTelemetryModalOpen(false);
+          setIsLedgerModalOpen(false);
         }
         return;
       }
@@ -182,12 +188,14 @@ def test_data_buffer_boundary():
         setIsShortcutsModalOpen(false);
         setIsPocModalOpen(false);
         setIsTeamModalOpen(false);
+        setIsTelemetryModalOpen(false);
+        setIsLedgerModalOpen(false);
       }
     };
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [scenarios, selectedScenarioId, triggerHeal, activeView, isExportModalOpen, isShortcutsModalOpen, isPocModalOpen, isTeamModalOpen]);
+  }, [scenarios, selectedScenarioId, triggerHeal, activeView, isExportModalOpen, isShortcutsModalOpen, isPocModalOpen, isTeamModalOpen, isTelemetryModalOpen, isLedgerModalOpen]);
 
   const [showQuickstart, setShowQuickstart] = useState(true);
 
@@ -214,6 +222,7 @@ def test_data_buffer_boundary():
           onOpenPocModal={() => setIsPocModalOpen(true)}
           onOpenTeamModal={() => setIsTeamModalOpen(true)}
           onOpenTelemetryModal={() => setIsTelemetryModalOpen(true)}
+          onOpenLedgerModal={() => setIsLedgerModalOpen(true)}
           session={session}
           activeView={activeView}
           setActiveView={setActiveView}
@@ -400,6 +409,12 @@ def test_data_buffer_boundary():
         <TelemetryDashboardModal
           isOpen={isTelemetryModalOpen}
           onClose={() => setIsTelemetryModalOpen(false)}
+        />
+
+        {/* Cryptographic Audit Ledger Modal */}
+        <AuditLedgerModal
+          isOpen={isLedgerModalOpen}
+          onClose={() => setIsLedgerModalOpen(false)}
         />
       </div>
     </BackgroundGrid>

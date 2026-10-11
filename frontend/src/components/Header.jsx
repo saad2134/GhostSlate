@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Cpu, GitPullRequest, Keyboard, ChevronDown, Check, Code, Globe, Shield, BookOpen, DollarSign, ClipboardCheck, Users, Activity } from 'lucide-react';
+import { Cpu, GitPullRequest, Keyboard, ChevronDown, Check, Code, Globe, Shield, BookOpen, DollarSign, ClipboardCheck, Users, Activity, ShieldCheck } from 'lucide-react';
 import appIcon from '../assets/app-icon.png';
 import ShinyText from './ui/ShinyText';
 import DecryptedText from './ui/DecryptedText';
@@ -13,6 +13,7 @@ export default function Header({
   onOpenPocModal,
   onOpenTeamModal,
   onOpenTelemetryModal,
+  onOpenLedgerModal,
   session,
   activeView = 'studio',
   setActiveView
@@ -303,6 +304,18 @@ export default function Header({
           >
             <Activity size={13} color="#38bdf8" />
             <span className="hide-on-mobile-xs">Telemetry</span>
+          </button>
+
+          {/* Cryptographic Audit Ledger Button */}
+          <button
+            onClick={onOpenLedgerModal}
+            className="vercel-btn-secondary"
+            title="Cryptographic Audit Ledger (/api/ledger)"
+            aria-label="Cryptographic Audit Ledger"
+            style={{ padding: '7px 12px', fontSize: '0.78rem' }}
+          >
+            <ShieldCheck size={13} color="#10b981" />
+            <span className="hide-on-mobile-xs">Audit Ledger</span>
           </button>
 
           {/* Aceternity Shimmer Export Button */}

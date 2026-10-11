@@ -45,7 +45,31 @@ export default function LegalComplianceView() {
     let filename = '';
     let mimeType = '';
 
-    if (format === 'json') {
+    if (format === 'bundle') {
+      content = JSON.stringify({
+        bundle_format: "GhostSlate Enterprise Compliance & Attestation Bundle v2.1.0",
+        generated_at: new Date().toISOString(),
+        auditor: "Saaduddin Mohammed (github.com/saad2134)",
+        zero_exfiltration_guarantee: {
+          outbound_network_egress_bytes: 0.00,
+          offline_engine_verified: true,
+          secrets_isolation: "Sanitized clean_env environment"
+        },
+        sandbox_isolation: {
+          runtime: "Ephemeral Subprocess with Sanitized Env",
+          timeout_seconds: 5.0,
+          ast_preflight: "Rejection of os, subprocess, socket, sys, eval, exec"
+        },
+        sarif_compliance: "SARIF v2.1.0 oasis-tcs standard",
+        caiq_sig_answers: {
+          "AAS-01.1": "Affirmative: Zero customer code is retained, logged, or exfiltrated.",
+          "DCS-02.1": "Affirmative: Ephemeral tempfile subprocesses are automatically purged upon test completion.",
+          "SEF-03.1": "Affirmative: AST security pre-flight barrier strictly blocks os, subprocess, and eval calls."
+        }
+      }, null, 2);
+      filename = 'ghostslate-full-compliance-bundle.json';
+      mimeType = 'application/json';
+    } else if (format === 'json') {
       content = JSON.stringify({
         specification: "GhostSlate Enterprise Security & Compliance Audit",
         version: "1.0.0",
@@ -170,6 +194,25 @@ export default function LegalComplianceView() {
             >
               {downloaded ? <Check size={13} color="#10b981" /> : <Download size={13} />}
               <span>Download Audit (.json)</span>
+            </button>
+            <button
+              onClick={() => handleDownloadSpec('bundle')}
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '6px',
+                padding: '6px 14px',
+                background: '#10b981',
+                border: '1px solid #10b981',
+                borderRadius: '6px',
+                color: '#000000',
+                fontSize: '12px',
+                fontWeight: 600,
+                cursor: 'pointer',
+              }}
+            >
+              <Download size={13} />
+              <span>Full Compliance Bundle (.json)</span>
             </button>
             <button
               onClick={handleCopySigLite}

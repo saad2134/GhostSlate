@@ -189,7 +189,12 @@ class ASTMutationFuzzerAdapter(ChaosFuzzerPort):
 
         for cand in candidates:
             try:
-                success, output, code = sandbox_runner.execute_test(cand.mutated_code, test_code)
+                if hasattr(sandbox_runner, "run_tests"):
+                    success, output, code = sandbox_runner.run_tests(cand.mutated_code, test_code)
+                elif hasattr(sandbox_runner, "execute_test"):
+                    success, output, code = sandbox_runner.execute_test(cand.mutated_code, test_code)
+                else:
+                    raise AttributeError("Sandbox runner does not implement run_tests or execute_test")
                 # If test FAILED (success == False), the mutation was caught by the test suite!
                 if not success:
                     cand.caught = True

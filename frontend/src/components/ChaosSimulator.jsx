@@ -1,5 +1,5 @@
-import React from 'react';
-import { Play, CheckCircle2, AlertTriangle, ShieldCheck, Cpu, Code2, Zap, FileCode, RotateCcw } from 'lucide-react';
+import React, { useState } from 'react';
+import { Play, CheckCircle2, AlertTriangle, ShieldCheck, Cpu, Code2, Zap, FileCode, RotateCcw, Flame, Bug, X } from 'lucide-react';
 import SpotlightCard from './ui/SpotlightCard';
 import ShimmerButton from './ui/ShimmerButton';
 import ShinyText from './ui/ShinyText';
@@ -16,6 +16,40 @@ export default function ChaosSimulator({
   customTest,
   setCustomTest
 }) {
+  const [fuzzLoading, setFuzzLoading] = useState(false);
+  const [fuzzResult, setFuzzResult] = useState(null);
+  const [showFuzzCard, setShowFuzzCard] = useState(false);
+
+  const effectiveApiBase = (typeof window !== 'undefined' && window.location.port === '5180')
+    ? 'http://127.0.0.1:8000'
+    : '';
+
+  const handleRunFuzz = async () => {
+    setFuzzLoading(true);
+    setShowFuzzCard(true);
+    try {
+      const payload = {
+        scenario_id: selectedScenarioId === 'custom' ? undefined : selectedScenarioId,
+        custom_code: selectedScenarioId === 'custom' ? customCode : undefined,
+        custom_test: selectedScenarioId === 'custom' ? customTest : undefined,
+        max_mutants: 5
+      };
+      const res = await fetch(`${effectiveApiBase}/api/chaos/fuzz`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setFuzzResult(data);
+      }
+    } catch (err) {
+      console.warn('Fuzzing request fallback:', err);
+    } finally {
+      setFuzzLoading(false);
+    }
+  };
+
   const pipelineStages = [
     { key: 'recording_trace', label: '1. Invariant Breach', icon: AlertTriangle, accentColor: '#ef4444' },
     { key: 'ast_isolation', label: '2. AST Node Isolation', icon: Code2, accentColor: '#f59e0b' },
@@ -51,6 +85,19 @@ export default function ChaosSimulator({
 
         {/* Action Button & FAIE Headless Crawler Reset Cycle CTA */}
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+          <button
+            id="btn-run-fuzz"
+            aria-label="Run AST Mutation Fuzzer on active scenario"
+            title="Execute AST Mutation Campaign against active code"
+            onClick={handleRunFuzz}
+            disabled={fuzzLoading || loading}
+            className="vercel-btn-secondary"
+            style={{ padding: '8px 12px', fontSize: '0.78rem', color: '#f59e0b', borderColor: 'rgba(245, 158, 11, 0.4)' }}
+          >
+            <Flame size={13} color="#f59e0b" />
+            <span>{fuzzLoading ? 'Fuzzing...' : 'Run Mutation Fuzzer'}</span>
+          </button>
+
           <button
             id="btn-reset-scenario"
             aria-label="Reset simulation cycle to initial state"
@@ -91,6 +138,99 @@ export default function ChaosSimulator({
           </ShimmerButton>
         </div>
       </div>
+
+      {/* Live AST Mutation Fuzzer Telemetry Card */}
+      {showFuzzCard && (
+        <div style={{
+          background: '#050505',
+          border: '1px solid #222222',
+          borderRadius: '8px',
+          padding: '14px 16px',
+          marginBottom: '16px',
+          display: 'flex',
+          flexDirection: 'column',
+          gap: '10px'
+        }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '8px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <Flame size={16} color="#f59e0b" />
+              <span style={{ fontSize: '13px', fontWeight: 600, color: '#ffffff' }}>
+                Adversarial AST Mutation Fuzzing Campaign
+              </span>
+              {fuzzResult && (
+                <span style={{
+                  fontSize: '11px',
+                  fontWeight: 600,
+                  color: fuzzResult.mutation_score >= 0.8 ? '#10b981' : '#f59e0b',
+                  background: fuzzResult.mutation_score >= 0.8 ? 'rgba(16, 185, 129, 0.1)' : 'rgba(245, 158, 11, 0.1)',
+                  padding: '2px 8px',
+                  borderRadius: '4px',
+                  border: `1px solid ${fuzzResult.mutation_score >= 0.8 ? 'rgba(16, 185, 129, 0.25)' : 'rgba(245, 158, 11, 0.25)'}`
+                }}>
+                  Mutation Score: {Math.round((fuzzResult.mutation_score || 0) * 100)}% ✦ {fuzzResult.caught_mutants}/{fuzzResult.total_mutants} Caught
+                </span>
+              )}
+            </div>
+
+            <button
+              onClick={() => setShowFuzzCard(false)}
+              aria-label="Close mutation fuzzer panel"
+              style={{ background: 'transparent', border: 'none', color: '#666666', cursor: 'pointer', padding: '4px' }}
+            >
+              <X size={14} />
+            </button>
+          </div>
+
+          {fuzzLoading ? (
+            <div style={{ fontSize: '12px', color: '#888888', display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <div style={{ width: '12px', height: '12px', border: '2px solid #f59e0b', borderTopColor: 'transparent', borderRadius: '50%', animation: 'spin 0.7s linear infinite' }} />
+              <span>Synthesizing adversarial AST mutants and evaluating test suite coverage in sandbox...</span>
+            </div>
+          ) : fuzzResult ? (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+              <div style={{ display: 'flex', gap: '16px', fontSize: '11px', color: '#888888', flexWrap: 'wrap' }}>
+                <span>Campaign: <strong style={{ color: '#ffffff' }}>{fuzzResult.campaign_id}</strong></span>
+                <span>Caught: <strong style={{ color: '#10b981' }}>{fuzzResult.caught_mutants}</strong></span>
+                <span>Survived: <strong style={{ color: fuzzResult.survived_mutants > 0 ? '#ef4444' : '#888888' }}>{fuzzResult.survived_mutants}</strong></span>
+                <span>Execution Duration: <strong style={{ color: '#38bdf8' }}>{fuzzResult.duration_ms}ms</strong></span>
+              </div>
+
+              {/* Mutants List */}
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', maxHeight: '160px', overflowY: 'auto' }}>
+                {fuzzResult.candidates?.map((c) => (
+                  <div
+                    key={c.candidate_id}
+                    style={{
+                      background: '#0a0a0a',
+                      border: '1px solid #1a1a1a',
+                      borderRadius: '4px',
+                      padding: '6px 10px',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'space-between',
+                      fontSize: '11px',
+                      fontFamily: 'monospace'
+                    }}
+                  >
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                      <span style={{ color: '#f59e0b' }}>Line {c.target_line}:</span>
+                      <span style={{ color: '#ffffff' }}>{c.mutation_type}</span>
+                      <span style={{ color: '#666666' }}>({c.mutated_snippet})</span>
+                    </div>
+                    <span style={{ color: c.caught ? '#10b981' : '#ef4444', fontWeight: 600 }}>
+                      {c.caught ? 'CAUGHT ✦ REJECTED' : 'SURVIVED'}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          ) : (
+            <p style={{ fontSize: '12px', color: '#888888', margin: 0 }}>
+              Click "Run Mutation Fuzzer" above to generate AST mutants and verify sandbox catch rates.
+            </p>
+          )}
+        </div>
+      )}
 
       {/* Aceternity Spotlight Scenario Grid with Generous Padding */}
       <div className="responsive-scenario-grid">

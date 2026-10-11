@@ -3,8 +3,6 @@ import { X, Activity, Radio, Shield, HardDrive, Copy, Check, RefreshCw, BarChart
 import ShinyText from './ui/ShinyText';
 
 export default function TelemetryDashboardModal({ isOpen, onClose }) {
-  if (!isOpen) return null;
-
   const [copied, setCopied] = useState(false);
   const [metricsText, setMetricsText] = useState('');
   const [loading, setLoading] = useState(true);
@@ -14,6 +12,7 @@ export default function TelemetryDashboardModal({ isOpen, onClose }) {
     : '';
 
   useEffect(() => {
+    if (!isOpen) return;
     let isMounted = true;
     const fetchMetrics = async () => {
       try {
@@ -39,7 +38,16 @@ export default function TelemetryDashboardModal({ isOpen, onClose }) {
       isMounted = false;
       clearInterval(interval);
     };
-  }, [effectiveApiBase]);
+  }, [isOpen, effectiveApiBase]);
+
+  useEffect(() => {
+    if (!isOpen) return;
+    const handleKeyDown = (e) => {
+      if (e.key === 'Escape') onClose?.();
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [isOpen, onClose]);
 
   const handleCopy = () => {
     if (navigator?.clipboard?.writeText) {
@@ -51,6 +59,8 @@ export default function TelemetryDashboardModal({ isOpen, onClose }) {
         .catch(err => console.warn('Clipboard write denied:', err));
     }
   };
+
+  if (!isOpen) return null;
 
   return (
     <div style={{

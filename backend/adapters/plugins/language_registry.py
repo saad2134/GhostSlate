@@ -94,14 +94,20 @@ class DynamicLanguageRegistryAdapter(LanguagePluginPort):
                 target_node_type = "Statement"
                 start_line = target_line
                 end_line = target_line
+                min_scope_span = float("inf")
 
                 for node in ast.walk(tree):
                     if hasattr(node, "lineno") and hasattr(node, "end_lineno"):
                         if node.lineno <= target_line <= node.end_lineno:
+                            span = node.end_lineno - node.lineno
                             if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef)):
-                                enclosing_scope = f"def {node.name}"
+                                if span <= min_scope_span:
+                                    enclosing_scope = f"def {node.name}"
+                                    min_scope_span = span
                             elif isinstance(node, ast.ClassDef):
-                                enclosing_scope = f"class {node.name}"
+                                if span < min_scope_span:
+                                    enclosing_scope = f"class {node.name}"
+                                    min_scope_span = span
                             elif isinstance(node, (ast.If, ast.While, ast.For)):
                                 target_node_type = type(node).__name__
                                 start_line = node.lineno
@@ -119,7 +125,7 @@ class DynamicLanguageRegistryAdapter(LanguagePluginPort):
                     source_slice=source_slice,
                     metadata={"parser": "python_ast"}
                 )
-            except SyntaxError:
+            except (SyntaxError, ValueError, Exception):
                 pass
 
         # Fallback scoping for other registered languages or syntax errors

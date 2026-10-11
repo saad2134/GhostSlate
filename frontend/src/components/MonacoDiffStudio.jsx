@@ -9,6 +9,7 @@ export default function MonacoDiffStudio({ patch, originalCode, language = 'pyth
   const [inlineView, setInlineView] = useState(isMobile);
   const [copied, setCopied] = useState(false);
   const [showLlmComparison, setShowLlmComparison] = useState(false);
+  const [currentLang, setCurrentLang] = useState(language || 'python');
 
   // Generate simulated blind LLM rewrite for visual comparison
   const getSimulatedLlmCode = () => {
@@ -119,6 +120,30 @@ export default function MonacoDiffStudio({ patch, originalCode, language = 'pyth
             <span>{inlineView ? 'Side-by-Side' : 'Inline Diff'}</span>
           </button>
 
+          {/* Polyglot Language Switcher */}
+          <select
+            value={currentLang}
+            onChange={(e) => setCurrentLang(e.target.value)}
+            aria-label="Select syntax highlighting language"
+            style={{
+              padding: '6px 10px',
+              fontSize: '0.76rem',
+              backgroundColor: '#050505',
+              border: '1px solid #333333',
+              borderRadius: '6px',
+              color: '#38bdf8',
+              cursor: 'pointer',
+              outline: 'none',
+              fontWeight: 600
+            }}
+          >
+            <option value="python">Python 3.10+</option>
+            <option value="c">ANSI C / C99</option>
+            <option value="typescript">TypeScript / JS</option>
+            <option value="rust">Rust 2021</option>
+            <option value="go">Go 1.22+</option>
+          </select>
+
           <button
             onClick={handleCopyDiff}
             className="vercel-btn-secondary"
@@ -201,7 +226,7 @@ export default function MonacoDiffStudio({ patch, originalCode, language = 'pyth
       }}>
         <DiffEditor
           height="100%"
-          language={language}
+          language={currentLang}
           original={originalCode || ''}
           modified={modifiedCode}
           theme="vs-dark"

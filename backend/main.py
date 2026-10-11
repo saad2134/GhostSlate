@@ -69,7 +69,7 @@ class ExportPRRequest(BaseModel):
     custom_test: Optional[str] = None
 
 class ChaosFuzzRequest(BaseModel):
-    scenario_id: Optional[str] = "boundary_slip"
+    scenario_id: Optional[str] = "off_by_one"
     custom_code: Optional[str] = Field(default=None, max_length=50000)
     custom_test: Optional[str] = Field(default=None, max_length=50000)
     max_mutants: Optional[int] = Field(default=5, ge=1, le=20)
@@ -288,17 +288,18 @@ async def run_chaos_fuzz(req: ChaosFuzzRequest, request: Request, response: Resp
     test = req.custom_test
 
     if not code or not test:
-        sc = get_scenario(req.scenario_id or "boundary_slip")
+        scenario_key = req.scenario_id or "off_by_one"
+        sc = get_scenario(scenario_key)
         if not sc:
-            raise HTTPException(status_code=404, detail=f"Scenario '{req.scenario_id}' not found")
-        code = code or sc.get("original_code", "")
-        test = test or sc.get("test_suite", "")
+            raise HTTPException(status_code=404, detail=f"Scenario '{scenario_key}' not found")
+        code = code or sc.source_code
+        test = test or sc.test_code
 
     result = await asyncio.to_thread(
         fuzzer.evaluate_campaign,
         source_code=code,
         test_code=test,
-        sandbox_runner=coordinator.sandbox,
+        sandbox_runner=coordinator.sandbox_runner,
         max_mutants=req.max_mutants or 5
     )
 
