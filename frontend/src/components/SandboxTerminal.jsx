@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import { Terminal, CheckCircle2, XCircle, Clock, Zap } from 'lucide-react';
-import BorderBeam from './ui/BorderBeam';
 import SpotlightCard from './ui/SpotlightCard';
 import ShinyText from './ui/ShinyText';
 import DecryptedText from './ui/DecryptedText';
@@ -31,12 +30,10 @@ export default function SandboxTerminal({ verification }) {
         flexDirection: 'column',
         gap: '12px',
         backgroundColor: '#0a0a0a',
-        borderColor: isVerified ? '#333333' : '#ef4444'
+        borderColor: isVerified ? 'rgba(16, 185, 129, 0.4)' : '#ef4444',
+        boxShadow: isVerified ? '0 0 24px rgba(16, 185, 129, 0.07)' : 'none'
       }}
     >
-      {isVerified && (
-        <BorderBeam size={220} duration={6} colorFrom="#10b981" colorTo="transparent" borderWidth={1.5} />
-      )}
       {/* Header and Proof Badges */}
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '8px' }}>
         <div>
