@@ -30,6 +30,8 @@ class DeterministicEngine(ModelProviderPort):
             return self._repair_null_pointer(original_code, violation, isolated_node, now)
         elif scenario_id == "financial_ledger":
             return self._repair_financial_ledger(original_code, violation, isolated_node, now)
+        elif scenario_id == "stream_interrupt":
+            return self._repair_stream_interrupt(original_code, violation, isolated_node, now)
         else:
             return self._repair_race_condition(original_code, violation, isolated_node, now)
 
@@ -262,6 +264,65 @@ class DeterministicEngine(ModelProviderPort):
                 avatar="🛡️",
                 timestamp=now,
                 message="CONSERVATION INVARIANT VERIFIED: Total supply preserved, negative balance prevented. Ready for sandbox test.",
+                status="approved",
+                confidence_score=1.00
+            )
+        ]
+        return patch, turns
+
+    def _repair_stream_interrupt(self, original_code, violation, isolated_node, now):
+        replacement = """        # PATCHED: Enforce causal watermark monotonicity and strict capacity boundary
+        if len(self.pending_tasks) < self.max_buffer_size and sequence_no > self.watermark_sequence:
+            self.pending_tasks.append(task_id)
+            self.watermark_sequence = sequence_no
+            self.processed_count += 1
+            return True
+        return False"""
+
+        patch = self.ast_engine.apply_surgical_patch(
+            source_code=original_code,
+            start_line=10,
+            end_line=16,
+            replacement_code=replacement,
+            explanation="Tightened dispatch guard to enforce causal sequence monotonicity `sequence_no > self.watermark_sequence` and strict buffer capacity. Rejects out-of-order interrupt execution.",
+            target_node_id=isolated_node.node_id if isolated_node else None,
+            target_node_type="IfStatement"
+        )
+
+        turns = [
+            AgentDebateTurn(
+                id=str(uuid.uuid4())[:8],
+                speaker="TriageAgent",
+                avatar="⚡",
+                timestamp=now,
+                message="Discovered out-of-order execution trace at Line 10: `dispatch_task` admits regressive sequence numbers following high-priority interrupts without checking `sequence_no > self.watermark_sequence`.",
+                status="proposing",
+                confidence_score=0.97
+            ),
+            AgentDebateTurn(
+                id=str(uuid.uuid4())[:8],
+                speaker="AdversarialCritic",
+                avatar="🛡️",
+                timestamp=now,
+                message="AUDIT WARNING: What if an interrupt delivers a task exactly at capacity? Will `<` or `<=` prevent buffer overflow?",
+                status="challenging",
+                confidence_score=0.91
+            ),
+            AgentDebateTurn(
+                id=str(uuid.uuid4())[:8],
+                speaker="TriageAgent",
+                avatar="⚡",
+                timestamp=now,
+                message="Confirmed. Mutating AST node to strictly enforce `len(self.pending_tasks) < self.max_buffer_size` along with the monotonic watermark barrier.",
+                status="proposing",
+                confidence_score=0.99
+            ),
+            AgentDebateTurn(
+                id=str(uuid.uuid4())[:8],
+                speaker="AdversarialCritic",
+                avatar="🛡️",
+                timestamp=now,
+                message="CAUSAL WATERMARK PROOF VERIFIED: Monotonic order preserved, regressive interrupt tasks safely rejected. Passing to sandbox.",
                 status="approved",
                 confidence_score=1.00
             )

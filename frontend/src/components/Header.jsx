@@ -53,6 +53,9 @@ export default function Header({
               <span style={{ width: '6px', height: '6px', borderRadius: '50%', backgroundColor: '#10b981', display: 'inline-block', boxShadow: '0 0 8px rgba(16, 185, 129, 0.4)' }}></span>
               <DecryptedText text="Hexagonal Engine Active ✦ v1.0.0" speed={30} maxIterations={10} />
             </span>
+            <span className="vercel-pill" style={{ color: '#10b981', borderColor: 'rgba(16, 185, 129, 0.4)', backgroundColor: '#0a0a0a', fontSize: '0.68rem', padding: '2px 8px' }}>
+              ✦ Stream Sync: Resilient
+            </span>
           </div>
           <p style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', margin: 0 }}>
             Autonomous AST Program Repair ✦ Time-Travel Debugger & Self-Healing Sandbox

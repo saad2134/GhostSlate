@@ -99,6 +99,7 @@ export default function App() {
               <StateTimeTravelScrubber
                 snapshots={session?.snapshots}
                 violation={session?.invariant_violation}
+                streamSync={session?.stream_sync}
               />
 
               <ASTVisualizer

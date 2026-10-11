@@ -31,8 +31,8 @@ class AgentLoopCoordinator:
 
         session_id = f"sess_{uuid.uuid4().hex[:8]}"
 
-        # Step 1: Trace execution state and capture invariant violation
-        snapshots, violation = self.state_trap.capture_trace(scenario_id)
+        # Step 1: Trace execution state and capture invariant violation via ResilientInMemoryStream
+        snapshots, violation, stream_sync = self.state_trap.capture_trace(scenario_id)
 
         # Step 2: AST Scoping & Node Isolation
         line_to_target = violation.line_number if violation else 8
@@ -72,5 +72,6 @@ class AgentLoopCoordinator:
             debate_turns=debate_turns,
             patch=patch,
             verification=verification,
-            stage=final_stage
+            stage=final_stage,
+            stream_sync=stream_sync
         )

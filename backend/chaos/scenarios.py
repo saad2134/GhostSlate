@@ -158,6 +158,52 @@ def test_ledger_solvency_invariant():
     assert ledger.accounts["treasury"] == 800.0
 """,
         expected_invariant="accounts[sender] >= amount"
+    ),
+
+    "stream_interrupt": ChaosScenario(
+        id="stream_interrupt",
+        title="High-Priority Interrupt ✦ Out-of-Order Stream Sync",
+        category="Stream Asynchrony & Interrupt Recovery",
+        language="python",
+        description="A high-priority interrupt dislocates the runtime event stream during asynchronous queue processing, delivering out-of-order causal frames. The resilient stream synchronizes causal watermarks to enable surgical AST repair.",
+        bug_type="Out-of-Order Stream Asynchrony & Regressive Watermark",
+        source_code="""class ResilientTaskBuffer:
+    def __init__(self, max_buffer_size: int = 5):
+        self.max_buffer_size = max_buffer_size
+        self.pending_tasks = []
+        self.processed_count = 0
+        self.watermark_sequence = 0
+
+    def dispatch_task(self, task_id: str, sequence_no: int) -> bool:
+        # BUG: Accepts tasks out of sequence without enforcing causal watermark invariant
+        if len(self.pending_tasks) <= self.max_buffer_size:
+            self.pending_tasks.append(task_id)
+            self.watermark_sequence = sequence_no
+            self.processed_count += 1
+            return True
+        return False
+""",
+        test_code="""import pytest
+from target import ResilientTaskBuffer
+
+def test_task_buffer_watermark_invariants():
+    buffer = ResilientTaskBuffer(max_buffer_size=5)
+    
+    # In-order task dispatch succeeds
+    assert buffer.dispatch_task("task_001", sequence_no=1) is True
+    assert buffer.watermark_sequence == 1
+    assert buffer.processed_count == 1
+    
+    # Sequential task dispatch advances watermark
+    assert buffer.dispatch_task("task_002", sequence_no=2) is True
+    assert buffer.watermark_sequence == 2
+    
+    # Regressive sequence caused by high-priority interrupt must be strictly rejected
+    assert buffer.dispatch_task("task_003", sequence_no=1) is False, "Regressive sequence_no must not be dispatched out-of-order!"
+    assert buffer.watermark_sequence == 2
+    assert buffer.processed_count == 2
+""",
+        expected_invariant="sequence_no > watermark_sequence and len(pending_tasks) < max_buffer_size"
     )
 }
 

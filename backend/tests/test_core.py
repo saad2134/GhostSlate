@@ -11,6 +11,23 @@ def test_all_chaos_scenarios_configured():
     assert "off_by_one" in scenario_ids
     assert "null_pointer" in scenario_ids
     assert "financial_ledger" in scenario_ids
+    assert "stream_interrupt" in scenario_ids
+
+def test_stream_interrupt_self_heal_loop():
+    coordinator = AgentLoopCoordinator()
+    session = coordinator.run_healing_session("stream_interrupt")
+
+    assert session.stage == "healed"
+    assert session.verification.is_verified is True
+    assert session.verification.exit_code == 0
+    assert session.patch is not None
+    assert "sequence_no > self.watermark_sequence" in session.patch.replacement_code
+    assert session.invariant_violation.rule_name == "MonotonicWatermarkSequenceInvariant"
+    assert session.stream_sync is not None
+    assert session.stream_sync.timeline_integrity_verified is True
+    assert session.stream_sync.is_out_of_order_detected is True
+    assert session.stream_sync.events_reordered > 0
+    assert session.stream_sync.interrupt_count >= 1
 
 def test_race_condition_self_heal_loop():
     coordinator = AgentLoopCoordinator()

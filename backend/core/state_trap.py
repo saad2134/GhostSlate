@@ -1,25 +1,46 @@
 import sys
 import traceback
 from typing import Dict, List, Tuple, Any, Optional
-from backend.core.models import RuntimeStateSnapshot, InvariantViolation
+from backend.core.models import RuntimeStateSnapshot, InvariantViolation, StreamSyncMetadata
+from backend.core.stream_sync import ResilientInMemoryStream
 
 class StateTrap:
     """
     Lightweight state-delta trap that monitors variable mutations and stack frames.
     Captures exact moments when runtime invariants are compromised.
+    Integrates ResilientInMemoryStream for out-of-order and interrupt de-jittering.
     """
 
-    def capture_trace(self, scenario_id: str) -> Tuple[List[RuntimeStateSnapshot], Optional[InvariantViolation]]:
-        if scenario_id == "race_condition":
-            return self._trace_race_condition()
+    def capture_trace(
+        self,
+        scenario_id: str,
+        simulate_interrupt: bool = False
+    ) -> Tuple[List[RuntimeStateSnapshot], Optional[InvariantViolation], StreamSyncMetadata]:
+        stream = ResilientInMemoryStream()
+        is_scrambled = (scenario_id == "stream_interrupt") or simulate_interrupt
+
+        if scenario_id == "stream_interrupt":
+            raw_snapshots, violation = self._trace_stream_interrupt()
+        elif scenario_id == "race_condition":
+            raw_snapshots, violation = self._trace_race_condition()
         elif scenario_id == "off_by_one":
-            return self._trace_off_by_one()
+            raw_snapshots, violation = self._trace_off_by_one()
         elif scenario_id == "null_pointer":
-            return self._trace_null_pointer()
+            raw_snapshots, violation = self._trace_null_pointer()
         elif scenario_id == "financial_ledger":
-            return self._trace_financial_ledger()
+            raw_snapshots, violation = self._trace_financial_ledger()
         else:
-            return self._trace_generic()
+            raw_snapshots, violation = self._trace_generic()
+
+        # Ingest into resilient in-memory stream buffer
+        stream.ingest_batch(
+            raw_snapshots,
+            simulate_scramble=is_scrambled,
+            inject_interrupt_at=2 if is_scrambled else None
+        )
+
+        ordered_snapshots, sync_meta = stream.synchronize_and_drain()
+        return ordered_snapshots, violation, sync_meta
 
     def _trace_race_condition(self) -> Tuple[List[RuntimeStateSnapshot], Optional[InvariantViolation]]:
         snapshots = [
@@ -236,6 +257,74 @@ class StateTrap:
             actual_value="-300.0",
             line_number=10,
             function_name="transfer"
+        )
+        return snapshots, violation
+
+    def _trace_stream_interrupt(self) -> Tuple[List[RuntimeStateSnapshot], Optional[InvariantViolation]]:
+        snapshots = [
+            RuntimeStateSnapshot(
+                step=1,
+                line_number=2,
+                function_name="ResilientTaskBuffer.__init__",
+                variables={"max_buffer_size": 5, "pending_tasks": [], "processed_count": 0, "watermark_sequence": 0},
+                call_stack=["ResilientTaskBuffer.__init__"],
+                status="normal",
+                message="ResilientTaskBuffer initialized with watermark=0, capacity=5"
+            ),
+            RuntimeStateSnapshot(
+                step=2,
+                line_number=8,
+                function_name="ResilientTaskBuffer.dispatch_task",
+                variables={"task_id": "task_001", "sequence_no": 1, "watermark": 0},
+                call_stack=["test_task_buffer_watermark_invariants", "dispatch_task"],
+                status="normal",
+                message="Task task_001 dispatched with monotonic sequence_no=1. Watermark updated -> 1"
+            ),
+            RuntimeStateSnapshot(
+                step=3,
+                line_number=8,
+                function_name="ResilientTaskBuffer.dispatch_task",
+                variables={"task_id": "task_002", "sequence_no": 2, "watermark": 1},
+                call_stack=["test_task_buffer_watermark_invariants", "dispatch_task"],
+                status="normal",
+                message="HIGH-PRIORITY INTERRUPT: Kernel pre-emption IRQ_0x1F intercepted event stream buffer"
+            ),
+            RuntimeStateSnapshot(
+                step=4,
+                line_number=8,
+                function_name="ResilientTaskBuffer.dispatch_task",
+                variables={"interrupt_irq": "0x1F", "stream_status": "temporarily_dislocated"},
+                call_stack=["KernelInterruptHandler", "dispatch_task"],
+                status="normal",
+                message="Stream access re-established after interrupt context switch. Event queue flush resumed"
+            ),
+            RuntimeStateSnapshot(
+                step=5,
+                line_number=10,
+                function_name="ResilientTaskBuffer.dispatch_task",
+                variables={"task_id": "task_003", "sequence_no": 1, "watermark": 2, "condition": "len(pending_tasks) <= 5 (True)"},
+                call_stack=["test_task_buffer_watermark_invariants", "dispatch_task"],
+                status="normal",
+                message="Out-of-order task task_003 (seq=1 < watermark=2) passed flawed guard `len(pending_tasks) <= 5`"
+            ),
+            RuntimeStateSnapshot(
+                step=6,
+                line_number=10,
+                function_name="ResilientTaskBuffer.dispatch_task",
+                variables={"task_id": "task_003", "sequence_no": 1, "watermark_sequence": 1, "processed_count": 3},
+                call_stack=["test_task_buffer_watermark_invariants", "dispatch_task"],
+                status="invariant_violation",
+                message="CRITICAL INVARIANT BREACH: Regressive task accepted! Watermark regressed 2 -> 1, violating monotonic stream ordering."
+            )
+        ]
+        violation = InvariantViolation(
+            rule_name="MonotonicWatermarkSequenceInvariant",
+            description="Task buffer guard clause failed to verify sequence_no > watermark_sequence, allowing out-of-order interrupt execution.",
+            culprit_variable="sequence_no",
+            expected_condition="sequence_no > self.watermark_sequence",
+            actual_value="sequence_no=1 <= watermark=2",
+            line_number=10,
+            function_name="dispatch_task"
         )
         return snapshots, violation
 

@@ -10,6 +10,11 @@ class RuntimeStateSnapshot(BaseModel):
     status: str = "normal"  # "normal" | "invariant_violation" | "exception" | "healed"
     message: Optional[str] = None
     timestamp_ms: float = 0.0
+    sequence_id: Optional[int] = None
+    logical_clock: Optional[int] = None
+    is_out_of_order: bool = False
+    interrupt_context: Optional[str] = None
+    arrival_order: Optional[int] = None
 
 class ASTNodeInfo(BaseModel):
     node_id: str
@@ -74,6 +79,17 @@ class ChaosScenario(BaseModel):
     test_code: str
     expected_invariant: str
 
+class StreamSyncMetadata(BaseModel):
+    is_out_of_order_detected: bool = False
+    total_events: int = 0
+    events_reordered: int = 0
+    max_jitter_frames: int = 0
+    interrupt_count: int = 0
+    watermark_strategy: str = "Causal Watermark & Monotonic Sequence Barrier"
+    sync_latency_us: float = 0.0
+    timeline_integrity_verified: bool = True
+    sync_log: List[str] = Field(default_factory=list)
+
 class SelfHealingSession(BaseModel):
     session_id: str
     scenario_id: str
@@ -89,3 +105,4 @@ class SelfHealingSession(BaseModel):
     patch: Optional[PatchCandidate] = None
     verification: Optional[VerificationResult] = None
     stage: str = "idle"  # "idle" | "recording_trace" | "ast_isolation" | "agent_debate" | "sandbox_verifying" | "healed" | "failed"
+    stream_sync: Optional[StreamSyncMetadata] = None

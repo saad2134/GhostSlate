@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { History, Play, Pause, ChevronLeft, ChevronRight, AlertOctagon, Layers, Variable } from 'lucide-react';
+import { History, Play, Pause, ChevronLeft, ChevronRight, AlertOctagon, Layers, Variable, CheckCircle2 } from 'lucide-react';
 import SpotlightCard from './ui/SpotlightCard';
 import ShinyText from './ui/ShinyText';
 import DecryptedText from './ui/DecryptedText';
 
-export default function StateTimeTravelScrubber({ snapshots, violation }) {
+export default function StateTimeTravelScrubber({ snapshots, violation, streamSync }) {
   const [currentStepIndex, setCurrentStepIndex] = useState(0);
   const [isPlaying, setIsPlaying] = useState(false);
 
@@ -96,16 +96,71 @@ export default function StateTimeTravelScrubber({ snapshots, violation }) {
         </div>
       </div>
 
+      {/* Causal Stream Synchronization Audit Banner */}
+      {streamSync && (
+        <div style={{
+          backgroundColor: '#050505',
+          border: '1px solid #222222',
+          borderRadius: '8px',
+          padding: '9px 14px',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          flexWrap: 'wrap',
+          gap: '8px'
+        }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <span style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '5px',
+              backgroundColor: streamSync.is_out_of_order_detected ? 'rgba(16, 185, 129, 0.12)' : '#111111',
+              color: streamSync.is_out_of_order_detected ? '#10b981' : '#a1a1a1',
+              border: streamSync.is_out_of_order_detected ? '1px solid #10b981' : '1px solid #222222',
+              borderRadius: '6px',
+              padding: '3px 8px',
+              fontSize: '0.71rem',
+              fontWeight: 700
+            }}>
+              <CheckCircle2 size={12} color={streamSync.is_out_of_order_detected ? '#10b981' : '#a1a1a1'} />
+              {streamSync.is_out_of_order_detected ? 'Causal Stream Re-Synchronized' : 'Stream In-Order Verified'}
+            </span>
+            <span style={{ fontSize: '0.72rem', color: '#888888' }}>
+              {streamSync.watermark_strategy}
+            </span>
+          </div>
+
+          <div style={{ display: 'flex', alignItems: 'center', gap: '12px', fontSize: '0.72rem', fontFamily: 'var(--font-mono)' }}>
+            {streamSync.events_reordered > 0 && (
+              <span style={{ color: '#f59e0b' }}>
+                Reordered: <strong>{streamSync.events_reordered} frames</strong> (Jitter: {streamSync.max_jitter_frames})
+              </span>
+            )}
+            {streamSync.interrupt_count > 0 && (
+              <span style={{ color: '#ffffff' }}>
+                Interrupts: <strong>{streamSync.interrupt_count}</strong>
+              </span>
+            )}
+            <span style={{ color: '#10b981' }}>
+              Latency: <strong>{streamSync.sync_latency_us}µs</strong>
+            </span>
+          </div>
+        </div>
+      )}
+
       {/* Scrub-Bar Timeline Tracks (Properly Padded) */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: '8px', width: '100%', overflowX: 'auto', padding: '4px 2px', margin: '4px 0 6px 0' }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: '8px', width: '100%', overflowX: 'auto', padding: '4px 2px', margin: '2px 0 4px 0' }}>
         {snapshots.map((snap, idx) => {
           const isSelected = idx === currentStepIndex;
           const isFaulty = snap.status === 'invariant_violation' || snap.status === 'exception';
+          const isResequenced = snap.is_out_of_order;
+          const isInterrupt = Boolean(snap.interrupt_context);
 
           return (
             <button
-              key={snap.step}
+              key={snap.sequence_id || snap.step}
               onClick={() => { setCurrentStepIndex(idx); setIsPlaying(false); }}
+              title={isResequenced ? `Sequence #${snap.sequence_id || snap.step} arrived out-of-order ✦ Synchronized by Causal Barrier` : (isInterrupt ? snap.interrupt_context : undefined)}
               style={{
                 flex: 1,
                 minWidth: '58px',
@@ -117,11 +172,12 @@ export default function StateTimeTravelScrubber({ snapshots, violation }) {
                   : (isFaulty ? '#1c1012' : '#111111'),
                 border: isSelected
                   ? '1px solid #ffffff'
-                  : (isFaulty ? '1px dashed #ef4444' : '1px solid var(--border-subtle)'),
+                  : (isFaulty ? '1px dashed #ef4444' : (isResequenced ? '1px solid #10b981' : '1px solid var(--border-subtle)')),
                 color: isSelected ? '#000000' : (isFaulty ? '#ef4444' : '#a1a1a1'),
                 fontSize: '0.76rem',
                 fontWeight: isSelected ? 700 : 600,
                 display: 'flex',
+                position: 'relative',
                 flexDirection: 'column',
                 alignItems: 'center',
                 justifyContent: 'center',
@@ -129,7 +185,21 @@ export default function StateTimeTravelScrubber({ snapshots, violation }) {
                 transition: 'all 0.15s ease'
               }}
             >
-              <span style={{ fontSize: '0.78rem' }}>#{snap.step}</span>
+              {isResequenced && (
+                <span
+                  title="Resequenced by causal watermark"
+                  style={{
+                    position: 'absolute',
+                    top: '-3px',
+                    right: '-3px',
+                    width: '7px',
+                    height: '7px',
+                    borderRadius: '50%',
+                    backgroundColor: '#10b981'
+                  }}
+                />
+              )}
+              <span style={{ fontSize: '0.78rem' }}>#{snap.sequence_id || snap.step}</span>
               <span style={{ fontSize: '0.68rem', opacity: 0.85, marginTop: '2px' }}>L{snap.line_number}</span>
             </button>
           );
