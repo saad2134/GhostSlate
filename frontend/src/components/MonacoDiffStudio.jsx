@@ -33,11 +33,31 @@ export default function MonacoDiffStudio({ patch, originalCode, language = 'pyth
       {/* Header and Controls */}
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '12px' }}>
         <div>
-          <h3 style={{ fontSize: '0.94rem', fontWeight: 700, margin: 0, color: '#ffffff', letterSpacing: '-0.02em' }}>
-            <ShinyText text="Monaco AST-Scoped Diff Studio" speed={4} />
-          </h3>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+            <h3 style={{ fontSize: '0.94rem', fontWeight: 700, margin: 0, color: '#ffffff', letterSpacing: '-0.02em' }}>
+              <ShinyText text="Monaco AST-Scoped Diff Studio" speed={4} />
+            </h3>
+            <span
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '6px',
+                padding: '2px 8px',
+                borderRadius: '4px',
+                fontSize: '0.68rem',
+                fontWeight: 600,
+                color: '#10b981',
+                backgroundColor: 'rgba(16, 185, 129, 0.1)',
+                border: '1px solid rgba(16, 185, 129, 0.25)',
+              }}
+            >
+              <span>Blast Radius: {patch ? (patch.end_line - patch.start_line + 1) : 0} lines</span>
+              <span style={{ color: '#444444' }}>✦</span>
+              <span>100% Comments Preserved</span>
+            </span>
+          </div>
           <p style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', margin: '4px 0 0 0' }}>
-            Surgical AST mutation (Lines {patch?.start_line || 1} ✦ {patch?.end_line || 1}) ✦ 100% comments & scope preserved
+            Surgical AST mutation (Lines {patch?.start_line || 1} ✦ {patch?.end_line || 1}) ✦ Non-destructive syntax surgery
           </p>
         </div>
 
