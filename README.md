@@ -16,6 +16,7 @@
 [![Architecture](https://img.shields.io/badge/Architecture-Hexagonal%20Ports%20%26%20Adapters-1e293b?style=flat&logo=diagram-next&logoColor=white&labelColor=8b5cf6)](https://github.com/saad2134/GhostSlate)
 [![License: MIT](https://img.shields.io/badge/License-MIT-1e293b?style=flat&logo=opensourceinitiative&logoColor=white&labelColor=2ea44f)](LICENSE)
 [![Publisher](https://img.shields.io/badge/Publisher-Saad%20M.-1e293b?style=flat&logo=github&logoColor=white&labelColor=111827)](https://github.com/saad2134)
+[![Keep Render Warm](https://github.com/saad2134/GhostSlate/actions/workflows/keep_alive.yml/badge.svg)](https://github.com/saad2134/GhostSlate/actions/workflows/keep_alive.yml)
 
 </div>
 
