@@ -13,12 +13,13 @@ from backend.core.ports.sandbox import ExecutionSandboxPort
 from backend.core.ports.provider import ModelProviderPort
 from backend.core.ports.repository import SessionRepositoryPort
 from backend.core.ports.metrics import MetricsCollectorPort
+from backend.core.ports.tracing import TraceHookPort
 
 class AgentLoopCoordinator:
     """
     Coordinates the end-to-end self-healing lifecycle:
     Trace Capture -> AST Isolation -> Two-Tier Debate -> Sandbox Subprocess Verification
-    Supports Hexagonal dependency injection for sandboxes, providers, repositories, and metrics collectors.
+    Supports Hexagonal dependency injection for sandboxes, providers, repositories, metrics, and tracers.
     """
 
     def __init__(
@@ -28,7 +29,8 @@ class AgentLoopCoordinator:
         ast_engine: Optional[ASTEngine] = None,
         state_trap: Optional[StateTrap] = None,
         session_repo: Optional[SessionRepositoryPort] = None,
-        metrics_collector: Optional[MetricsCollectorPort] = None
+        metrics_collector: Optional[MetricsCollectorPort] = None,
+        tracer: Optional[TraceHookPort] = None
     ):
         self.state_trap = state_trap or StateTrap()
         self.ast_engine = ast_engine or ASTEngine()
@@ -36,6 +38,7 @@ class AgentLoopCoordinator:
         self.deterministic_provider = model_provider or DeterministicEngine()
         self.session_repo = session_repo or InMemorySessionRepository()
         self.metrics = metrics_collector or InMemoryMetricsCollector()
+        self.tracer = tracer
 
     def run_healing_session(
         self,
@@ -55,14 +58,18 @@ class AgentLoopCoordinator:
         session_id = f"sess_{uuid.uuid4().hex[:8]}"
 
         # Step 1: Trace execution state and capture invariant violation via ResilientInMemoryStream
+        span1 = self.tracer.start_span("ghostslate.trace_capture", {"scenario_id": scenario_id}) if self.tracer else None
         snapshots, violation, stream_sync = self.state_trap.capture_trace(
             scenario_id=scenario_id,
             custom_code=source_code if scenario_id == "custom" else None
         )
         if self.metrics:
             self.metrics.record_duration("stream_synchronization", stream_sync.sync_latency_us)
+        if self.tracer and span1:
+            self.tracer.end_span(span1)
 
         # Step 2: AST Scoping & Node Isolation with microsecond telemetry
+        span2 = self.tracer.start_span("ghostslate.ast_isolation", {"language": scenario.language}) if self.tracer else None
         ast_start = time.perf_counter()
         line_to_target = violation.line_number if violation else 8
         all_ast_nodes = self.ast_engine.get_nodes(source_code, scenario.language)
@@ -71,17 +78,23 @@ class AgentLoopCoordinator:
         if self.metrics:
             self.metrics.record_duration("ast_parsing", ast_duration_us)
             self.metrics.increment_counter("ast_nodes_scanned_total", len(all_ast_nodes))
+        if self.tracer and span2:
+            self.tracer.end_span(span2)
 
         # Step 3: Two-Tier Agent Loop (Triage + Critic)
         try:
+            span3 = self.tracer.start_span("ghostslate.agent_debate", {"scenario_id": scenario_id}) if self.tracer else None
             patch, debate_turns = self.deterministic_provider.synthesize_repair(
                 scenario_id=scenario_id,
                 original_code=source_code,
                 violation=violation,
                 isolated_node=isolated_node
             )
+            if self.tracer and span3:
+                self.tracer.end_span(span3)
 
             # Step 4: Deterministic Sandbox Runner (Subprocess Red -> Green verification)
+            span4 = self.tracer.start_span("ghostslate.sandbox_verification", {"patch_id": patch.patch_id}) if self.tracer else None
             sandbox_start = time.perf_counter()
             if hasattr(self.sandbox_runner, "run_verification"):
                 verification = self.sandbox_runner.run_verification(
@@ -111,15 +124,17 @@ class AgentLoopCoordinator:
             if self.metrics:
                 self.metrics.record_duration("sandbox_verification", sandbox_duration_ms * 1000.0)
                 self.metrics.increment_counter("sandbox_runs_total", 2)
+            if self.tracer and span4:
+                self.tracer.end_span(span4)
 
-        except ValueError as err:
+        except Exception as err:
             if self.metrics:
                 self.metrics.increment_counter("syntax_rejections_total", 1)
             rej_id = f"rejected_{uuid.uuid4().hex[:6]}"
             patch = PatchCandidate(
                 patch_id=rej_id,
                 target_node_id=isolated_node.node_id if isolated_node else None,
-                target_node_type="SyntaxError",
+                target_node_type="SyntaxError" if isinstance(err, ValueError) else "ExecutionError",
                 start_line=isolated_node.start_point[0] if isolated_node else 1,
                 end_line=isolated_node.end_point[0] if isolated_node else 1,
                 original_code=source_code,
@@ -165,8 +180,11 @@ class AgentLoopCoordinator:
         )
 
         # Cache session in session repository for instant zero-redundancy exports
+        span5 = self.tracer.start_span("ghostslate.session_storage", {"session_id": session_id}) if self.tracer else None
         if self.session_repo:
             self.session_repo.save(session)
+        if self.tracer and span5:
+            self.tracer.end_span(span5)
 
         total_session_ms = (time.perf_counter() - start_session_time) * 1000.0
         if self.metrics:

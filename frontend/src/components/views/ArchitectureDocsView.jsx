@@ -99,7 +99,21 @@ python -m backend.adapters.presentation.cli_adapter --scenario race_condition
 python -m backend.adapters.presentation.cli_adapter --scenario stream_interrupt --output-sarif artifacts/audit.sarif
 
 # 3. Query live microsecond telemetry benchmarks via REST API
-curl http://127.0.0.1:8000/api/benchmarks`
+curl http://127.0.0.1:8000/api/benchmarks`,
+
+    docker: `version: '3.8'
+services:
+  ghostslate-engine:
+    image: ghcr.io/saad2134/ghostslate:latest
+    container_name: ghostslate-airgapped
+    network_mode: none # Strict zero-exfiltration air-gapped isolation
+    environment:
+      - GHOSTSLATE_PROVIDER=deterministic
+      - GHOSTSLATE_SANDBOX_TIMEOUT=5.0
+      - GHOSTSLATE_TELEMETRY=disabled
+    ports:
+      - "127.0.0.1:8000:8000"
+    restart: unless-stopped`
   };
 
   return (
@@ -281,6 +295,21 @@ curl http://127.0.0.1:8000/api/benchmarks`
               }}
             >
               Terminal CLI
+            </button>
+            <button
+              onClick={() => setCiTab('docker')}
+              style={{
+                padding: '6px 12px',
+                borderRadius: '6px',
+                fontSize: '12px',
+                fontWeight: 600,
+                cursor: 'pointer',
+                background: ciTab === 'docker' ? '#1f1f1f' : 'transparent',
+                color: ciTab === 'docker' ? '#ffffff' : '#888888',
+                border: '1px solid ' + (ciTab === 'docker' ? '#333333' : 'transparent'),
+              }}
+            >
+              Air-Gapped Docker / VPC
             </button>
           </div>
 

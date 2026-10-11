@@ -69,7 +69,7 @@ def generate_sarif_report(session) -> dict:
     }
 
 def main():
-    parser = argparse.ArgumentParser(description="GhostSlate Headless CLI Adapter — Autonomous AST Program Repair")
+    parser = argparse.ArgumentParser(description="GhostSlate Headless CLI Adapter ✦ Autonomous AST Program Repair")
     parser.add_argument("--scenario", default="race_condition", help="Chaos scenario ID to repair")
     parser.add_argument("--output-sarif", help="Path to write SARIF v2.1.0 audit report")
     parser.add_argument("--output-json", help="Path to write full session JSON")

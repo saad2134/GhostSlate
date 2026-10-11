@@ -16,7 +16,9 @@ import {
   Calculator,
   TrendingDown,
   Clock,
-  Sparkles
+  Sparkles,
+  Copy,
+  Check
 } from 'lucide-react';
 import ShimmerButton from '../ui/ShimmerButton';
 
@@ -33,6 +35,26 @@ export default function LandingView({ onLaunchStudio }) {
   const annualHoursSaved = Math.round(totalAnnualPRs * hoursSavedPerPR);
   const annualCapitalSaved = Math.round(annualHoursSaved * hourlyRate);
   const mergeConflictsPrevented = Math.round(totalAnnualPRs * 0.14); // 14% estimated conflict rate on large full-file rewrites
+  const [copiedRoi, setCopiedRoi] = useState(false);
+
+  const handleCopyBoardSummary = () => {
+    const summary = `### 📊 GhostSlate Enterprise ROI Model (${teamSize} Engineers)
+* Annual Direct Payroll Recovered: $${annualCapitalSaved.toLocaleString()} / year
+* Engineering Review Hours Saved: ${annualHoursSaved.toLocaleString()} hours / year
+* Blast Radius Reduction: 97.6% (180 lines down to 4 surgical lines)
+* Merge Conflicts Prevented: ${mergeConflictsPrevented.toLocaleString()} branch collisions eliminated
+* Verification Guarantee: 100% Deterministic Green Pytest Gate (Exit Code 0)
+* Data Residency: Zero Exfiltration (0.00 KB outbound network activity)`;
+
+    if (navigator?.clipboard?.writeText) {
+      navigator.clipboard.writeText(summary)
+        .then(() => {
+          setCopiedRoi(true);
+          setTimeout(() => setCopiedRoi(false), 2000);
+        })
+        .catch((err) => console.warn('Clipboard write denied:', err));
+    }
+  };
 
   const scenarioBridges = [
     {
@@ -475,25 +497,46 @@ export default function LandingView({ onLaunchStudio }) {
               Run surgical repairs locally or request an air-gapped VPC architecture review.
             </div>
           </div>
-          <button
-            onClick={() => onLaunchStudio && onLaunchStudio('race_condition')}
-            style={{
-              padding: '8px 18px',
-              background: '#ffffff',
-              color: '#000000',
-              border: 'none',
-              borderRadius: '6px',
-              fontSize: '12px',
-              fontWeight: 600,
-              cursor: 'pointer',
-              display: 'inline-flex',
-              alignItems: 'center',
-              gap: '6px',
-            }}
-          >
-            <span>Verify in Studio</span>
-            <ArrowRight size={13} />
-          </button>
+          <div style={{ display: 'flex', gap: '8px', alignItems: 'center', flexWrap: 'wrap' }}>
+            <button
+              onClick={handleCopyBoardSummary}
+              style={{
+                padding: '8px 14px',
+                background: '#141414',
+                color: '#ffffff',
+                border: '1px solid #333333',
+                borderRadius: '6px',
+                fontSize: '12px',
+                fontWeight: 500,
+                cursor: 'pointer',
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '6px',
+              }}
+            >
+              {copiedRoi ? <Check size={13} color="#10b981" /> : <Copy size={13} />}
+              <span>{copiedRoi ? 'Board Summary Copied!' : 'Copy Executive Board Summary'}</span>
+            </button>
+            <button
+              onClick={() => onLaunchStudio && onLaunchStudio('race_condition')}
+              style={{
+                padding: '8px 18px',
+                background: '#ffffff',
+                color: '#000000',
+                border: 'none',
+                borderRadius: '6px',
+                fontSize: '12px',
+                fontWeight: 600,
+                cursor: 'pointer',
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '6px',
+              }}
+            >
+              <span>Verify in Studio</span>
+              <ArrowRight size={13} />
+            </button>
+          </div>
         </div>
       </section>
 

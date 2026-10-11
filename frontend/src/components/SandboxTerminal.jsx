@@ -125,8 +125,12 @@ export default function SandboxTerminal({ verification }) {
             transition: 'all 0.15s ease'
           }}
         >
-          <CheckCircle2 size={14} color={activeTab === 'post' ? '#000000' : '#ffffff'} />
-          <span>Post-Patch Run ✦ 100% Green Passed</span>
+          {isVerified ? (
+            <CheckCircle2 size={14} color={activeTab === 'post' ? '#000000' : '#10b981'} />
+          ) : (
+            <XCircle size={14} color={activeTab === 'post' ? '#000000' : '#ef4444'} />
+          )}
+          <span>{isVerified ? 'Post-Patch Run ✦ 100% Green Passed' : 'Post-Patch Run ✦ Verification Failed'}</span>
         </button>
       </div>
 

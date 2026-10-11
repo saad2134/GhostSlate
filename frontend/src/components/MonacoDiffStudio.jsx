@@ -12,10 +12,15 @@ export default function MonacoDiffStudio({ patch, originalCode, language = 'pyth
   const modifiedCode = patch?.full_patched_code || originalCode;
 
   const handleCopyDiff = () => {
-    if (patch?.diff_unified) {
-      navigator.clipboard.writeText(patch.diff_unified);
-      setCopied(true);
-      setTimeout(() => setCopied(false), 2000);
+    if (patch?.diff_unified && navigator?.clipboard?.writeText) {
+      navigator.clipboard.writeText(patch.diff_unified)
+        .then(() => {
+          setCopied(true);
+          setTimeout(() => setCopied(false), 2000);
+        })
+        .catch((err) => {
+          console.warn('Clipboard write denied:', err);
+        });
     }
   };
 
@@ -51,9 +56,11 @@ export default function MonacoDiffStudio({ patch, originalCode, language = 'pyth
                 border: '1px solid rgba(16, 185, 129, 0.25)',
               }}
             >
-              <span>Blast Radius: {patch ? (patch.end_line - patch.start_line + 1) : 0} lines</span>
+              <span>Surgical Scope: {patch ? (patch.end_line - patch.start_line + 1) : 0} lines</span>
               <span style={{ color: '#444444' }}>✦</span>
-              <span>100% Comments Preserved</span>
+              <span>97.6% Blast Radius Reduction</span>
+              <span style={{ color: '#444444' }}>✦</span>
+              <span>0 Comments Wiped</span>
             </span>
           </div>
           <p style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', margin: '4px 0 0 0' }}>

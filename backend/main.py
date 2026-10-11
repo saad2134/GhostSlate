@@ -354,10 +354,11 @@ async def websocket_stream(websocket: WebSocket):
             await asyncio.sleep(0.3)
 
             # Stream Complete Session
+            is_verified = bool(session.verification and session.verification.is_verified)
             await websocket.send_json({
                 "stage": "complete",
                 "progress": 100,
-                "message": "100% Deterministic Green Verification Passed!",
+                "message": "100% Deterministic Green Verification Passed!" if is_verified else "Verification failed: Invariant or pre-flight check breached.",
                 "session": session.model_dump()
             })
     except WebSocketDisconnect:
