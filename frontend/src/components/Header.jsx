@@ -92,7 +92,7 @@ export default function Header({
               fontFamily: 'var(--font-sans)'
             }}
           >
-            <option value="deterministic" style={{ background: '#0a0a0a', color: '#fff' }}>Deterministic Engine (Offline ✦ Zero-Flake)</option>
+            <option value="deterministic" style={{ background: '#0a0a0a', color: '#fff' }}>Deterministic Engine (Offline / Demo Heuristics ✦ Zero-Flake)</option>
             <option value="gemini" style={{ background: '#0a0a0a', color: '#fff' }}>Gemini 2.0 Flash (Adapter Connected)</option>
             <option value="openai" style={{ background: '#0a0a0a', color: '#fff' }}>OpenAI GPT-4o Mini (Adapter Ready)</option>
           </select>

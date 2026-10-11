@@ -30,21 +30,32 @@ class SandboxRunner:
 
         duration_ms = (time.time() - start_time) * 1000
 
-        # Parse test counts from output
-        passed_count = 1 if post_success else 0
-        failed_count = 0 if post_success else 1
+        # Strict Verification Gate: Must transition strictly from RED (pre failed) to GREEN (post passed)
+        if pre_success:
+            # If the test already passed before the patch, the patch did not heal anything
+            is_verified = False
+            proof = (
+                f"SANDBOX VERIFICATION REJECTED [Invalid Test State]\n"
+                f"Pre-Patch Exit: {pre_code} (UNEXPECTED PASS - Test already passed prior to patch)\n"
+                f"Post-Patch Exit: {post_code}\n"
+                f"Verification Invariant: Must strictly demonstrate Red (Fail) -> Green (Pass) transition."
+            )
+        else:
+            is_verified = post_success
+            proof = (
+                f"SANDBOX VERIFICATION PROOF [Deterministic Subprocess Isolation]\n"
+                f"Pre-Patch Exit: {pre_code} (FAILED - Invariant violation confirmed)\n"
+                f"Post-Patch Exit: {post_code} ({'PASSED - 100% Green verified' if post_success else 'FAILED'})\n"
+                f"Execution Duration: {duration_ms:.1f}ms\n"
+                f"Sandbox Isolation: Ephemeral Subprocess (Sanitized Environment & Resource Bounds)"
+            )
 
-        proof = (
-            f"SANDBOX VERIFICATION PROOF [Deterministic Subprocess Isolation]\n"
-            f"Pre-Patch Exit: {pre_code} (FAILED - Invariant violation reproduced)\n"
-            f"Post-Patch Exit: {post_code} ({'PASSED - 100% Green verified' if post_success else 'FAILED'})\n"
-            f"Execution Duration: {duration_ms:.1f}ms\n"
-            f"Sandbox Isolation: Pure Subprocess in Ephemeral Temp Directory"
-        )
+        passed_count = 1 if is_verified else 0
+        failed_count = 0 if is_verified else 1
 
         return VerificationResult(
             patch_id=patch_id,
-            is_verified=post_success,
+            is_verified=is_verified,
             pre_patch_test_output=pre_output,
             post_patch_test_output=post_output,
             exit_code=post_code,
@@ -55,6 +66,13 @@ class SandboxRunner:
         )
 
     def _execute_in_sandbox(self, target_code: str, test_code: str, timeout: float) -> Tuple[bool, str, int]:
+        # Security pre-screening: bar high-risk system commands in user code
+        dangerous_patterns = ["os.system(", "subprocess.Popen(", "shutil.rmtree(", "eval(__import__"]
+        combined = target_code + "\n" + test_code
+        for pattern in dangerous_patterns:
+            if pattern in combined:
+                return False, f"SECURITY SANDBOX BARRIER: Dangerous pattern '{pattern}' prohibited.", -99
+
         with tempfile.TemporaryDirectory(prefix="ghostslate_sandbox_") as tmpdir:
             target_path = os.path.join(tmpdir, "target.py")
             test_path = os.path.join(tmpdir, "test_target.py")
@@ -65,15 +83,26 @@ class SandboxRunner:
             with open(test_path, "w", encoding="utf-8") as f:
                 f.write(test_code)
 
+            # Sanitized execution environment: prevent leaking parent secrets
+            clean_env = {
+                "PYTHONPATH": tmpdir,
+                "PATH": os.environ.get("PATH", ""),
+                "SYSTEMROOT": os.environ.get("SYSTEMROOT", ""),
+                "TEMP": tmpdir,
+                "TMP": tmpdir,
+                "PYTHONDONTWRITEBYTECODE": "1"
+            }
+
             cmd = [sys.executable, "-m", "pytest", test_path, "-v", "--no-header", "--tb=short"]
 
             try:
                 result = subprocess.run(
                     cmd,
                     cwd=tmpdir,
+                    env=clean_env,
                     capture_output=True,
                     text=True,
-                    timeout=timeout
+                    timeout=min(timeout, 5.0)  # Capped at 5s execution limit
                 )
                 output = (result.stdout + "\n" + result.stderr).strip()
                 success = (result.returncode == 0)
