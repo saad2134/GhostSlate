@@ -15,7 +15,7 @@
 [![Sandbox Harness](https://img.shields.io/badge/Sandbox-Subprocess%20Pytest%20Isolated-1e293b?style=flat&logo=pytest&logoColor=white&labelColor=0ea5e9)](https://github.com/saad2134/GhostSlate)
 [![Architecture](https://img.shields.io/badge/Architecture-Hexagonal%20Ports%20%26%20Adapters-1e293b?style=flat&logo=diagram-next&logoColor=white&labelColor=8b5cf6)](https://github.com/saad2134/GhostSlate)
 [![License: MIT](https://img.shields.io/badge/License-MIT-1e293b?style=flat&logo=opensourceinitiative&logoColor=white&labelColor=2ea44f)](LICENSE)
-[![Publisher](https://img.shields.io/badge/Publisher-Saaduddin%20Mohammed-1e293b?style=flat&logo=github&logoColor=white&labelColor=111827)](https://github.com/saad2134)
+[![Publisher](https://img.shields.io/badge/Publisher-Saad%20M.-1e293b?style=flat&logo=github&logoColor=white&labelColor=111827)](https://github.com/saad2134)
 
 </div>
 
