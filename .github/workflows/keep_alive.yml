@@ -2,21 +2,36 @@ name: Keep Render Warm
 
 on:
   schedule:
-    # Runs every 10 minutes to prevent Render free-tier from hibernating (15 min inactivity limit)
-    - cron: '*/10 * * * *'
-  workflow_dispatch: # Allows manual run from GitHub UI
+    # Run every 10 minutes
+    - cron: '3,13,23,33,43,53 * * * *'
+  workflow_dispatch:
 
 jobs:
   ping:
     runs-on: ubuntu-latest
+    timeout-minutes: 2
+
     steps:
       - name: Ping GhostSlate Service
         run: |
-          echo "Sending keep-alive ping to https://ghostslate.onrender.com/api/scenarios..."
-          STATUS=$(curl -s -o /dev/null -w "%{http_code}" -m 30 "https://ghostslate.onrender.com/api/scenarios")
+          URL="https://ghostslate.onrender.com/api/scenarios"
+
+          echo "Pinging $URL..."
+
+          STATUS=$(curl -sS -o /dev/null \
+            -w "%{http_code}" \
+            --connect-timeout 10 \
+            --max-time 60 \
+            "$URL") || {
+              echo "ERROR: Request failed or timed out."
+              exit 1
+            }
+
           echo "HTTP Status Code: $STATUS"
-          if [ "$STATUS" -ge 200 ] && [ "$STATUS" -lt 500 ]; then
-            echo "Instance is active and warm!"
+
+          if [ "$STATUS" -ge 200 ] && [ "$STATUS" -lt 400 ]; then
+            echo "Ping successful."
           else
-            echo "Warning: Service responded with code $STATUS"
+            echo "ERROR: Unexpected HTTP status $STATUS"
+            exit 1
           fi
