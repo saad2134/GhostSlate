@@ -177,6 +177,15 @@ def test_data_buffer_boundary():
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [scenarios, selectedScenarioId, triggerHeal, activeView, isExportModalOpen, isShortcutsModalOpen]);
 
+  const [showQuickstart, setShowQuickstart] = useState(true);
+
+  const handleLaunchStudio = (scenarioId) => {
+    setActiveView('studio');
+    if (scenarioId) {
+      triggerHeal(scenarioId);
+    }
+  };
+
   return (
     <BackgroundGrid>
       <a href="#main-content" className="skip-to-content" aria-label="Skip to main content">
@@ -199,13 +208,13 @@ def test_data_buffer_boundary():
           {/* View Router */}
           {activeView === 'overview' && (
             <ErrorBoundary onReset={() => setActiveView('studio')}>
-              <LandingView onLaunchStudio={() => setActiveView('studio')} />
+              <LandingView onLaunchStudio={handleLaunchStudio} />
             </ErrorBoundary>
           )}
 
           {activeView === 'architecture' && (
             <ErrorBoundary onReset={() => setActiveView('studio')}>
-              <ArchitectureDocsView />
+              <ArchitectureDocsView apiBase={API_BASE} />
             </ErrorBoundary>
           )}
 
@@ -217,12 +226,57 @@ def test_data_buffer_boundary():
 
           {activeView === 'pricing' && (
             <ErrorBoundary onReset={() => setActiveView('studio')}>
-              <PricingTiersView onLaunchStudio={() => setActiveView('studio')} />
+              <PricingTiersView onLaunchStudio={handleLaunchStudio} />
             </ErrorBoundary>
           )}
 
           {activeView === 'studio' && (
             <ErrorBoundary onReset={() => triggerHeal('race_condition')}>
+              {/* 3-Step Interactive Guided Tour Banner */}
+              {showQuickstart && (
+                <div style={{
+                  background: '#0a0a0a',
+                  border: '1px solid #333333',
+                  borderRadius: '10px',
+                  padding: '12px 18px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                  flexWrap: 'wrap',
+                  gap: '12px',
+                  marginBottom: '16px',
+                  boxShadow: '0 4px 20px rgba(0, 0, 0, 0.6)'
+                }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '14px', flexWrap: 'wrap' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '13px', fontWeight: 600, color: '#38bdf8' }}>
+                      <span>✦ 3-Step Studio Quickstart:</span>
+                    </div>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '10px', fontSize: '12px', color: '#a1a1a1', flexWrap: 'wrap' }}>
+                      <span><strong style={{ color: '#ffffff' }}>1.</strong> Select or Inject Chaos Scenario</span>
+                      <span style={{ color: '#444444' }}>→</span>
+                      <span><strong style={{ color: '#ffffff' }}>2.</strong> Scrub Time-Travel Slider to Isolate Invariant Breach</span>
+                      <span style={{ color: '#444444' }}>→</span>
+                      <span><strong style={{ color: '#ffffff' }}>3.</strong> Inspect Verified AST Diff & Export PR</span>
+                    </div>
+                  </div>
+                  <button
+                    onClick={() => setShowQuickstart(false)}
+                    style={{
+                      background: 'transparent',
+                      border: 'none',
+                      color: '#666666',
+                      fontSize: '12px',
+                      cursor: 'pointer',
+                      padding: '2px 8px'
+                    }}
+                    onMouseEnter={(e) => { e.currentTarget.style.color = '#ffffff'; }}
+                    onMouseLeave={(e) => { e.currentTarget.style.color = '#666666'; }}
+                  >
+                    ✕ Dismiss Tour
+                  </button>
+                </div>
+              )}
+
               {/* Chaos Injection Simulator & 5-Stage Stepper */}
               <ChaosSimulator
                 scenarios={scenarios}

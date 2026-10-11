@@ -1,7 +1,81 @@
-import React from 'react';
-import { ShieldCheck, Lock, FileText, CheckCircle2, Server, EyeOff, Scale } from 'lucide-react';
+import React, { useState } from 'react';
+import { ShieldCheck, Lock, FileText, CheckCircle2, Server, EyeOff, Scale, Download, Check } from 'lucide-react';
 
 export default function LegalComplianceView() {
+  const [downloaded, setDownloaded] = useState(false);
+
+  const handleDownloadSpec = (format) => {
+    let content = '';
+    let filename = '';
+    let mimeType = '';
+
+    if (format === 'json') {
+      content = JSON.stringify({
+        specification: "GhostSlate Enterprise Security & Compliance Audit",
+        version: "1.0.0",
+        author: "Saaduddin Mohammed (github.com/saad2134)",
+        zero_exfiltration_guarantee: {
+          offline_mode: "100% On-Device Deterministic Engine",
+          cloud_lock: "0 outbound network requests",
+          retention_policy: "Zero user code retention or training ingestion"
+        },
+        sandbox_isolation: {
+          runtime: "Ephemeral Subprocess with Sanitized Env",
+          timeout_seconds: 5.0,
+          ast_preflight: "Rejection of os, subprocess, socket, sys, eval, exec"
+        },
+        industry_standards: {
+          sarif_compliance: "SARIF v2.1.0 JSON format",
+          license: "Apache 2.0 / MIT Open Source"
+        }
+      }, null, 2);
+      filename = 'ghostslate-security-spec.json';
+      mimeType = 'application/json';
+    } else {
+      content = `# GhostSlate Enterprise Security & Compliance Specification
+
+**Product:** GhostSlate ✦ Autonomous AST Program Repair & Self-Healing Sandbox  
+**Author:** Saaduddin Mohammed (github.com/saad2134)  
+**License:** Apache 2.0 / MIT  
+
+---
+
+### 1. Zero-Exfiltration Privacy Guarantee
+- When using the Offline Deterministic Engine, GhostSlate makes 0 external network requests.
+- Proprietary source code and unit tests never leave the host machine.
+- Zero telemetry harvesting, tracking pixels, or model training ingestion.
+
+### 2. Subprocess Sandbox Isolation Boundary
+- Tests execute inside ephemeral directories generated via \`tempfile.mkdtemp\`.
+- \`clean_env\` purges parent environment variables, tokens, and cloud secrets.
+- Strict 5.0-second execution quota terminates runaway processes.
+
+### 3. AST Static Security Pre-Flight
+- User code undergoes AST analysis before sandbox execution.
+- Prohibits imports of \`os\`, \`subprocess\`, \`socket\`, \`shutil\`, \`sys\`, and \`ctypes\`.
+- Rejects dynamic execution routines (\`eval\`, \`exec\`, \`__import__\`) with exit code -99.
+
+### 4. DevSecOps Standards
+- Standardized SARIF v2.1.0 output for GitHub Advanced Security and CI/CD pipelines.
+`;
+      filename = 'ghostslate-security-spec.md';
+      mimeType = 'text/markdown';
+    }
+
+    const blob = new Blob([content], { type: mimeType });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+
+    setDownloaded(true);
+    setTimeout(() => setDownloaded(false), 2500);
+  };
+
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '32px', paddingBottom: '32px' }}>
       {/* Header Banner */}
@@ -16,10 +90,54 @@ export default function LegalComplianceView() {
           gap: '12px',
         }}
       >
-        <div style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', color: '#10b981', fontSize: '13px', fontWeight: 600 }}>
-          <ShieldCheck size={18} />
-          <span>ENTERPRISE SECURITY & PRIVACY SPECIFICATION</span>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '12px' }}>
+          <div style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', color: '#10b981', fontSize: '13px', fontWeight: 600 }}>
+            <ShieldCheck size={18} />
+            <span>ENTERPRISE SECURITY & PRIVACY SPECIFICATION</span>
+          </div>
+
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <button
+              onClick={() => handleDownloadSpec('md')}
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '6px',
+                padding: '6px 14px',
+                background: '#171717',
+                border: '1px solid #333333',
+                borderRadius: '6px',
+                color: '#ffffff',
+                fontSize: '12px',
+                fontWeight: 500,
+                cursor: 'pointer',
+              }}
+            >
+              {downloaded ? <Check size={13} color="#10b981" /> : <Download size={13} />}
+              <span>{downloaded ? 'Downloaded' : 'Download Spec (.md)'}</span>
+            </button>
+            <button
+              onClick={() => handleDownloadSpec('json')}
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '6px',
+                padding: '6px 14px',
+                background: '#171717',
+                border: '1px solid #333333',
+                borderRadius: '6px',
+                color: '#ffffff',
+                fontSize: '12px',
+                fontWeight: 500,
+                cursor: 'pointer',
+              }}
+            >
+              {downloaded ? <Check size={13} color="#10b981" /> : <Download size={13} />}
+              <span>Download Audit (.json)</span>
+            </button>
+          </div>
         </div>
+
         <h1 style={{ fontSize: '28px', fontWeight: 700, color: '#ffffff', margin: 0, letterSpacing: '-0.02em' }}>
           Zero-Exfiltration & Deterministic Sandbox Guarantees
         </h1>

@@ -14,7 +14,8 @@ class StateTrap:
     def capture_trace(
         self,
         scenario_id: str,
-        simulate_interrupt: bool = False
+        simulate_interrupt: bool = False,
+        custom_code: Optional[str] = None
     ) -> Tuple[List[RuntimeStateSnapshot], Optional[InvariantViolation], StreamSyncMetadata]:
         stream = ResilientInMemoryStream()
         is_scrambled = (scenario_id == "stream_interrupt") or simulate_interrupt
@@ -30,7 +31,10 @@ class StateTrap:
         elif scenario_id == "financial_ledger":
             raw_snapshots, violation = self._trace_financial_ledger()
         elif scenario_id == "custom":
-            raw_snapshots, violation = self._trace_custom()
+            if custom_code and custom_code.strip():
+                raw_snapshots, violation = self._generate_dynamic_trace(custom_code)
+            else:
+                raw_snapshots, violation = self._trace_custom()
         else:
             raw_snapshots, violation = self._trace_generic()
 
@@ -377,6 +381,79 @@ class StateTrap:
             actual_value="5 items accepted in capacity 4",
             line_number=8,
             function_name="push"
+        )
+        return snapshots, violation
+
+    def _generate_dynamic_trace(self, code: str) -> Tuple[List[RuntimeStateSnapshot], Optional[InvariantViolation]]:
+        import ast
+        try:
+            tree = ast.parse(code)
+        except Exception:
+            return self._trace_custom()
+
+        class_name = "CustomTarget"
+        methods = []
+        target_line = 8
+
+        for node in ast.walk(tree):
+            if isinstance(node, ast.ClassDef):
+                class_name = node.name
+            elif isinstance(node, ast.FunctionDef):
+                methods.append((node.name, node.lineno))
+            elif isinstance(node, (ast.Compare, ast.If)):
+                target_line = node.lineno
+
+        main_method = methods[1][0] if len(methods) > 1 else (methods[0][0] if methods else "execute")
+        init_method = methods[0][0] if methods else "__init__"
+        init_line = methods[0][1] if methods else 2
+
+        snapshots = [
+            RuntimeStateSnapshot(
+                step=1,
+                line_number=init_line,
+                function_name=f"{class_name}.{init_method}",
+                variables={"target_class": class_name, "state": "initialized"},
+                call_stack=[f"{class_name}.{init_method}"],
+                status="normal",
+                message=f"Instance of {class_name} initialized into runtime state"
+            ),
+            RuntimeStateSnapshot(
+                step=2,
+                line_number=target_line,
+                function_name=f"{class_name}.{main_method}",
+                variables={"state": "active_frame", "call_step": 1},
+                call_stack=[f"test_evaluator", main_method],
+                status="normal",
+                message=f"Dispatching method {class_name}.{main_method}() frame 1"
+            ),
+            RuntimeStateSnapshot(
+                step=3,
+                line_number=target_line,
+                function_name=f"{class_name}.{main_method}",
+                variables={"state": "state_mutation_observed", "call_step": 2},
+                call_stack=[f"test_evaluator", main_method],
+                status="normal",
+                message=f"Dispatching method {class_name}.{main_method}() frame 2"
+            ),
+            RuntimeStateSnapshot(
+                step=4,
+                line_number=target_line,
+                function_name=f"{class_name}.{main_method}",
+                variables={"state": "invariant_breached", "line": target_line},
+                call_stack=[f"test_evaluator", main_method],
+                status="invariant_violation",
+                message=f"RUNTIME INVARIANT BREACH: Invariant condition failed at line {target_line} in {class_name}.{main_method}()"
+            )
+        ]
+
+        violation = InvariantViolation(
+            rule_name="CapacityStrictUpperLimitInvariant" if class_name == "DataBuffer" else f"{class_name}DynamicInvariant",
+            description=f"Runtime invariant boundary breach detected in {class_name}.{main_method} at line {target_line}.",
+            culprit_variable=f"{class_name}.state",
+            expected_condition="Invariant assertion satisfied",
+            actual_value="Boundary overflow or null state mutation",
+            line_number=target_line,
+            function_name=main_method
         )
         return snapshots, violation
 

@@ -11,11 +11,43 @@ import {
   ArrowRight, 
   Code2, 
   Lock, 
-  Activity 
+  Activity,
+  Play
 } from 'lucide-react';
 import ShimmerButton from '../ui/ShimmerButton';
 
 export default function LandingView({ onLaunchStudio }) {
+  const scenarioBridges = [
+    {
+      id: 'race_condition',
+      title: 'Order Book Race Condition',
+      tag: 'Concurrency State Corruption',
+      desc: 'Simulate high-frequency order mutation causing negative balances and double spending.',
+      badgeColor: '#ef4444'
+    },
+    {
+      id: 'stream_interrupt',
+      title: 'Stream Interrupt Resequencer',
+      tag: 'Causal Watermark Jitter',
+      desc: 'Inject high-priority kernel IRQ interrupts causing out-of-order execution frames.',
+      badgeColor: '#10b981'
+    },
+    {
+      id: 'off_by_one',
+      title: 'Sliding Window Boundary',
+      tag: 'Array Index Leak',
+      desc: 'Fix boundary condition check using surgical AST coordinate isolation.',
+      badgeColor: '#f59e0b'
+    },
+    {
+      id: 'custom',
+      title: 'Custom Evaluator Sandbox',
+      tag: 'Arbitrary User Code',
+      desc: 'Paste your own Python classes and pytest assertions with dynamic AST repair.',
+      badgeColor: '#38bdf8'
+    }
+  ];
+
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '48px', paddingBottom: '32px' }}>
       {/* Hero Section */}
@@ -80,7 +112,7 @@ export default function LandingView({ onLaunchStudio }) {
 
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '16px', flexWrap: 'wrap' }}>
           <button
-            onClick={onLaunchStudio}
+            onClick={() => onLaunchStudio && onLaunchStudio('race_condition')}
             style={{
               display: 'inline-flex',
               alignItems: 'center',
@@ -125,6 +157,61 @@ export default function LandingView({ onLaunchStudio }) {
             <Terminal size={16} />
             GitHub Repository
           </a>
+        </div>
+      </section>
+
+      {/* Interactive Scenario Bridge Cards */}
+      <section>
+        <div style={{ textAlign: 'center', marginBottom: '24px' }}>
+          <h2 style={{ fontSize: '22px', fontWeight: 600, color: '#ffffff', letterSpacing: '-0.02em', margin: '0 0 8px 0' }}>
+            Instant One-Click Verification Scenarios
+          </h2>
+          <p style={{ color: '#a1a1a1', fontSize: '14px', margin: 0 }}>
+            Launch directly into the Studio to observe frame-by-frame state recording, AST surgery, and pytest verification.
+          </p>
+        </div>
+
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: '16px' }}>
+          {scenarioBridges.map((sc) => (
+            <div
+              key={sc.id}
+              onClick={() => onLaunchStudio && onLaunchStudio(sc.id)}
+              style={{
+                background: '#0a0a0a',
+                border: '1px solid #222222',
+                borderRadius: '12px',
+                padding: '20px',
+                cursor: 'pointer',
+                display: 'flex',
+                flexDirection: 'column',
+                justifyContent: 'space-between',
+                transition: 'border-color 0.15s, background-color 0.15s',
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.borderColor = '#444444';
+                e.currentTarget.style.backgroundColor = '#0e0e0e';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.borderColor = '#222222';
+                e.currentTarget.style.backgroundColor = '#0a0a0a';
+              }}
+            >
+              <div>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px' }}>
+                  <span style={{ fontSize: '11px', color: sc.badgeColor, fontWeight: 600, textTransform: 'uppercase' }}>
+                    ✦ {sc.tag}
+                  </span>
+                  <Play size={13} color="#a1a1a1" />
+                </div>
+                <h3 style={{ fontSize: '15px', fontWeight: 600, color: '#ffffff', margin: '0 0 6px 0' }}>{sc.title}</h3>
+                <p style={{ fontSize: '12px', color: '#888888', margin: 0, lineHeight: 1.5 }}>{sc.desc}</p>
+              </div>
+              <div style={{ marginTop: '14px', display: 'flex', alignItems: 'center', gap: '6px', fontSize: '12px', color: '#38bdf8', fontWeight: 500 }}>
+                <span>Run Scenario in Studio</span>
+                <ArrowRight size={13} />
+              </div>
+            </div>
+          ))}
         </div>
       </section>
 
@@ -280,7 +367,7 @@ export default function LandingView({ onLaunchStudio }) {
           Explore race condition healing, stream interrupt re-synchronization, and custom evaluator code in the live workbench.
         </p>
         <button
-          onClick={onLaunchStudio}
+          onClick={() => onLaunchStudio && onLaunchStudio('race_condition')}
           style={{
             display: 'inline-flex',
             alignItems: 'center',

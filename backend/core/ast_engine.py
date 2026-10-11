@@ -1,14 +1,41 @@
+import ast
 import difflib
 import uuid
-from typing import List, Optional, Tuple
+from typing import List, Optional, Tuple, Dict
 from backend.core.models import ASTNodeInfo, PatchCandidate
+from backend.core.ports.parser import ASTParserPort
 from backend.adapters.parsers.python_ast_parser import PythonASTParser
 from backend.adapters.parsers.tree_sitter_parser import TreeSitterASTParser
 
 class ASTEngine:
-    def __init__(self):
-        self.py_parser = PythonASTParser()
-        self.ts_parser = TreeSitterASTParser()
+    """
+    Surgical AST Engine: isolates exact syntax node coordinates and applies line-bounded diffs.
+    Supports pluggable parser ports and pre-flight syntax compilation validation.
+    """
+
+    def __init__(self, parsers: Optional[Dict[str, ASTParserPort]] = None):
+        self.py_parser = parsers.get("python") if parsers else PythonASTParser()
+        self.ts_parser = parsers.get("tree-sitter") if parsers else TreeSitterASTParser()
+        self.parsers = parsers or {
+            "python": self.py_parser,
+            "tree-sitter": self.ts_parser
+        }
+
+    def validate_syntax(self, code: str, language: str = "python") -> Tuple[bool, Optional[str]]:
+        """
+        Zero-cost pre-flight syntax compilation gate.
+        Validates concrete syntax trees before dispatching code to the subprocess sandbox.
+        """
+        lang = language.lower()
+        if lang == "python":
+            try:
+                ast.parse(code)
+                return True, None
+            except SyntaxError as e:
+                return False, f"AST Syntax Error at line {e.lineno}: {e.msg}"
+            except Exception as e:
+                return False, f"AST Syntax Compilation Exception: {str(e)}"
+        return True, None
 
     def get_nodes(self, source_code: str, language: str = "python") -> List[ASTNodeInfo]:
         lang = language.lower()
@@ -48,7 +75,8 @@ class ASTEngine:
         replacement_code: str,
         explanation: str,
         target_node_id: Optional[str] = None,
-        target_node_type: str = "Statement"
+        target_node_type: str = "Statement",
+        language: str = "python"
     ) -> PatchCandidate:
         lines = source_code.splitlines()
 
@@ -63,6 +91,11 @@ class ASTEngine:
 
         patched_lines = prefix + replacement_lines + suffix
         patched_code = "\n".join(patched_lines) + "\n"
+
+        # Directive 1: AST Pre-Flight Syntax Gate
+        is_valid_syntax, syntax_err = self.validate_syntax(patched_code, language)
+        if not is_valid_syntax:
+            raise ValueError(f"AST PRE-FLIGHT REJECTION: Candidate patch introduces invalid syntax: {syntax_err}")
 
         diff_lines = list(difflib.unified_diff(
             lines,

@@ -1,0 +1,98 @@
+import time
+import math
+import threading
+from typing import Dict, List, Any
+from collections import deque
+from backend.core.ports.metrics import MetricsCollectorPort
+
+class InMemoryMetricsCollector(MetricsCollectorPort):
+    """
+    In-memory rolling window telemetry collector.
+    Tracks latency distributions with exact microsecond percentiles (p50, p95, p99),
+    operational counters, and Prometheus text export.
+    Thread-safe across async workers.
+    """
+
+    def __init__(self, window_size: int = 128):
+        self.window_size = window_size
+        self._lock = threading.RLock()
+        self._durations: Dict[str, deque] = {}
+        self._counters: Dict[str, int] = {
+            "heals_total": 0,
+            "ast_nodes_scanned_total": 0,
+            "watermark_reorders_total": 0,
+            "syntax_rejections_total": 0,
+            "sandbox_runs_total": 0,
+        }
+        self._start_time = time.time()
+
+    def record_duration(self, category: str, duration_us: float) -> None:
+        with self._lock:
+            if category not in self._durations:
+                self._durations[category] = deque(maxlen=self.window_size)
+            self._durations[category].append(duration_us)
+
+    def increment_counter(self, name: str, value: int = 1) -> None:
+        with self._lock:
+            self._counters[name] = self._counters.get(name, 0) + value
+
+    def _calc_percentiles(self, values: List[float]) -> Dict[str, float]:
+        if not values:
+            return {"count": 0, "avg": 0.0, "p50": 0.0, "p95": 0.0, "p99": 0.0}
+        sorted_vals = sorted(values)
+        n = len(sorted_vals)
+
+        def pct(p: float) -> float:
+            k = (n - 1) * p
+            f = math.floor(k)
+            c = math.ceil(k)
+            if f == c:
+                return sorted_vals[int(k)]
+            d0 = sorted_vals[int(f)] * (c - k)
+            d1 = sorted_vals[int(c)] * (k - f)
+            return d0 + d1
+
+        return {
+            "count": n,
+            "avg": round(sum(sorted_vals) / n, 2),
+            "p50": round(pct(0.50), 2),
+            "p95": round(pct(0.95), 2),
+            "p99": round(pct(0.99), 2),
+        }
+
+    def get_summary(self) -> Dict[str, Any]:
+        with self._lock:
+            uptime = time.time() - self._start_time
+            summary = {
+                "uptime_seconds": round(uptime, 2),
+                "counters": dict(self._counters),
+                "latencies_us": {}
+            }
+            for cat, dq in self._durations.items():
+                summary["latencies_us"][cat] = self._calc_percentiles(list(dq))
+            return summary
+
+    def to_prometheus(self) -> str:
+        with self._lock:
+            lines = [
+                "# HELP ghostslate_uptime_seconds Time since engine started",
+                "# TYPE ghostslate_uptime_seconds gauge",
+                f"ghostslate_uptime_seconds {round(time.time() - self._start_time, 2)}",
+            ]
+
+            for name, val in self._counters.items():
+                lines.append(f"# HELP ghostslate_{name} Operational counter for {name}")
+                lines.append(f"# TYPE ghostslate_{name} counter")
+                lines.append(f"ghostslate_{name} {val}")
+
+            for cat, dq in self._durations.items():
+                stats = self._calc_percentiles(list(dq))
+                sanitized_cat = cat.replace(".", "_").replace("-", "_")
+                lines.append(f"# HELP ghostslate_{sanitized_cat}_latency_microseconds Latency for {cat}")
+                lines.append(f"# TYPE ghostslate_{sanitized_cat}_latency_microseconds summary")
+                lines.append(f'ghostslate_{sanitized_cat}_latency_microseconds{{quantile="0.5"}} {stats["p50"]}')
+                lines.append(f'ghostslate_{sanitized_cat}_latency_microseconds{{quantile="0.95"}} {stats["p95"]}')
+                lines.append(f'ghostslate_{sanitized_cat}_latency_microseconds{{quantile="0.99"}} {stats["p99"]}')
+                lines.append(f'ghostslate_{sanitized_cat}_latency_microseconds_count {stats["count"]}')
+
+            return "\n".join(lines) + "\n"
