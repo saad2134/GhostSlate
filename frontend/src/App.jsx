@@ -7,6 +7,7 @@ import AgentDebateStream from './components/AgentDebateStream';
 import MonacoDiffStudio from './components/MonacoDiffStudio';
 import SandboxTerminal from './components/SandboxTerminal';
 import ExportModal from './components/ExportModal';
+import KeyboardShortcutsModal from './components/KeyboardShortcutsModal';
 import BackgroundGrid from './components/ui/BackgroundGrid';
 
 const API_BASE = 'http://127.0.0.1:8000';
@@ -19,6 +20,7 @@ export default function App() {
   const [loading, setLoading] = useState(false);
   const [stage, setStage] = useState('healed');
   const [isExportModalOpen, setIsExportModalOpen] = useState(false);
+  const [isShortcutsModalOpen, setIsShortcutsModalOpen] = useState(false);
 
   // Fetch scenarios on mount and run initial session
   useEffect(() => {
@@ -65,6 +67,30 @@ export default function App() {
     }
   };
 
+  // Hands-free keyboard shortcuts navigation
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA' || e.target.tagName === 'SELECT') return;
+
+      if (e.key >= '1' && e.key <= '5') {
+        const idx = parseInt(e.key) - 1;
+        if (scenarios[idx]) triggerHeal(scenarios[idx].id);
+      } else if (e.key === ' ' || e.code === 'Space') {
+        e.preventDefault();
+        triggerHeal(selectedScenarioId);
+      } else if (e.key === 'e' || e.key === 'E') {
+        setIsExportModalOpen(true);
+      } else if (e.key === '?' || e.key === '/') {
+        setIsShortcutsModalOpen(prev => !prev);
+      } else if (e.key === 'Escape') {
+        setIsExportModalOpen(false);
+        setIsShortcutsModalOpen(false);
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [scenarios, selectedScenarioId]);
+
   return (
     <BackgroundGrid>
       <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
@@ -73,6 +99,7 @@ export default function App() {
           provider={provider}
           setProvider={setProvider}
           onOpenExportModal={() => setIsExportModalOpen(true)}
+          onOpenShortcuts={() => setIsShortcutsModalOpen(true)}
           session={session}
         />
 
@@ -172,6 +199,12 @@ export default function App() {
           isOpen={isExportModalOpen}
           onClose={() => setIsExportModalOpen(false)}
           session={session}
+        />
+
+        {/* Rapid Keyboard Navigation Overlay */}
+        <KeyboardShortcutsModal
+          isOpen={isShortcutsModalOpen}
+          onClose={() => setIsShortcutsModalOpen(false)}
         />
       </div>
     </BackgroundGrid>

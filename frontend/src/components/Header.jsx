@@ -1,5 +1,5 @@
 import React from 'react';
-import { Cpu, GitPullRequest } from 'lucide-react';
+import { Cpu, GitPullRequest, Keyboard } from 'lucide-react';
 import appIcon from '../assets/app-icon.png';
 import ShinyText from './ui/ShinyText';
 import DecryptedText from './ui/DecryptedText';
@@ -9,6 +9,7 @@ export default function Header({
   provider,
   setProvider,
   onOpenExportModal,
+  onOpenShortcuts,
   session
 }) {
   const isVerified = session?.verification?.is_verified;
@@ -96,6 +97,17 @@ export default function Header({
             <option value="openai" style={{ background: '#0a0a0a', color: '#fff' }}>OpenAI GPT-4o Mini (Adapter Ready)</option>
           </select>
         </div>
+
+        {/* Hotkeys Button */}
+        <button
+          onClick={onOpenShortcuts}
+          className="vercel-btn-secondary"
+          title="Keyboard Shortcuts (?)"
+          style={{ padding: '7px 12px', fontSize: '0.78rem' }}
+        >
+          <Keyboard size={13} />
+          <span>Hotkeys (?)</span>
+        </button>
 
         {/* Aceternity Shimmer Export Button */}
         <ShimmerButton
