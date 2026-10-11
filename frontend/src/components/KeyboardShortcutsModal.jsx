@@ -78,7 +78,9 @@ export default function KeyboardShortcutsModal({ isOpen, onClose }) {
                 padding: '10px 14px',
                 borderRadius: '6px',
                 backgroundColor: '#050505',
-                border: '1px solid var(--border-subtle)'
+                border: '1px solid var(--border-subtle)',
+                flexWrap: 'wrap',
+                gap: '8px'
               }}
             >
               <span style={{ fontSize: '0.78rem', color: '#d4d4d4' }}>

@@ -5,7 +5,8 @@ import SpotlightCard from './ui/SpotlightCard';
 import ShinyText from './ui/ShinyText';
 
 export default function MonacoDiffStudio({ patch, originalCode, language = 'python' }) {
-  const [inlineView, setInlineView] = useState(false);
+  const isMobile = typeof window !== 'undefined' && window.innerWidth < 768;
+  const [inlineView, setInlineView] = useState(isMobile);
   const [copied, setCopied] = useState(false);
 
   const modifiedCode = patch?.full_patched_code || originalCode;
@@ -28,7 +29,7 @@ export default function MonacoDiffStudio({ patch, originalCode, language = 'pyth
   }
 
   return (
-    <SpotlightCard style={{ padding: '20px 22px', display: 'flex', flexDirection: 'column', gap: '16px', backgroundColor: '#0a0a0a' }}>
+    <SpotlightCard style={{ padding: 'var(--card-p)', display: 'flex', flexDirection: 'column', gap: '16px', backgroundColor: '#0a0a0a' }}>
       {/* Header and Controls */}
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '12px' }}>
         <div>
@@ -83,7 +84,7 @@ export default function MonacoDiffStudio({ patch, originalCode, language = 'pyth
 
       {/* Monaco Diff Editor */}
       <div style={{
-        height: '350px',
+        height: isMobile ? '280px' : '350px',
         borderRadius: '8px',
         overflow: 'hidden',
         border: '1px solid var(--border-subtle)',

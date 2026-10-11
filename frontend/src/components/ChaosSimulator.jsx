@@ -40,7 +40,7 @@ export default function ChaosSimulator({
   const activeIndex = getStageIndex(stage);
 
   return (
-    <SpotlightCard style={{ padding: '22px 24px', margin: '0 20px 24px 20px', backgroundColor: '#050505' }}>
+    <SpotlightCard className="responsive-chaos-card">
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '16px', flexWrap: 'wrap', gap: '14px' }}>
         <div>
           <h2 style={{ fontSize: '1.02rem', fontWeight: 700, margin: 0, color: '#ffffff', letterSpacing: '-0.02em' }}>
@@ -79,12 +79,7 @@ export default function ChaosSimulator({
       </div>
 
       {/* Aceternity Spotlight Scenario Grid with Generous Padding */}
-      <div style={{
-        display: 'grid',
-        gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))',
-        gap: '12px',
-        marginBottom: '18px'
-      }}>
+      <div className="responsive-scenario-grid">
         {scenarios.map((sc) => {
           const isSelected = sc.id === selectedScenarioId;
           return (
@@ -250,17 +245,7 @@ export default function ChaosSimulator({
       )}
 
       {/* 5-Stage High-Contrast Pipeline with Proper Padding */}
-      <div style={{
-        backgroundColor: '#0a0a0a',
-        borderRadius: '8px',
-        padding: '12px 18px',
-        border: '1px solid var(--border-subtle)',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'space-between',
-        flexWrap: 'wrap',
-        gap: '10px'
-      }}>
+      <div className="responsive-pipeline-stepper">
         {pipelineStages.map((stg, idx) => {
           const isPassed = activeIndex >= idx;
           const isCurrent = activeIndex === idx;
@@ -269,6 +254,7 @@ export default function ChaosSimulator({
           return (
             <div
               key={stg.key}
+              className="pipeline-step-chip"
               style={{
                 display: 'flex',
                 alignItems: 'center',

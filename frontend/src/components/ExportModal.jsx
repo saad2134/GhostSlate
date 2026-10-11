@@ -107,7 +107,8 @@ export default function ExportModal({ isOpen, onClose, session }) {
           gap: '6px',
           padding: '10px 20px',
           borderBottom: '1px solid var(--border-subtle)',
-          backgroundColor: '#050505'
+          backgroundColor: '#050505',
+          flexWrap: 'wrap'
         }}>
           <button
             onClick={() => setActiveTab('pr')}

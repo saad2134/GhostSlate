@@ -15,17 +15,7 @@ export default function Header({
   const isVerified = session?.verification?.is_verified;
 
   return (
-    <header className="vercel-card" style={{
-      margin: '16px 20px',
-      padding: '12px 20px',
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'space-between',
-      flexWrap: 'wrap',
-      gap: '16px',
-      backgroundColor: '#000000',
-      borderColor: 'var(--border-subtle)'
-    }}>
+    <header className="vercel-card responsive-header">
       {/* Brand & App Icon */}
       <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
         <img
@@ -37,11 +27,12 @@ export default function Header({
             borderRadius: '6px',
             border: '1px solid #333333',
             objectFit: 'cover',
-            backgroundColor: '#0a0a0a'
+            backgroundColor: '#0a0a0a',
+            flexShrink: 0
           }}
         />
         <div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
             <h1 style={{
               fontSize: '1.18rem',
               fontWeight: 700,
@@ -50,7 +41,7 @@ export default function Header({
             }}>
               <ShinyText text="GhostSlate" speed={3.5} />
             </h1>
-            <span className="vercel-pill" style={{ color: '#ffffff', borderColor: '#333333', backgroundColor: '#0a0a0a' }}>
+            <span className="vercel-pill hide-on-mobile-xs" style={{ color: '#ffffff', borderColor: '#333333', backgroundColor: '#0a0a0a' }}>
               <span style={{ width: '6px', height: '6px', borderRadius: '50%', backgroundColor: '#10b981', display: 'inline-block', boxShadow: '0 0 8px rgba(16, 185, 129, 0.4)' }}></span>
               <DecryptedText text="Hexagonal Engine Active ✦ v1.0.0" speed={30} maxIterations={10} />
             </span>
@@ -58,15 +49,15 @@ export default function Header({
               ✦ Stream Sync: Resilient
             </span>
           </div>
-          <p style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', margin: 0 }}>
+          <p style={{ fontSize: '0.73rem', color: 'var(--text-secondary)', margin: '2px 0 0 0' }}>
             Autonomous AST Program Repair ✦ Time-Travel Debugger & Self-Healing Sandbox
           </p>
         </div>
       </div>
 
       {/* Provider Selector & Export Button */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap' }}>
-        <div style={{
+      <div className="header-actions-wrap" style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+        <div className="header-provider-box" style={{
           display: 'flex',
           alignItems: 'center',
           gap: '8px',

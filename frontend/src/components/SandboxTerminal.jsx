@@ -86,7 +86,7 @@ export default function SandboxTerminal({ verification }) {
       </div>
 
       {/* Terminal View Tabs (Properly Padded) */}
-      <div style={{ display: 'flex', gap: '8px', margin: '4px 0 6px 0' }}>
+      <div style={{ display: 'flex', gap: '8px', margin: '4px 0 6px 0', flexWrap: 'wrap' }}>
         <button
           onClick={() => setActiveTab('pre')}
           style={{

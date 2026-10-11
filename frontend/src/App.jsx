@@ -124,7 +124,7 @@ def test_data_buffer_boundary():
 
   return (
     <BackgroundGrid>
-      <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
+      <div className="responsive-app-container">
         {/* Top Header */}
         <Header
           provider={provider}
@@ -134,7 +134,7 @@ def test_data_buffer_boundary():
           session={session}
         />
 
-        <main style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '20px' }}>
+        <main className="responsive-main">
           {/* Chaos Injection Simulator & 5-Stage Stepper */}
           <ChaosSimulator
             scenarios={scenarios}
@@ -150,14 +150,9 @@ def test_data_buffer_boundary():
           />
 
           {/* Two-Column Bento Grid: State Invariant Inspection & Multi-Agent Verification */}
-          <div style={{
-            display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fit, minmax(460px, 1fr))',
-            gap: '20px',
-            margin: '0 20px'
-          }}>
+          <div className="responsive-bento-grid">
             {/* Column 1: Time-Travel Runtime Scrubber & AST Scoping Inspector */}
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '20px', minWidth: 0 }}>
               <StateTimeTravelScrubber
                 snapshots={session?.snapshots}
                 violation={session?.invariant_violation}
@@ -171,7 +166,7 @@ def test_data_buffer_boundary():
             </div>
 
             {/* Column 2: Dual-Agent Debate Stream & Subprocess Sandbox Terminal */}
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '20px', minWidth: 0 }}>
               <AgentDebateStream
                 debateTurns={session?.debate_turns}
               />
@@ -183,7 +178,7 @@ def test_data_buffer_boundary():
           </div>
 
           {/* Full-Width Monaco Diff Studio */}
-          <div style={{ margin: '0 20px 24px 20px' }}>
+          <div className="responsive-diff-wrapper">
             <MonacoDiffStudio
               patch={session?.patch}
               originalCode={session?.original_code}
@@ -193,19 +188,8 @@ def test_data_buffer_boundary():
         </main>
 
         {/* Footer */}
-        <footer style={{
-          margin: '0 20px 20px 20px',
-          padding: '16px 20px',
-          borderTop: '1px solid var(--border-subtle)',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-          flexWrap: 'wrap',
-          gap: '12px',
-          fontSize: '0.75rem',
-          color: 'var(--text-secondary)'
-        }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+        <footer className="responsive-footer">
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
             <strong style={{ color: '#ffffff' }}>GhostSlate</strong>
             <span style={{ color: '#666666' }}>✦</span>
             <span>
@@ -220,7 +204,7 @@ def test_data_buffer_boundary():
               </a>
             </span>
           </div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '14px', color: 'var(--text-muted)' }}>
+          <div className="footer-meta-row" style={{ display: 'flex', alignItems: 'center', gap: '14px', color: 'var(--text-muted)', flexWrap: 'wrap' }}>
             <span>Architecture: <strong style={{ color: '#ffffff' }}>Hexagonal Ports & Adapters</strong></span>
             <span style={{ color: '#444444' }}>✦</span>
             <span>AST Engines: <strong style={{ color: '#ffffff' }}>Tree-Sitter C + Python AST</strong></span>
