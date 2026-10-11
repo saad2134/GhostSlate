@@ -30,3 +30,22 @@ def test_ast_engine_surgical_patch_rejects_syntax_errors():
             explanation="Invalid syntax injection"
         )
     assert "AST PRE-FLIGHT REJECTION" in str(excinfo.value)
+
+def test_coordinator_handles_syntax_rejection_gracefully():
+    from backend.core.agent_loop import AgentLoopCoordinator
+    coordinator = AgentLoopCoordinator()
+    
+    # Run healing session with intentionally broken Python syntax
+    broken_code = "def totally_broken(:\n    return False"
+    broken_test = "def test_it(): assert True"
+    
+    session = coordinator.run_healing_session(
+        scenario_id="custom",
+        custom_code=broken_code,
+        custom_test=broken_test
+    )
+    assert session.stage == "failed"
+    assert session.verification.is_verified is False
+    assert session.verification.exit_code == -99
+    assert session.verification.canary_passed is False
+    assert "Pre-flight AST gate rejected candidate syntax" in session.verification.deterministic_proof

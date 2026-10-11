@@ -27,4 +27,28 @@ def test_telemetry_prometheus_format():
     prom_text = collector.to_prometheus()
     assert "ghostslate_heals_total 3" in prom_text
     assert "ghostslate_stream_synchronization_latency_microseconds" in prom_text
+    assert "ghostslate_stream_synchronization_latency_microseconds_sum 8.5" in prom_text
     assert "ghostslate_uptime_seconds" in prom_text
+
+def test_telemetry_rejects_nan_and_negative_durations():
+    collector = InMemoryMetricsCollector()
+    collector.record_duration("ast_parsing", float("nan"))
+    collector.record_duration("ast_parsing", float("inf"))
+    collector.record_duration("ast_parsing", -50.0)
+    collector.record_duration("ast_parsing", 25.0)
+
+    summary = collector.get_summary()
+    ast_stats = summary["latencies_us"]["ast_parsing"]
+    assert ast_stats["count"] == 1
+    assert ast_stats["avg"] == 25.0
+
+def test_telemetry_bounds_maximum_categories():
+    collector = InMemoryMetricsCollector()
+    # Attempt to flood with 100 unique categories
+    for i in range(100):
+        collector.record_duration(f"category_{i}", 10.0)
+        collector.increment_counter(f"counter_{i}", 1)
+
+    summary = collector.get_summary()
+    assert len(summary["latencies_us"]) <= InMemoryMetricsCollector.MAX_METRIC_CATEGORIES
+    assert len(summary["counters"]) <= InMemoryMetricsCollector.MAX_METRIC_CATEGORIES

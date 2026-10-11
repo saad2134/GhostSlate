@@ -28,9 +28,16 @@ export default function ArchitectureDocsView({ apiBase = '' }) {
   }, [effectiveApiBase]);
 
   const copyToClipboard = (text, key) => {
-    navigator.clipboard.writeText(text);
-    setCopiedCode(key);
-    setTimeout(() => setCopiedCode(null), 2000);
+    if (navigator?.clipboard?.writeText) {
+      navigator.clipboard.writeText(text)
+        .then(() => {
+          setCopiedCode(key);
+          setTimeout(() => setCopiedCode(null), 2000);
+        })
+        .catch(err => {
+          console.warn('Clipboard write prevented:', err);
+        });
+    }
   };
 
   const snippets = {

@@ -1,7 +1,7 @@
 import time
 import uuid
 from typing import Optional
-from backend.core.models import SelfHealingSession, ChaosScenario, VerificationResult
+from backend.core.models import SelfHealingSession, ChaosScenario, VerificationResult, PatchCandidate
 from backend.chaos.scenarios import get_scenario, SCENARIOS
 from backend.core.state_trap import StateTrap
 from backend.core.ast_engine import ASTEngine
@@ -73,43 +73,75 @@ class AgentLoopCoordinator:
             self.metrics.increment_counter("ast_nodes_scanned_total", len(all_ast_nodes))
 
         # Step 3: Two-Tier Agent Loop (Triage + Critic)
-        patch, debate_turns = self.deterministic_provider.synthesize_repair(
-            scenario_id=scenario_id,
-            original_code=source_code,
-            violation=violation,
-            isolated_node=isolated_node
-        )
-
-        # Step 4: Deterministic Sandbox Runner (Subprocess Red -> Green verification)
-        sandbox_start = time.perf_counter()
-        if hasattr(self.sandbox_runner, "run_verification"):
-            verification = self.sandbox_runner.run_verification(
+        try:
+            patch, debate_turns = self.deterministic_provider.synthesize_repair(
+                scenario_id=scenario_id,
                 original_code=source_code,
-                patched_code=patch.full_patched_code,
-                test_code=test_code,
-                patch_id=patch.patch_id
-            )
-        else:
-            # Conformance fallback for generic ExecutionSandboxPort
-            pre_pass, pre_out, pre_code = self.sandbox_runner.run_tests(source_code, test_code)
-            post_pass, post_out, post_code = self.sandbox_runner.run_tests(patch.full_patched_code, test_code)
-            is_verified = (not pre_pass) and post_pass
-            verification = VerificationResult(
-                patch_id=patch.patch_id,
-                is_verified=is_verified,
-                pre_patch_test_output=pre_out,
-                post_patch_test_output=post_out,
-                exit_code=post_code,
-                duration_ms=150.0,
-                tests_passed=1 if is_verified else 0,
-                tests_failed=0 if is_verified else 1,
-                deterministic_proof="Port sandbox verification completed."
+                violation=violation,
+                isolated_node=isolated_node
             )
 
-        sandbox_duration_ms = (time.perf_counter() - sandbox_start) * 1000.0
-        if self.metrics:
-            self.metrics.record_duration("sandbox_verification", sandbox_duration_ms * 1000.0)
-            self.metrics.increment_counter("sandbox_runs_total", 2)
+            # Step 4: Deterministic Sandbox Runner (Subprocess Red -> Green verification)
+            sandbox_start = time.perf_counter()
+            if hasattr(self.sandbox_runner, "run_verification"):
+                verification = self.sandbox_runner.run_verification(
+                    original_code=source_code,
+                    patched_code=patch.full_patched_code,
+                    test_code=test_code,
+                    patch_id=patch.patch_id
+                )
+            else:
+                # Conformance fallback for generic ExecutionSandboxPort
+                pre_pass, pre_out, pre_code = self.sandbox_runner.run_tests(source_code, test_code)
+                post_pass, post_out, post_code = self.sandbox_runner.run_tests(patch.full_patched_code, test_code)
+                is_verified = (not pre_pass) and post_pass
+                verification = VerificationResult(
+                    patch_id=patch.patch_id,
+                    is_verified=is_verified,
+                    pre_patch_test_output=pre_out,
+                    post_patch_test_output=post_out,
+                    exit_code=post_code,
+                    duration_ms=150.0,
+                    tests_passed=1 if is_verified else 0,
+                    tests_failed=0 if is_verified else 1,
+                    deterministic_proof="Port sandbox verification completed."
+                )
+
+            sandbox_duration_ms = (time.perf_counter() - sandbox_start) * 1000.0
+            if self.metrics:
+                self.metrics.record_duration("sandbox_verification", sandbox_duration_ms * 1000.0)
+                self.metrics.increment_counter("sandbox_runs_total", 2)
+
+        except ValueError as err:
+            if self.metrics:
+                self.metrics.increment_counter("syntax_rejections_total", 1)
+            rej_id = f"rejected_{uuid.uuid4().hex[:6]}"
+            patch = PatchCandidate(
+                patch_id=rej_id,
+                target_node_id=isolated_node.node_id if isolated_node else None,
+                target_node_type="SyntaxError",
+                start_line=isolated_node.start_point[0] if isolated_node else 1,
+                end_line=isolated_node.end_point[0] if isolated_node else 1,
+                original_code=source_code,
+                replacement_code="# SYNTAX REJECTED",
+                full_patched_code=source_code,
+                explanation=f"AST pre-flight syntax rejection: {str(err)}",
+                diff_unified=""
+            )
+            debate_turns = []
+            verification = VerificationResult(
+                patch_id=rej_id,
+                is_verified=False,
+                pre_patch_test_output="",
+                post_patch_test_output=str(err),
+                exit_code=-99,
+                duration_ms=0.0,
+                tests_passed=0,
+                tests_failed=1,
+                deterministic_proof=f"Pre-flight AST gate rejected candidate syntax: {str(err)}",
+                canary_passed=False,
+                canary_diagnostics=str(err)
+            )
 
         # Step 5: Determine final stage
         final_stage = "healed" if verification.is_verified else "failed"

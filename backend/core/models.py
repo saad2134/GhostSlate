@@ -58,6 +58,10 @@ class VerificationResult(BaseModel):
     tests_passed: int
     tests_failed: int
     deterministic_proof: str
+    pre_duration_ms: float = 0.0
+    post_duration_ms: float = 0.0
+    canary_passed: bool = True
+    canary_diagnostics: Optional[str] = None
 
 class AgentDebateTurn(BaseModel):
     id: str

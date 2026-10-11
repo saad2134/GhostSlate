@@ -13,6 +13,8 @@ class InMemoryMetricsCollector(MetricsCollectorPort):
     Thread-safe across async workers.
     """
 
+    MAX_METRIC_CATEGORIES = 64
+
     def __init__(self, window_size: int = 128):
         self.window_size = window_size
         self._lock = threading.RLock()
@@ -27,13 +29,21 @@ class InMemoryMetricsCollector(MetricsCollectorPort):
         self._start_time = time.time()
 
     def record_duration(self, category: str, duration_us: float) -> None:
+        if not isinstance(duration_us, (int, float)) or math.isnan(duration_us) or math.isinf(duration_us) or duration_us < 0:
+            return
         with self._lock:
             if category not in self._durations:
+                if len(self._durations) >= self.MAX_METRIC_CATEGORIES:
+                    return
                 self._durations[category] = deque(maxlen=self.window_size)
-            self._durations[category].append(duration_us)
+            self._durations[category].append(float(duration_us))
 
     def increment_counter(self, name: str, value: int = 1) -> None:
+        if not isinstance(value, int) or value < 0:
+            return
         with self._lock:
+            if name not in self._counters and len(self._counters) >= self.MAX_METRIC_CATEGORIES:
+                return
             self._counters[name] = self._counters.get(name, 0) + value
 
     def _calc_percentiles(self, values: List[float]) -> Dict[str, float]:
@@ -86,13 +96,15 @@ class InMemoryMetricsCollector(MetricsCollectorPort):
                 lines.append(f"ghostslate_{name} {val}")
 
             for cat, dq in self._durations.items():
-                stats = self._calc_percentiles(list(dq))
+                dq_list = list(dq)
+                stats = self._calc_percentiles(dq_list)
                 sanitized_cat = cat.replace(".", "_").replace("-", "_")
                 lines.append(f"# HELP ghostslate_{sanitized_cat}_latency_microseconds Latency for {cat}")
                 lines.append(f"# TYPE ghostslate_{sanitized_cat}_latency_microseconds summary")
                 lines.append(f'ghostslate_{sanitized_cat}_latency_microseconds{{quantile="0.5"}} {stats["p50"]}')
                 lines.append(f'ghostslate_{sanitized_cat}_latency_microseconds{{quantile="0.95"}} {stats["p95"]}')
                 lines.append(f'ghostslate_{sanitized_cat}_latency_microseconds{{quantile="0.99"}} {stats["p99"]}')
+                lines.append(f'ghostslate_{sanitized_cat}_latency_microseconds_sum {round(sum(dq_list), 2)}')
                 lines.append(f'ghostslate_{sanitized_cat}_latency_microseconds_count {stats["count"]}')
 
             return "\n".join(lines) + "\n"

@@ -23,8 +23,17 @@ class SandboxRunner(ExecutionSandboxPort):
     """
     Isolated Subprocess Test Runner: executes pytest in a sandboxed temporary directory.
     Guarantees that no patch is marked verified unless pytest exits with returncode 0.
+    Enforces AST Resource Canary Gate against algorithmic complexity regressions.
     Implements ExecutionSandboxPort.
     """
+
+    def __init__(
+        self,
+        max_post_duration_ms: float = 2500.0,
+        max_blowup_ratio: float = 3.5
+    ):
+        self.max_post_duration_ms = max_post_duration_ms
+        self.max_blowup_ratio = max_blowup_ratio
 
     def run_tests(
         self,
@@ -46,12 +55,19 @@ class SandboxRunner(ExecutionSandboxPort):
         start_time = time.time()
 
         # Step 1: Run against original code (expecting failure / Red test)
+        pre_t0 = time.perf_counter()
         pre_success, pre_output, pre_code = self._execute_in_sandbox(original_code, test_code, timeout_seconds)
+        pre_duration_ms = (time.perf_counter() - pre_t0) * 1000.0
 
         # Step 2: Run against patched code (expecting 100% pass / Green test)
+        post_t0 = time.perf_counter()
         post_success, post_output, post_code = self._execute_in_sandbox(patched_code, test_code, timeout_seconds)
+        post_duration_ms = (time.perf_counter() - post_t0) * 1000.0
 
-        duration_ms = (time.time() - start_time) * 1000
+        duration_ms = (time.time() - start_time) * 1000.0
+
+        canary_passed = True
+        canary_diagnostics = None
 
         # Strict Verification Gate: Must transition strictly from RED (pre failed) to GREEN (post passed)
         if pre_success:
@@ -73,6 +89,25 @@ class SandboxRunner(ExecutionSandboxPort):
                 f"Sandbox Isolation: Ephemeral Subprocess (Sanitized Environment & Resource Bounds)"
             )
 
+        # Step 3: AST Resource Canary Gate
+        # Prevent algorithmic regressions, infinite loops, and quadratic complexity blowups
+        if post_success:
+            ratio = post_duration_ms / max(pre_duration_ms, 50.0)
+            if post_duration_ms > self.max_post_duration_ms or (post_duration_ms > 200.0 and ratio > self.max_blowup_ratio):
+                canary_passed = False
+                is_verified = False
+                canary_diagnostics = (
+                    f"AST Resource Canary Regression detected: post duration {post_duration_ms:.1f}ms "
+                    f"vs pre duration {pre_duration_ms:.1f}ms (blowup ratio: {ratio:.1f}x)."
+                )
+                proof = (
+                    f"SANDBOX VERIFICATION REJECTED [AST Resource Canary Regression]\n"
+                    f"Pre-Patch Duration: {pre_duration_ms:.1f}ms\n"
+                    f"Post-Patch Duration: {post_duration_ms:.1f}ms (Blowup Factor: {ratio:.1f}x)\n"
+                    f"Canary Invariant: Candidate patch introduces computational complexity regression.\n"
+                    f"Execution Duration: {duration_ms:.1f}ms"
+                )
+
         passed_count = 1 if is_verified else 0
         failed_count = 0 if is_verified else 1
 
@@ -85,7 +120,11 @@ class SandboxRunner(ExecutionSandboxPort):
             duration_ms=round(duration_ms, 2),
             tests_passed=passed_count,
             tests_failed=failed_count,
-            deterministic_proof=proof
+            deterministic_proof=proof,
+            pre_duration_ms=round(pre_duration_ms, 2),
+            post_duration_ms=round(post_duration_ms, 2),
+            canary_passed=canary_passed,
+            canary_diagnostics=canary_diagnostics
         )
 
     def _validate_ast_security(self, code: str) -> Tuple[bool, Optional[str]]:
