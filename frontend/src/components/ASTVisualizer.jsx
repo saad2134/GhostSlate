@@ -152,7 +152,8 @@ export default function ASTVisualizer({ astNodes, isolatedNode }) {
           backgroundColor: '#050505',
           borderRadius: '8px',
           padding: '12px 16px',
-          border: '1px solid var(--border-subtle)'
+          border: '1px solid var(--border-subtle)',
+          marginTop: '10px'
         }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '6px', fontSize: '0.74rem', color: 'var(--text-muted)' }}>
             <span style={{ fontWeight: 500 }}>AST Node Snippet ✦ {activeNode.node_type}</span>

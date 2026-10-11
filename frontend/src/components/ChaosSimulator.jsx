@@ -110,7 +110,14 @@ export default function ChaosSimulator({
                 backgroundColor: isSelected ? '#111111' : '#0a0a0a'
               }}
             >
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px' }}>
+              <div style={{
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                gap: '12px',
+                flexWrap: 'wrap',
+                marginBottom: '10px'
+              }}>
                 <span style={{
                   fontSize: '0.7rem',
                   fontWeight: 600,
@@ -122,7 +129,13 @@ export default function ChaosSimulator({
                 }}>
                   {sc.category}
                 </span>
-                <span style={{ fontSize: '0.72rem', color: '#a1a1a1', fontFamily: 'var(--font-mono)' }}>
+                <span style={{
+                  fontSize: '0.72rem',
+                  color: '#a1a1a1',
+                  fontFamily: 'var(--font-mono)',
+                  flexShrink: 0,
+                  marginLeft: 'auto'
+                }}>
                   Python AST
                 </span>
               </div>
@@ -258,7 +271,7 @@ export default function ChaosSimulator({
         </div>
       )}
 
-      {/* 5-Stage High-Contrast Pipeline with Proper Padding */}
+      {/* 5-Stage High-Contrast Pipeline with Animating >>> Arrows */}
       <div className="responsive-pipeline-stepper">
         {pipelineStages.map((stg, idx) => {
           const isPassed = activeIndex >= idx;
@@ -266,29 +279,53 @@ export default function ChaosSimulator({
           const Icon = stg.icon;
 
           return (
-            <div
-              key={stg.key}
-              className="pipeline-step-chip"
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: '8px',
-                padding: '6px 12px',
-                borderRadius: '6px',
-                backgroundColor: isCurrent ? '#ffffff' : (isPassed ? '#171717' : 'transparent'),
-                color: isCurrent ? '#000000' : (isPassed ? '#ffffff' : 'var(--text-muted)'),
-                border: isCurrent ? '1px solid #ffffff' : '1px solid transparent',
-                fontSize: '0.76rem',
-                fontWeight: isCurrent ? 700 : 500,
-                transition: 'all 0.15s ease'
-              }}
-            >
-              <Icon size={14} color={isCurrent ? '#000000' : (isPassed ? stg.accentColor : '#666666')} />
-              <span>{stg.label}</span>
-              {isPassed && idx < activeIndex && (
-                <CheckCircle2 size={13} color="#10b981" />
+            <React.Fragment key={stg.key}>
+              <div
+                className="pipeline-step-chip"
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '8px',
+                  padding: '6px 12px',
+                  borderRadius: '6px',
+                  backgroundColor: isCurrent ? '#ffffff' : (isPassed ? '#171717' : 'transparent'),
+                  color: isCurrent ? '#000000' : (isPassed ? '#ffffff' : 'var(--text-muted)'),
+                  border: isCurrent ? '1px solid #ffffff' : '1px solid transparent',
+                  fontSize: '0.76rem',
+                  fontWeight: isCurrent ? 700 : 500,
+                  transition: 'all 0.15s ease'
+                }}
+              >
+                <Icon size={14} color={isCurrent ? '#000000' : (isPassed ? stg.accentColor : '#666666')} />
+                <span>{stg.label}</span>
+                {isPassed && idx < activeIndex && (
+                  <CheckCircle2 size={13} color="#10b981" />
+                )}
+              </div>
+
+              {idx < pipelineStages.length - 1 && (
+                <div
+                  className="pipeline-arrow-flow"
+                  style={{
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '2px',
+                    fontFamily: 'var(--font-mono)',
+                    fontSize: '0.86rem',
+                    fontWeight: 800,
+                    userSelect: 'none',
+                    flexShrink: 0,
+                    color: idx < activeIndex ? '#10b981' : '#555555',
+                    padding: '0 2px'
+                  }}
+                  aria-hidden="true"
+                >
+                  <span className="arrow-char a1">›</span>
+                  <span className="arrow-char a2">›</span>
+                  <span className="arrow-char a3">›</span>
+                </div>
               )}
-            </div>
+            </React.Fragment>
           );
         })}
       </div>
@@ -298,6 +335,17 @@ export default function ChaosSimulator({
           0% { transform: rotate(0deg); }
           100% { transform: rotate(360deg); }
         }
+        @keyframes arrowPulse {
+          0%, 100% { opacity: 0.35; transform: translateX(0); }
+          50% { opacity: 1; transform: translateX(2px); }
+        }
+        .arrow-char {
+          display: inline-block;
+          transition: all 0.2s ease;
+        }
+        .pipeline-arrow-flow .a1 { animation: arrowPulse 1.4s ease-in-out infinite; }
+        .pipeline-arrow-flow .a2 { animation: arrowPulse 1.4s ease-in-out 0.2s infinite; }
+        .pipeline-arrow-flow .a3 { animation: arrowPulse 1.4s ease-in-out 0.4s infinite; }
       `}</style>
     </SpotlightCard>
   );

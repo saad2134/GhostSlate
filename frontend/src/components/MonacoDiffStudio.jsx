@@ -69,10 +69,11 @@ export default function MonacoDiffStudio({ patch, originalCode, language = 'pyth
           backgroundColor: '#050505',
           border: '1px solid var(--border-subtle)',
           borderRadius: '8px',
-          padding: '12px 16px',
+          padding: '14px 18px',
+          margin: '10px 0',
           display: 'flex',
           alignItems: 'center',
-          gap: '10px'
+          gap: '12px'
         }}>
           <Sparkles size={16} color="#ffffff" style={{ flexShrink: 0 }} />
           <p style={{ fontSize: '0.77rem', color: '#d4d4d4', margin: 0, lineHeight: 1.5 }}>

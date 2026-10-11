@@ -1,5 +1,5 @@
-import React from 'react';
-import { Cpu, GitPullRequest, Keyboard } from 'lucide-react';
+import React, { useState, useRef, useEffect } from 'react';
+import { Cpu, GitPullRequest, Keyboard, ChevronDown, Check } from 'lucide-react';
 import appIcon from '../assets/app-icon.png';
 import ShinyText from './ui/ShinyText';
 import DecryptedText from './ui/DecryptedText';
@@ -13,6 +13,41 @@ export default function Header({
   session
 }) {
   const isVerified = session?.verification?.is_verified;
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const dropdownRef = useRef(null);
+
+  const providers = [
+    {
+      id: 'deterministic',
+      label: 'Deterministic Engine',
+      badge: 'Offline / Zero-Flake',
+      description: 'Local heuristic AST engine with 0 external API calls'
+    },
+    {
+      id: 'gemini',
+      label: 'Gemini 2.0 Flash',
+      badge: 'Adapter Connected',
+      description: 'Google Deepmind multimodal LLM adapter'
+    },
+    {
+      id: 'openai',
+      label: 'OpenAI GPT-4o Mini',
+      badge: 'Adapter Ready',
+      description: 'OpenAI program synthesis adapter'
+    }
+  ];
+
+  const currentProvider = providers.find(p => p.id === provider) || providers[0];
+
+  useEffect(() => {
+    const handleClickOutside = (e) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(e.target)) {
+        setIsDropdownOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
 
   return (
     <header className="vercel-card responsive-header">
@@ -55,38 +90,121 @@ export default function Header({
         </div>
       </div>
 
-      {/* Provider Selector & Export Button */}
+      {/* Provider Selector & Export Button (Fluidly Wrapping) */}
       <div className="header-actions-wrap" style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
-        <div className="header-provider-box" style={{
-          display: 'flex',
-          alignItems: 'center',
-          gap: '8px',
-          backgroundColor: '#0a0a0a',
-          padding: '6px 12px',
-          borderRadius: '6px',
-          border: '1px solid var(--border-subtle)',
-          fontSize: '0.78rem'
-        }}>
-          <Cpu size={14} color="#a1a1a1" />
-          <span style={{ color: 'var(--text-muted)' }}>Provider:</span>
-          <select
-            value={provider}
-            onChange={(e) => setProvider(e.target.value)}
+        {/* Custom High-Contrast Provider Dropdown */}
+        <div ref={dropdownRef} className="header-provider-box" style={{ position: 'relative' }}>
+          <button
+            type="button"
+            onClick={() => setIsDropdownOpen(prev => !prev)}
+            aria-haspopup="listbox"
+            aria-expanded={isDropdownOpen}
+            aria-label="Select Execution Provider"
             style={{
-              background: 'transparent',
-              border: 'none',
-              color: '#ffffff',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '8px',
+              backgroundColor: '#0a0a0a',
+              padding: '6px 12px',
+              borderRadius: '6px',
+              border: isDropdownOpen ? '1px solid #ffffff' : '1px solid var(--border-subtle)',
               fontSize: '0.78rem',
-              fontWeight: 500,
+              color: '#ffffff',
               cursor: 'pointer',
-              outline: 'none',
-              fontFamily: 'var(--font-sans)'
+              transition: 'all 0.15s ease',
+              width: '100%',
+              justifyContent: 'space-between'
             }}
           >
-            <option value="deterministic" style={{ background: '#0a0a0a', color: '#fff' }}>Deterministic Engine (Offline / Demo Heuristics ✦ Zero-Flake)</option>
-            <option value="gemini" style={{ background: '#0a0a0a', color: '#fff' }}>Gemini 2.0 Flash (Adapter Connected)</option>
-            <option value="openai" style={{ background: '#0a0a0a', color: '#fff' }}>OpenAI GPT-4o Mini (Adapter Ready)</option>
-          </select>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '7px' }}>
+              <Cpu size={14} color="#a1a1a1" style={{ flexShrink: 0 }} />
+              <span style={{ color: 'var(--text-muted)' }}>Provider:</span>
+              <span style={{ fontWeight: 600, color: '#ffffff' }}>{currentProvider.label}</span>
+              <span className="hide-on-mobile-xs" style={{
+                fontSize: '0.67rem',
+                backgroundColor: '#171717',
+                padding: '2px 6px',
+                borderRadius: '4px',
+                color: '#10b981',
+                border: '1px solid rgba(16, 185, 129, 0.3)'
+              }}>
+                {currentProvider.badge}
+              </span>
+            </div>
+            <ChevronDown
+              size={13}
+              color="#a1a1a1"
+              style={{
+                transform: isDropdownOpen ? 'rotate(180deg)' : 'none',
+                transition: 'transform 0.15s ease',
+                flexShrink: 0
+              }}
+            />
+          </button>
+
+          {isDropdownOpen && (
+            <div
+              role="listbox"
+              aria-label="Available execution providers"
+              style={{
+                position: 'absolute',
+                top: 'calc(100% + 6px)',
+                right: 0,
+                zIndex: 1000,
+                width: 'max-content',
+                minWidth: '280px',
+                maxWidth: '340px',
+                backgroundColor: '#0a0a0a',
+                border: '1px solid #333333',
+                borderRadius: '8px',
+                boxShadow: '0 16px 36px rgba(0, 0, 0, 0.95)',
+                padding: '5px',
+                display: 'flex',
+                flexDirection: 'column',
+                gap: '3px'
+              }}
+            >
+              {providers.map((p) => {
+                const isSelected = p.id === provider;
+                return (
+                  <button
+                    key={p.id}
+                    role="option"
+                    aria-selected={isSelected}
+                    type="button"
+                    onClick={() => {
+                      setProvider(p.id);
+                      setIsDropdownOpen(false);
+                    }}
+                    style={{
+                      display: 'flex',
+                      alignItems: 'flex-start',
+                      justifyContent: 'space-between',
+                      padding: '8px 10px',
+                      borderRadius: '6px',
+                      backgroundColor: isSelected ? '#141414' : 'transparent',
+                      border: isSelected ? '1px solid #333333' : '1px solid transparent',
+                      cursor: 'pointer',
+                      textAlign: 'left',
+                      transition: 'background-color 0.12s ease',
+                      width: '100%'
+                    }}
+                    onMouseEnter={(e) => { if (!isSelected) e.currentTarget.style.backgroundColor = '#111111'; }}
+                    onMouseLeave={(e) => { if (!isSelected) e.currentTarget.style.backgroundColor = 'transparent'; }}
+                  >
+                    <div>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                        <span style={{ fontSize: '0.78rem', fontWeight: 600, color: '#ffffff' }}>{p.label}</span>
+                        <span style={{ fontSize: '0.67rem', color: isSelected ? '#10b981' : '#888888' }}>✦ {p.badge}</span>
+                      </div>
+                      <span style={{ fontSize: '0.68rem', color: '#777777', display: 'block', marginTop: '2px' }}>{p.description}</span>
+                    </div>
+                    {isSelected && <Check size={14} color="#10b981" style={{ flexShrink: 0, marginTop: '2px', marginLeft: '8px' }} />}
+                  </button>
+                );
+              })}
+            </div>
+          )}
         </div>
 
         {/* Hotkeys Button */}
