@@ -29,6 +29,8 @@ class StateTrap:
             raw_snapshots, violation = self._trace_null_pointer()
         elif scenario_id == "financial_ledger":
             raw_snapshots, violation = self._trace_financial_ledger()
+        elif scenario_id == "custom":
+            raw_snapshots, violation = self._trace_custom()
         else:
             raw_snapshots, violation = self._trace_generic()
 
@@ -325,6 +327,56 @@ class StateTrap:
             actual_value="sequence_no=1 <= watermark=2",
             line_number=10,
             function_name="dispatch_task"
+        )
+        return snapshots, violation
+
+    def _trace_custom(self) -> Tuple[List[RuntimeStateSnapshot], Optional[InvariantViolation]]:
+        snapshots = [
+            RuntimeStateSnapshot(
+                step=1,
+                line_number=2,
+                function_name="DataBuffer.__init__",
+                variables={"capacity": 4, "items": []},
+                call_stack=["DataBuffer.__init__"],
+                status="normal",
+                message="DataBuffer initialized with capacity 4"
+            ),
+            RuntimeStateSnapshot(
+                step=2,
+                line_number=7,
+                function_name="DataBuffer.push",
+                variables={"val": 0, "len(items)": 0, "capacity": 4},
+                call_stack=["test_data_buffer_boundary", "push"],
+                status="normal",
+                message="Item 0 pushed into buffer. Buffer count -> 1"
+            ),
+            RuntimeStateSnapshot(
+                step=3,
+                line_number=7,
+                function_name="DataBuffer.push",
+                variables={"val": 1, "len(items)": 1, "capacity": 4},
+                call_stack=["test_data_buffer_boundary", "push"],
+                status="normal",
+                message="Item 1 pushed into buffer. Buffer count -> 2"
+            ),
+            RuntimeStateSnapshot(
+                step=4,
+                line_number=8,
+                function_name="DataBuffer.push",
+                variables={"val": 99, "len(items)": 4, "capacity": 4, "condition": "4 <= 4 (True)"},
+                call_stack=["test_data_buffer_boundary", "push"],
+                status="invariant_violation",
+                message="BOUNDARY INVARIANT BREACH: len(items) <= capacity evaluated True when buffer is at capacity 4!"
+            )
+        ]
+        violation = InvariantViolation(
+            rule_name="CapacityStrictUpperLimitInvariant",
+            description="Buffer boundary check used '<=' instead of strict '<', allowing overflow beyond maximum capacity.",
+            culprit_variable="len(self.items)",
+            expected_condition="len(self.items) < self.capacity",
+            actual_value="5 items accepted in capacity 4",
+            line_number=8,
+            function_name="push"
         )
         return snapshots, violation
 

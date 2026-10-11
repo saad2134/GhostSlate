@@ -22,6 +22,31 @@ export default function App() {
   const [isExportModalOpen, setIsExportModalOpen] = useState(false);
   const [isShortcutsModalOpen, setIsShortcutsModalOpen] = useState(false);
 
+  // Custom Evaluator Sandbox code & test assertion state
+  const [customCode, setCustomCode] = useState(`class DataBuffer:
+    def __init__(self, capacity: int = 4):
+        self.capacity = capacity
+        self.items = []
+
+    def push(self, val: int) -> bool:
+        # BUG: Off-by-one boundary check allows overflow when full
+        if len(self.items) <= self.capacity:
+            self.items.append(val)
+            return True
+        return False
+`);
+  const [customTest, setCustomTest] = useState(`import pytest
+from target import DataBuffer
+
+def test_data_buffer_boundary():
+    buf = DataBuffer(capacity=4)
+    for i in range(4):
+        assert buf.push(i) is True
+    # 5th item must be rejected
+    assert buf.push(99) is False, "Buffer overflow: item accepted beyond capacity!"
+    assert len(buf.items) == 4
+`);
+
   // Fetch scenarios on mount and run initial session
   useEffect(() => {
     fetch(`${API_BASE}/api/scenarios`)
@@ -37,7 +62,7 @@ export default function App() {
       });
   }, []);
 
-  const triggerHeal = async (scenarioId) => {
+  const triggerHeal = async (scenarioId, overrideCode, overrideTest) => {
     setSelectedScenarioId(scenarioId);
     setLoading(true);
     setStage('recording_trace');
@@ -48,10 +73,16 @@ export default function App() {
       setTimeout(() => setStage('agent_debate'), 1000);
       setTimeout(() => setStage('sandbox_verifying'), 1600);
 
+      const payload = { scenario_id: scenarioId };
+      if (scenarioId === 'custom') {
+        payload.custom_code = overrideCode !== undefined ? overrideCode : customCode;
+        payload.custom_test = overrideTest !== undefined ? overrideTest : customTest;
+      }
+
       const res = await fetch(`${API_BASE}/api/heal`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ scenario_id: scenarioId })
+        body: JSON.stringify(payload)
       });
 
       const data = await res.json();
@@ -67,12 +98,12 @@ export default function App() {
     }
   };
 
-  // Hands-free keyboard shortcuts navigation
+  // Hands-free keyboard shortcuts navigation (1-6 scenarios, Space heal, E export, ? shortcuts)
   useEffect(() => {
     const handleKeyDown = (e) => {
       if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA' || e.target.tagName === 'SELECT') return;
 
-      if (e.key >= '1' && e.key <= '5') {
+      if (e.key >= '1' && e.key <= '6') {
         const idx = parseInt(e.key) - 1;
         if (scenarios[idx]) triggerHeal(scenarios[idx].id);
       } else if (e.key === ' ' || e.code === 'Space') {
@@ -89,7 +120,7 @@ export default function App() {
     };
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [scenarios, selectedScenarioId]);
+  }, [scenarios, selectedScenarioId, customCode, customTest]);
 
   return (
     <BackgroundGrid>
@@ -112,6 +143,10 @@ export default function App() {
             onTriggerHeal={(id) => triggerHeal(id)}
             loading={loading}
             stage={stage}
+            customCode={customCode}
+            setCustomCode={setCustomCode}
+            customTest={customTest}
+            setCustomTest={setCustomTest}
           />
 
           {/* Two-Column Bento Grid: State Invariant Inspection & Multi-Agent Verification */}

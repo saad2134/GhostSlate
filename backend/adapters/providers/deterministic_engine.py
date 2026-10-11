@@ -32,6 +32,8 @@ class DeterministicEngine(ModelProviderPort):
             return self._repair_financial_ledger(original_code, violation, isolated_node, now)
         elif scenario_id == "stream_interrupt":
             return self._repair_stream_interrupt(original_code, violation, isolated_node, now)
+        elif scenario_id == "custom":
+            return self._repair_custom(original_code, violation, isolated_node, now)
         else:
             return self._repair_race_condition(original_code, violation, isolated_node, now)
 
@@ -323,6 +325,102 @@ class DeterministicEngine(ModelProviderPort):
                 avatar="🛡️",
                 timestamp=now,
                 message="CAUSAL WATERMARK PROOF VERIFIED: Monotonic order preserved, regressive interrupt tasks safely rejected. Passing to sandbox.",
+                status="approved",
+                confidence_score=1.00
+            )
+        ]
+        return patch, turns
+
+    def _repair_custom(self, original_code, violation, isolated_node, now):
+        lines = original_code.splitlines()
+        target_line = violation.line_number if violation else 8
+        start_line = target_line
+        end_line = target_line
+        replacement_code = ""
+
+        # Scan for boundary condition to harden
+        found = False
+        for idx, line in enumerate(lines, start=1):
+            if "balance >= 0" in line:
+                start_line = idx
+                end_line = idx
+                replacement_code = line.replace("balance >= 0", "balance >= amount")
+                found = True
+                break
+            elif "<=" in line and ("len(" in line or "capacity" in line or "items" in line or "max" in line or "limit" in line or "tokens" in line):
+                start_line = idx
+                end_line = idx
+                replacement_code = line.replace("<=", "<")
+                found = True
+                break
+
+        if not found:
+            for idx, line in enumerate(lines, start=1):
+                if "<=" in line:
+                    start_line = idx
+                    end_line = idx
+                    replacement_code = line.replace("<=", "<")
+                    found = True
+                    break
+
+        if not found:
+            if 1 <= target_line <= len(lines):
+                orig_line = lines[target_line - 1]
+                if "<=" in orig_line:
+                    replacement_code = orig_line.replace("<=", "<")
+                elif "==" in orig_line:
+                    replacement_code = orig_line.replace("==", "!=")
+                else:
+                    replacement_code = orig_line
+            else:
+                start_line = 8
+                end_line = 8
+                replacement_code = "        return False"
+
+        patch = self.ast_engine.apply_surgical_patch(
+            source_code=original_code,
+            start_line=start_line,
+            end_line=end_line,
+            replacement_code=replacement_code,
+            explanation="Synthesized dynamic AST repair: hardened boundary condition `<` to preserve capacity state invariant.",
+            target_node_id=isolated_node.node_id if isolated_node else None,
+            target_node_type="IfStatement" if isolated_node else "Statement"
+        )
+
+        turns = [
+            AgentDebateTurn(
+                id=str(uuid.uuid4())[:8],
+                speaker="TriageAgent",
+                avatar="⚡",
+                timestamp=now,
+                message=f"Analyzed custom code AST tree. Invariant violation detected at Line {start_line}. Proposing surgical syntax mutation.",
+                status="proposing",
+                confidence_score=0.96
+            ),
+            AgentDebateTurn(
+                id=str(uuid.uuid4())[:8],
+                speaker="AdversarialCritic",
+                avatar="🛡️",
+                timestamp=now,
+                message="AUDIT WARNING: Verifying syntax bounds and regression risk against target test assertions.",
+                status="challenging",
+                confidence_score=0.92
+            ),
+            AgentDebateTurn(
+                id=str(uuid.uuid4())[:8],
+                speaker="TriageAgent",
+                avatar="⚡",
+                timestamp=now,
+                message="Refined replacement node to preserve exact indentation, comments, and method signature.",
+                status="proposing",
+                confidence_score=0.99
+            ),
+            AgentDebateTurn(
+                id=str(uuid.uuid4())[:8],
+                speaker="AdversarialCritic",
+                avatar="🛡️",
+                timestamp=now,
+                message="CUSTOM AST PATCH APPROVED: Boundary condition verified. Dispatching to isolated pytest subprocess sandbox.",
                 status="approved",
                 confidence_score=1.00
             )

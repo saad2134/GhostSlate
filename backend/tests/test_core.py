@@ -12,6 +12,18 @@ def test_all_chaos_scenarios_configured():
     assert "null_pointer" in scenario_ids
     assert "financial_ledger" in scenario_ids
     assert "stream_interrupt" in scenario_ids
+    assert "custom" in scenario_ids
+
+def test_custom_self_heal_loop():
+    coordinator = AgentLoopCoordinator()
+    session = coordinator.run_healing_session("custom")
+
+    assert session.stage == "healed"
+    assert session.verification.is_verified is True
+    assert session.verification.exit_code == 0
+    assert session.patch is not None
+    assert "< self.capacity" in session.patch.replacement_code
+    assert session.invariant_violation.rule_name == "CapacityStrictUpperLimitInvariant"
 
 def test_stream_interrupt_self_heal_loop():
     coordinator = AgentLoopCoordinator()

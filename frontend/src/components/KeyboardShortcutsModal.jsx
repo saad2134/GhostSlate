@@ -6,7 +6,7 @@ export default function KeyboardShortcutsModal({ isOpen, onClose }) {
   if (!isOpen) return null;
 
   const shortcuts = [
-    { key: '1 ✦ 5', description: 'Switch Chaos Scenarios (1: Race, 2: Boundary, 3: Null, 4: Ledger, 5: Stream Sync)' },
+    { key: '1 ✦ 6', description: 'Switch Chaos Scenarios (1: Race, 2: Boundary, 3: Null, 4: Ledger, 5: Stream Sync, 6: Custom Sandbox)' },
     { key: 'Space', description: 'Trigger Chaos Injection & Automated AST Repair Live' },
     { key: 'E', description: 'Open 1-Click Pull Request & SARIF Export Modal' },
     { key: '?', description: 'Toggle Keyboard Shortcuts Cheat Sheet' },

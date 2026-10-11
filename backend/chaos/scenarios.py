@@ -204,6 +204,39 @@ def test_task_buffer_watermark_invariants():
     assert buffer.processed_count == 2
 """,
         expected_invariant="sequence_no > watermark_sequence and len(pending_tasks) < max_buffer_size"
+    ),
+
+    "custom": ChaosScenario(
+        id="custom",
+        title="Custom Sandbox ✦ Evaluator Code & Invariant",
+        category="Custom Code & Interactive Sandbox",
+        language="python",
+        description="Inspect, modify, or test custom Python source code and unit assertions in real time. GhostSlate's AST engine scopes the failing syntax node and verifies surgical repair.",
+        bug_type="Dynamic Invariant Violation",
+        source_code="""class DataBuffer:
+    def __init__(self, capacity: int = 4):
+        self.capacity = capacity
+        self.items = []
+
+    def push(self, val: int) -> bool:
+        # BUG: Off-by-one boundary check allows overflow when full
+        if len(self.items) <= self.capacity:
+            self.items.append(val)
+            return True
+        return False
+""",
+        test_code="""import pytest
+from target import DataBuffer
+
+def test_data_buffer_boundary():
+    buf = DataBuffer(capacity=4)
+    for i in range(4):
+        assert buf.push(i) is True
+    # 5th item must be rejected
+    assert buf.push(99) is False, "Buffer overflow: item accepted beyond capacity!"
+    assert len(buf.items) == 4
+""",
+        expected_invariant="len(items) < capacity"
     )
 }
 

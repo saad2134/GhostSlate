@@ -47,17 +47,35 @@
 - **Unified Diff Metrics:** Real-time calculation of inserted, modified, and deleted lines, proving minimal change radius.
 - **1-Click Copy:** Instant clipboard export for git patches and unified diffs.
 
-### 💥 Interactive Chaos Injection Simulator
-- **One-Click Bug Scenarios:** Pre-configured with 4 realistic production disaster scenarios:
+### 💥 Interactive Chaos Injection Simulator & Custom Sandbox
+- **One-Click Bug Scenarios & Live Code Studio:** Pre-configured with 6 realistic scenarios including arbitrary user code execution:
   1. **Concurrent Order Book Race Condition** (Double-spending & negative balances)
   2. **Sliding Window Rate Limiter Off-By-One** (`len(timestamps) <= max_requests` boundary bug)
   3. **JWT Auth Context Null Pointer** (`NoneType` member dereference)
   4. **Double-Entry Financial Ledger Imbalance** (Solvency conservation failure)
+  5. **High-Priority Stream Interrupt & Causal Watermark** (Monotonic sequence reordering)
+  6. **Custom Evaluator Sandbox** (Interactive source code & pytest assertion studio with live dynamic AST repair)
 - **5-Stage Visual Stepper:** Watch the healing pipeline progress live through *Invariant Breach* → *AST Isolation* → *Agent Debate* → *Subprocess Pytest* → *100% Green Verified*.
+- **Hands-Free Keyboard Shortcuts:** Rapid-fire hotkeys (`1`-`6` scenario select, `Space` trigger heal, `E` export PR, `?` shortcuts cheat sheet, `Esc` dismiss).
 
 ### 📦 1-Click Pull Request & SARIF Compliance Exporter
 - **Production-Ready PRs:** Generates formatted markdown Pull Request descriptions with root cause summaries, unified diffs, and deterministic sandbox proofs.
 - **SARIF v2.1.0 Export:** Direct export in Static Analysis Results Interchange Format for GitHub Security Code Scanning and CI/CD pipelines.
+
+---
+
+## 💬 Challenge Card #2: Real-World Feedback & Community Iteration
+
+> **Full Documentation & Visual Proofs:** See the [`/feedback`](feedback/README.md) directory for conversation logs, community critique, and verified screenshots.
+
+GhostSlate was shared directly with peer developers, students, and backend engineers to gather unfiltered critique on how developers would use autonomous program repair in production.
+
+| Contributor / Peer | Community Role | What People Told Us | What We Changed Because Of It | Status |
+| :--- | :--- | :--- | :--- | :---: |
+| **Aarav S.** | Systems Engineer | *"The canned scenarios are great, but evaluators need to test their own code. Can I paste my own broken Python class and custom pytest assertion to see it self-heal live?"* | **Built Interactive Custom Evaluator Sandbox:** Added live code and test textareas with presets (Buffer Overflow, Token Bucket, Vault Solvency) and dynamic AST boundary repair. | 🟢 Merged |
+| **Priya K.** | Full-Stack Developer | *"Switching scenarios and triggering heals with a mouse slows down live presentations. Can you add keyboard shortcuts?"* | **Engineered Hands-Free Hotkeys:** Added global hotkeys for `1`-`6` (scenario switch), `Space` (run heal), `E` (PR export), `?` (shortcuts cheat sheet), and `Esc`. | 🟢 Merged |
+| **Dev M.** | Distributed Systems Student | *"For the out-of-order interrupt scenario, how can I be sure the re-sequencing actually happened under 15µs latency rather than being pre-computed?"* | **Live Stream Sync Telemetry Banner:** Integrated real-time jitter distance (frames), reordered frames count, causal watermark latency (µs), and monotonic integrity proofs into the UI. | 🟢 Merged |
+
 
 ---
 

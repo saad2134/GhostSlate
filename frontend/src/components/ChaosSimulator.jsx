@@ -1,5 +1,5 @@
 import React from 'react';
-import { Play, CheckCircle2, AlertTriangle, ShieldCheck, Cpu, Code2, Zap } from 'lucide-react';
+import { Play, CheckCircle2, AlertTriangle, ShieldCheck, Cpu, Code2, Zap, FileCode, RotateCcw, Sparkles } from 'lucide-react';
 import SpotlightCard from './ui/SpotlightCard';
 import ShimmerButton from './ui/ShimmerButton';
 import ShinyText from './ui/ShinyText';
@@ -10,7 +10,11 @@ export default function ChaosSimulator({
   onSelectScenario,
   onTriggerHeal,
   loading,
-  stage
+  stage,
+  customCode,
+  setCustomCode,
+  customTest,
+  setCustomTest
 }) {
   const selectedScenario = scenarios.find(s => s.id === selectedScenarioId) || scenarios[0];
 
@@ -123,6 +127,127 @@ export default function ChaosSimulator({
           );
         })}
       </div>
+
+      {/* Interactive Custom Code & Invariant Editor (Visible when Custom Sandbox selected) */}
+      {selectedScenarioId === 'custom' && (
+        <div style={{
+          backgroundColor: '#050505',
+          border: '1px solid #333333',
+          borderRadius: '8px',
+          padding: '16px 18px',
+          marginBottom: '18px',
+          display: 'flex',
+          flexDirection: 'column',
+          gap: '12px'
+        }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '8px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <FileCode size={16} color="#10b981" />
+              <span style={{ fontSize: '0.84rem', fontWeight: 700, color: '#ffffff' }}>
+                Custom Evaluator Sandbox ✦ Dynamic Source Code & Test Assertions
+              </span>
+            </div>
+            
+            {/* Quick Template Chips */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flexWrap: 'wrap' }}>
+              <span style={{ fontSize: '0.7rem', color: '#888888' }}>Quick Presets:</span>
+              <button
+                type="button"
+                onClick={() => {
+                  setCustomCode(`class DataBuffer:\n    def __init__(self, capacity: int = 4):\n        self.capacity = capacity\n        self.items = []\n\n    def push(self, val: int) -> bool:\n        # BUG: Off-by-one boundary check allows overflow when full\n        if len(self.items) <= self.capacity:\n            self.items.append(val)\n            return True\n        return False\n`);
+                  setCustomTest(`import pytest\nfrom target import DataBuffer\n\ndef test_data_buffer_boundary():\n    buf = DataBuffer(capacity=4)\n    for i in range(4):\n        assert buf.push(i) is True\n    # 5th item must be rejected\n    assert buf.push(99) is False, "Buffer overflow: item accepted beyond capacity!"\n    assert len(buf.items) == 4\n`);
+                }}
+                className="vercel-btn-secondary"
+                style={{ padding: '3px 8px', fontSize: '0.69rem' }}
+              >
+                1. Buffer Overflow
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  setCustomCode(`class TokenBucket:\n    def __init__(self, burst_limit: int = 5):\n        self.burst_limit = burst_limit\n        self.tokens = 0\n\n    def consume(self, amount: int = 1) -> bool:\n        # BUG: Boundary <= allows tokens to exceed burst_limit\n        if self.tokens + amount <= self.burst_limit:\n            self.tokens += amount\n            return True\n        return False\n`);
+                  setCustomTest(`import pytest\nfrom target import TokenBucket\n\ndef test_token_bucket_limit():\n    bucket = TokenBucket(burst_limit=5)\n    assert bucket.consume(3) is True\n    assert bucket.consume(2) is True\n    # Further consumption must be rejected\n    assert bucket.consume(1) is False, "Burst limit exceeded!"\n    assert bucket.tokens == 5\n`);
+                }}
+                className="vercel-btn-secondary"
+                style={{ padding: '3px 8px', fontSize: '0.69rem' }}
+              >
+                2. Token Bucket
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  setCustomCode(`class SimpleVault:\n    def __init__(self, balance: float = 100.0):\n        self.balance = balance\n\n    def withdraw(self, amount: float) -> bool:\n        # BUG: Allows negative overdraft balance\n        if self.balance >= 0:\n            self.balance -= amount\n            return True\n        return False\n`);
+                  setCustomTest(`import pytest\nfrom target import SimpleVault\n\ndef test_vault_solvency():\n    vault = SimpleVault(100.0)\n    assert vault.withdraw(60.0) is True\n    assert vault.balance == 40.0\n    assert vault.withdraw(50.0) is False, "Overdraft must be barred!"\n    assert vault.balance == 40.0\n`);
+                }}
+                className="vercel-btn-secondary"
+                style={{ padding: '3px 8px', fontSize: '0.69rem' }}
+              >
+                3. Vault Solvency
+              </button>
+            </div>
+          </div>
+
+          <div style={{
+            display: 'grid',
+            gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))',
+            gap: '12px'
+          }}>
+            {/* Source Code Area */}
+            <div>
+              <label style={{ display: 'block', fontSize: '0.72rem', color: '#a1a1a1', marginBottom: '4px', fontFamily: 'var(--font-mono)' }}>
+                Target Source Code (`target.py`):
+              </label>
+              <textarea
+                value={customCode}
+                onChange={(e) => setCustomCode(e.target.value)}
+                rows={9}
+                style={{
+                  width: '100%',
+                  backgroundColor: '#000000',
+                  color: '#ffffff',
+                  fontFamily: 'var(--font-mono)',
+                  fontSize: '0.75rem',
+                  padding: '10px 12px',
+                  borderRadius: '6px',
+                  border: '1px solid #333333',
+                  outline: 'none',
+                  resize: 'vertical',
+                  lineHeight: 1.45
+                }}
+              />
+            </div>
+
+            {/* Test Suite Area */}
+            <div>
+              <label style={{ display: 'block', fontSize: '0.72rem', color: '#a1a1a1', marginBottom: '4px', fontFamily: 'var(--font-mono)' }}>
+                Pytest Assertion Suite (`test_target.py`):
+              </label>
+              <textarea
+                value={customTest}
+                onChange={(e) => setCustomTest(e.target.value)}
+                rows={9}
+                style={{
+                  width: '100%',
+                  backgroundColor: '#000000',
+                  color: '#ffffff',
+                  fontFamily: 'var(--font-mono)',
+                  fontSize: '0.75rem',
+                  padding: '10px 12px',
+                  borderRadius: '6px',
+                  border: '1px solid #333333',
+                  outline: 'none',
+                  resize: 'vertical',
+                  lineHeight: 1.45
+                }}
+              />
+            </div>
+          </div>
+
+          <p style={{ fontSize: '0.71rem', color: '#888888', margin: 0 }}>
+            ✦ Tip: Modify the code above and click <strong>"Inject Chaos ✦ Auto-Heal Live"</strong>. GhostSlate isolates the AST syntax node, synthesizes the fix, and runs subprocess pytest verification.
+          </p>
+        </div>
+      )}
 
       {/* 5-Stage High-Contrast Pipeline with Proper Padding */}
       <div style={{
